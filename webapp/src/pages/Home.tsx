@@ -27,10 +27,10 @@ function Unit({ period, index }: { period: PeriodNode; index: number }) {
   return (
     <section>
       <button className="unit-banner card tap colored" style={{ background: c, "--cd": cd } as React.CSSProperties}
-        onClick={() => { haptic.tap(); navigate(`/lesson?mode=period&id=${period.id}`); }}>
+        onClick={() => { haptic.tap(); navigate(period.id ? `/lesson?mode=period&id=${period.id}` : "/lesson?mode=mixed"); }}>
         <div className="row between">
           <div className="grow">
-            <div className="tiny">{t(`${index + 1}-bo'lim`)}</div>
+            <div className="tiny">{period.id ? t(`${index + 1}-bo'lim`) : t("Qo'shimcha")}</div>
             <h2>{period.name}</h2>
             <div className="small" style={{ opacity: 0.9, marginTop: 4 }}>{t(`${solved} / ${total} savol yechilgan`)}</div>
           </div>

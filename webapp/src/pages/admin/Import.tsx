@@ -76,12 +76,18 @@ export function ImportPage() {
     <div className="stack">
       <h1>Import</h1>
       <p className="muted">Shablonni yuklab oling, to'ldiring va shu yerga yuklang. Matni bir xil yozuvlar qayta qo'shilmaydi, shuning uchun bitta faylni qayta yuklash xavfsiz.</p>
+      <div className="card row" style={{ flexWrap: "wrap" }}>
+        <div className="grow"><b>Zaxira nusxa:</b> <span className="muted">barcha ma'lumotni Excel'ga yuklab oling. Fayl import formatida — tahrirlab, qayta yuklash mumkin.</span></div>
+        <button className="btn sm white" onClick={() => download("/admin/export/questions.xlsx", "savollar.xlsx").catch((e) => toast(e.message, "error"))}><Download size={18} /> Savollar</button>
+        <button className="btn sm white" onClick={() => download("/admin/export/history.xlsx", "voqealar.xlsx").catch((e) => toast(e.message, "error"))}><Download size={18} /> Voqealar</button>
+      </div>
       <div className="grid-2">
         <UploadBox kind="questions" title="📝 Test savollari"
-          columns={["savol", "a", "b", "c", "d", "togri", "izoh", "mavzu", "davr", "qiyinlik"]}
+          columns={["savol", "a", "b", "c", "d", "togri", "izoh", "mavzu", "davr", "qiyinlik", "rasm"]}
           notes={[
             "togri — A, B, C yoki D",
             "qiyinlik — 1, 2, 3 yoki oson / o'rta / qiyin (bo'sh bo'lsa 1)",
+            "rasm — ixtiyoriy, https:// havola (yoki keyin savolni tahrirlab rasm yuklang)",
             "Yangi davr va mavzular avtomatik yaratiladi",
             "Matnlarni lotinda yozing — kirill avtomatik",
           ]} />

@@ -15,6 +15,7 @@ from app.services.history import events_for, format_post
 from app.services.rating import user_rank, user_week_xp, weekly_leaderboard
 from app.services.review import due_count
 from app.services.stats import answer_totals
+from app.services.streak import effective_streak
 from app.services.translit import tr
 
 router = Router(name="menu")
@@ -28,7 +29,7 @@ async def profile(message: Message, user: User, session: AsyncSession, state: FS
     await message.answer(t(
         "profile", user.alphabet, total=total, correct=correct,
         percent=round(100 * correct / total) if total else 0,
-        streak=user.streak_current, best=user.streak_best,
+        streak=effective_streak(user), best=user.streak_best,
         due=await due_count(session, user.id),
     ))
 

@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { Calendar, Chart, Clipboard, Flag, Home, Layers, Search, Upload } from "../../components/Icons";
+import { Bell, Calendar, Chart, Clipboard, Flag, Home, Layers, Search, Upload } from "../../components/Icons";
 import { Mascot } from "../../components/Mascot";
 import { Loading } from "../../components/ui";
 import { api, ApiError, setAdminToken } from "../../lib/api";
 import { navigate, useRoute } from "../../lib/router";
 import { getInitData } from "../../lib/telegram";
+import { BroadcastPage } from "./Broadcast";
 import { Dashboard } from "./Dashboard";
 import { ExamConfigPage } from "./ExamConfig";
 import { HistoryPage } from "./History";
@@ -21,6 +22,7 @@ const MENU = [
   { path: "/admin/history", label: "Tarixda bugun", icon: Calendar },
   { path: "/admin/reports", label: "Xato xabarlari", icon: Flag },
   { path: "/admin/exam", label: "Imtihon formati", icon: Clipboard },
+  { path: "/admin/broadcast", label: "E'lon yuborish", icon: Bell },
 ];
 
 export function AdminApp() {
@@ -72,6 +74,7 @@ export function AdminApp() {
       case "/admin/history": return <HistoryPage />;
       case "/admin/reports": return <ReportsPage onCount={setNewReports} />;
       case "/admin/exam": return <ExamConfigPage />;
+      case "/admin/broadcast": return <BroadcastPage />;
       default: return <Dashboard />;
     }
   })();

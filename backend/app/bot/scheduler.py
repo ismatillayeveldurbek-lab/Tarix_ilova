@@ -6,20 +6,21 @@
 """
 import asyncio
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from aiogram import Bot
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-from sqlalchemy import or_, select
+from sqlalchemy import delete, or_, select
 
 from app.bot.broadcast import DELAY, safe_send
 from app.bot.keyboards import reminder_kb
 from app.bot.texts import t
 from app.config import settings
-from app.db import SessionLocal, local_today
-from app.models import User
+from app.db import SessionLocal, local_today, utcnow
+from app.models import LessonSession, User
 from app.services.daily import answers_today
 from app.services.history import events_for, format_post
+from app.services.streak import effective_streak
 
 log = logging.getLogger(__name__)
 
@@ -43,11 +44,10 @@ async def send_reminders(bot: Bot, now: datetime | None = None) -> int:
             if done >= settings.daily_question_count:
                 continue
             a = user.alphabet
-            ok = await safe_send(
-                bot, user.telegram_id,
-                t("reminder", a, n=settings.daily_question_count - done, streak=user.streak_current),
-                reply_markup=reminder_kb(a),
-            )
+            streak = effective_streak(user, today)
+            left = settings.daily_question_count - done
+            text = t("reminder", a, n=left, streak=streak) if streak else t("reminder_new", a, n=left)
+            ok = await safe_send(bot, user.telegram_id, text, reply_markup=reminder_kb(a))
             if ok is False:
                 user.is_blocked = True
             sent += bool(ok)
@@ -85,6 +85,16 @@ async def post_history_today(bot: Bot) -> int:
     return sent
 
 
+async def cleanup_old_lessons(days: int = 7) -> int:
+    """Eski Mini App dars yozuvlarini o'chiradi (javoblar `answers` jadvalida qoladi)."""
+    async with SessionLocal() as session:
+        result = await session.execute(
+            delete(LessonSession).where(LessonSession.created_at < utcnow() - timedelta(days=days))
+        )
+        await session.commit()
+        return result.rowcount or 0
+
+
 def create_scheduler(bot: Bot) -> AsyncIOScheduler:
     scheduler = AsyncIOScheduler(timezone=settings.tz)
     scheduler.add_job(send_reminders, "cron", minute="*", args=[bot], id="reminders",
@@ -92,6 +102,7 @@ def create_scheduler(bot: Bot) -> AsyncIOScheduler:
     hour, minute = (int(x) for x in settings.history_post_time.split(":"))
     scheduler.add_job(post_history_today, "cron", hour=hour, minute=minute, args=[bot],
                       id="history_today", max_instances=1, coalesce=True)
+    scheduler.add_job(cleanup_old_lessons, "cron", hour=4, minute=17, id="cleanup", max_instances=1)
     return scheduler
 
 

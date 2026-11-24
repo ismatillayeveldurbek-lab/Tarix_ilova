@@ -17,6 +17,7 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
   const { t, reload } = useStore();
   const [questions, setQuestions] = useState<Question[] | null>(null);
   const [source, setSource] = useState("practice");
+  const [lessonId, setLessonId] = useState(0);
   const [idx, setIdx] = useState(0);
   const [selected, setSelected] = useState<string | null>(null);
   const [result, setResult] = useState<AnswerResult | null>(null);
@@ -27,8 +28,8 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
   const started = useRef(Date.now());
 
   useEffect(() => {
-    api<{ source: string; questions: Question[] }>("/lessons", { body: { mode, id } })
-      .then((r) => { setQuestions(r.questions); setSource(r.source); })
+    api<{ lesson_id: number; source: string; questions: Question[] }>("/lessons", { body: { mode, id } })
+      .then((r) => { setQuestions(r.questions); setSource(r.source); setLessonId(r.lesson_id); })
       .catch((e) => { toast(e.message, "error"); setQuestions([]); });
   }, [mode, id]);
 
@@ -58,7 +59,7 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
     if (!selected || busy) return;
     setBusy(true);
     try {
-      const r = await api<AnswerResult>("/answers", { body: { question_id: q.id, option: selected, source } });
+      const r = await api<AnswerResult>("/answers", { body: { lesson_id: lessonId, question_id: q.id, option: selected } });
       setResult(r);
       if (r.is_correct) haptic.success(); else haptic.error();
       setStats((s) => {

@@ -1,17 +1,19 @@
 """Admin panel API: savollar, import, davr/mavzular, "Tarixda bugun", xato xabarlari, imtihon formati."""
+import asyncio
 import csv
 import io
 from datetime import timedelta
 from typing import Literal
 
-from fastapi import APIRouter, HTTPException, UploadFile
+from fastapi import APIRouter, HTTPException, Request, UploadFile
 from fastapi.responses import Response
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import Integer, cast, distinct, func, or_, select
 
 from app.api.deps import AdminUser, Session
+from app.bot.broadcast import broadcast
 from app.db import utcnow
 from app.models import (
     Answer, ExamAnswer, ExamConfig, HistoryEvent, Period, Question, QuestionReport, ReviewItem, Topic, User,
@@ -19,6 +21,7 @@ from app.models import (
 from app.services.daily import local_midnight_utc
 from app.services.exam import get_active_config, rule_availability
 from app.services.importer import import_file, import_history_file
+from app.services.media import MAX_IMAGE_BYTES, is_valid_image_url, save_image
 
 router = APIRouter(prefix="/api/admin")
 MAX_UPLOAD = 10 * 1024 * 1024
@@ -65,7 +68,7 @@ def q_out(q: Question) -> dict:
         "correct": q.correct_option, "explanation": q.explanation, "difficulty": q.difficulty,
         "period_id": q.period_id, "topic_id": q.topic_id,
         "period": q.period.name if q.period else None, "topic": q.topic.name if q.topic else None,
-        "is_active": q.is_active,
+        "is_active": q.is_active, "image_url": q.image_url,
     }
 
 
@@ -81,6 +84,15 @@ class QuestionIn(BaseModel):
     period_id: int | None = None
     topic_id: int | None = None
     is_active: bool = True
+    image_url: str | None = Field(None, max_length=500)
+
+    @field_validator("image_url")
+    @classmethod
+    def _image(cls, v: str | None) -> str | None:
+        v = (v or "").strip() or None
+        if v and not is_valid_image_url(v):
+            raise ValueError("Rasm havolasi http(s):// bilan boshlanishi kerak")
+        return v
 
 
 async def reload_question(session, qid: int) -> Question:
@@ -94,6 +106,7 @@ def apply_question(q: Question, body: QuestionIn) -> None:
         body.text.strip(), body.a.strip(), body.b.strip(), body.c.strip(), body.d.strip())
     q.correct_option, q.explanation, q.difficulty = body.correct, body.explanation.strip(), body.difficulty
     q.period_id, q.topic_id, q.is_active = body.period_id, body.topic_id, body.is_active
+    q.image_url = body.image_url
 
 
 @router.get("/questions")
@@ -157,6 +170,19 @@ async def delete_question(qid: int, _: AdminUser, session: Session) -> dict:
     return {"deleted": not used, "deactivated": used}
 
 
+# ---------- Rasmlar ----------
+
+@router.post("/media")
+async def upload_media(file: UploadFile, _: AdminUser, session: Session) -> dict:
+    data = await file.read(MAX_IMAGE_BYTES + 1)
+    try:
+        media = await save_image(session, data)
+    except ValueError as e:
+        raise HTTPException(400, str(e)) from None
+    await session.commit()
+    return {"url": f"/api/media/{media.id}"}
+
+
 # ---------- Import va shablonlar ----------
 
 async def _read_upload(file: UploadFile) -> bytes:
@@ -188,9 +214,9 @@ async def import_history(file: UploadFile, _: AdminUser, session: Session) -> di
 
 TEMPLATES = {
     "questions": (
-        ["savol", "a", "b", "c", "d", "togri", "izoh", "mavzu", "davr", "qiyinlik"],
+        ["savol", "a", "b", "c", "d", "togri", "izoh", "mavzu", "davr", "qiyinlik", "rasm"],
         [["Amir Temur qaysi yilda tug'ilgan?", "1320", "1336", "1370", "1405", "B",
-          "Amir Temur 1336-yil 9-aprelda tug'ilgan.", "Amir Temur va Temuriylar", "O'rta asrlar", "1"]],
+          "Amir Temur 1336-yil 9-aprelda tug'ilgan.", "Amir Temur va Temuriylar", "O'rta asrlar", "1", ""]],
     ),
     "history": (
         ["oy", "kun", "yil", "sarlavha", "matn"],
@@ -218,13 +244,93 @@ async def template(kind: Literal["questions", "history"], ext: Literal["xlsx", "
             cell.fill = PatternFill("solid", fgColor="2E9E5B")
         for r in rows:
             ws.append(r)
-        for col, width in zip("ABCDEFGHIJ", [50, 18, 18, 18, 18, 8, 50, 28, 18, 10]):
+        for col, width in zip("ABCDEFGHIJK", [50, 18, 18, 18, 18, 8, 50, 28, 18, 10, 30]):
             ws.column_dimensions[col].width = width
         buf = io.BytesIO()
         wb.save(buf)
         data, mime = buf.getvalue(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     return Response(data, media_type=mime,
                     headers={"Content-Disposition": f'attachment; filename="{kind}_shablon.{ext}"'})
+
+
+# ---------- Eksport (zaxira nusxa) ----------
+
+def _xlsx(title: str, headers: list[str], rows: list[list], widths: list[int]) -> bytes:
+    wb = Workbook()
+    ws = wb.active
+    ws.title = title
+    ws.append(headers)
+    for cell in ws[1]:
+        cell.font = Font(bold=True, color="FFFFFF")
+        cell.fill = PatternFill("solid", fgColor="2E9E5B")
+    for r in rows:
+        ws.append(r)
+    for i, w in enumerate(widths):
+        ws.column_dimensions[chr(ord("A") + i)].width = w
+    ws.freeze_panes = "A2"
+    buf = io.BytesIO()
+    wb.save(buf)
+    return buf.getvalue()
+
+
+XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+
+
+@router.get("/export/{kind}.xlsx")
+async def export(kind: Literal["questions", "history"], _: AdminUser, session: Session) -> Response:
+    """Import formatining o'zida yuklab beradi — faylni tahrirlab, qayta import qilish mumkin."""
+    if kind == "questions":
+        qs = await session.scalars(select(Question).order_by(Question.id))
+        rows = [[q.text, q.option_a, q.option_b, q.option_c, q.option_d, q.correct_option.upper(),
+                 q.explanation, q.topic.name if q.topic else "", q.period.name if q.period else "",
+                 q.difficulty, q.image_url or "", q.id, "ha" if q.is_active else "yo'q"] for q in qs]
+        data = _xlsx("Savollar", [*TEMPLATES["questions"][0], "id", "faol"], rows,
+                     [50, 18, 18, 18, 18, 8, 50, 28, 18, 10, 30, 6, 6])
+    else:
+        es = await session.scalars(select(HistoryEvent).order_by(HistoryEvent.month, HistoryEvent.day))
+        rows = [[e.month, e.day, e.year or "", e.title, e.text] for e in es]
+        data = _xlsx("Voqealar", TEMPLATES["history"][0], rows, [6, 6, 8, 40, 80])
+    name = f"{kind}_{utcnow():%Y-%m-%d}.xlsx"
+    return Response(data, media_type=XLSX, headers={"Content-Disposition": f'attachment; filename="{name}"'})
+
+
+# ---------- E'lon yuborish ----------
+
+class BroadcastIn(BaseModel):
+    text: str = Field(min_length=1, max_length=4000)
+    audience: Literal["all", "active7", "active30"] = "all"
+
+
+async def _recipients(session, audience: str) -> list[tuple[int, str]]:
+    q = select(User.telegram_id, User.alphabet).where(User.is_blocked.is_(False))
+    if audience != "all":
+        days = 7 if audience == "active7" else 30
+        active = select(Answer.user_id).where(Answer.answered_at >= utcnow() - timedelta(days=days))
+        q = q.where(User.id.in_(active))
+    return [(tid, a) for tid, a in (await session.execute(q)).all()]
+
+
+@router.get("/broadcast")
+async def broadcast_status(_: AdminUser, request: Request, session: Session, audience: str = "all") -> dict:
+    status = getattr(request.app.state, "broadcast", None) or {}
+    return {"status": status, "recipients": len(await _recipients(session, audience)),
+            "bot_ready": getattr(request.app.state, "bot", None) is not None}
+
+
+@router.post("/broadcast")
+async def broadcast_send(body: BroadcastIn, _: AdminUser, request: Request, session: Session) -> dict:
+    bot = getattr(request.app.state, "bot", None)
+    if bot is None:
+        raise HTTPException(503, "Bot ishga tushmagan (ilovani python -m app.main orqali ishga tushiring)")
+    status = getattr(request.app.state, "broadcast", None)
+    if status and status.get("running"):
+        raise HTTPException(409, "Oldingi e'lon hali yuborilmoqda")
+    recipients = await _recipients(session, body.audience)
+    status = {"total": len(recipients), "sent": 0, "failed": 0, "running": True, "started_at": utcnow().isoformat() + "Z"}
+    request.app.state.broadcast = status
+    # Fon rejimida yuboramiz — admin sahifani yopsa ham davom etadi
+    request.app.state.broadcast_task = asyncio.create_task(broadcast(bot, recipients, body.text.strip(), status))
+    return {"queued": len(recipients)}
 
 
 # ---------- Davrlar va mavzular ----------

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { Edit, Plus, Trash } from "../../components/Icons";
 import { Sheet, toast } from "../../components/ui";
-import { api } from "../../lib/api";
+import { api, download } from "../../lib/api";
 import { navigate } from "../../lib/router";
 import { confirmDialog } from "../../lib/telegram";
 
@@ -42,6 +42,7 @@ export function HistoryPage() {
         <h1>Tarixda bugun</h1>
         <div className="row">
           <button className="btn sm white" onClick={() => navigate("/admin/import")}>Import</button>
+          <button className="btn sm white" onClick={() => download("/admin/export/history.xlsx", "voqealar.xlsx").catch((e) => toast(e.message, "error"))}>Excel</button>
           <button className="btn sm" onClick={() => setEditing({ month, day: 1 })}><Plus size={18} /> Voqea</button>
         </div>
       </div>

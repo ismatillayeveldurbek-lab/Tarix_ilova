@@ -1,7 +1,7 @@
 """Foydalanuvchi faoliyati: javoblar, takrorlash navbati, xato xabarlari."""
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
+from sqlalchemy import JSON, Boolean, DateTime, ForeignKey, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base, utcnow
@@ -52,3 +52,19 @@ class QuestionReport(Base):
 
     user: Mapped[User] = relationship(lazy="joined")
     question: Mapped[Question] = relationship(lazy="joined")
+
+
+class LessonSession(Base):
+    """Mini App darsi: qaysi savollar berilgani va qaysilariga javob berilgani.
+
+    Har bir savolga faqat bir marta javob qabul qilinadi — XP'ni soxta oshirib bo'lmaydi.
+    """
+
+    __tablename__ = "lesson_sessions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    source: Mapped[str] = mapped_column(String(16), default="practice")
+    question_ids: Mapped[list] = mapped_column(JSON, default=list)
+    answered_ids: Mapped[list] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, index=True)

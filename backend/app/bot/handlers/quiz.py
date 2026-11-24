@@ -3,24 +3,28 @@
 Joriy test holati FSM (aiogram xotirasi) ichida saqlanadi:
     quiz = {"ids": [...], "idx": 0, "correct": 0, "answered": False, "source": "practice"}
 """
+import logging
+
 from aiogram import F, Router
 from aiogram.exceptions import TelegramBadRequest
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, Message
+from aiogram.types import BufferedInputFile, CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.bot.keyboards import after_answer_kb, answer_kb, list_kb, quiz_mode_kb, report_only_kb
 from app.bot.texts import both, t
 from app.bot.utils import esc, leave_input_state
 from app.config import settings
-from app.models import Question, User
+from app.models import Media, Question, User
 from app.services.daily import answers_today, daily_question_ids
+from app.services.media import media_id
 from app.services.quiz import get_question, list_periods, list_topics, pick_question_ids, record_answer
 from app.services.rating import xp_for
 from app.services.review import due_question_ids
 from app.services.translit import tr
 
 router = Router(name="quiz")
+log = logging.getLogger(__name__)
 
 
 # ---------- Ko'rinish ----------
@@ -70,8 +74,24 @@ async def send_current_question(
 ) -> None:
     quiz = (await state.get_data())["quiz"]
     q = await get_question(session, quiz["ids"][quiz["idx"]])
+    if q.image_url:
+        await send_image(message, session, q.image_url)
     text = format_question(q, user.alphabet, quiz["idx"] + 1, len(quiz["ids"]))
     await message.answer(text, reply_markup=answer_kb(q.id))
+
+
+async def send_image(message: Message, session: AsyncSession, url: str) -> None:
+    """Savol rasmini yuboradi. Rasm ochilmasa ham test davom etadi."""
+    try:
+        mid = media_id(url)
+        if mid:
+            media = await session.get(Media, mid)
+            if media:
+                await message.answer_photo(BufferedInputFile(media.data, filename=f"rasm{mid}.jpg"))
+        else:
+            await message.answer_photo(url)
+    except Exception as e:  # noqa: BLE001 — noto'g'ri havola testni to'xtatmasin
+        log.warning("Savol rasmi yuborilmadi (%s): %s", url, e)
 
 
 @router.message(F.text.in_(both("btn_quiz")))

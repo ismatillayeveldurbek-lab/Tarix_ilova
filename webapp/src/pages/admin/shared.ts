@@ -7,7 +7,7 @@ export type AdminPeriod = { id: number; name: string; sort_order: number; questi
 export type AdminQuestion = {
   id: number; text: string; a: string; b: string; c: string; d: string; correct: "a" | "b" | "c" | "d";
   explanation: string; difficulty: number; period_id: number | null; topic_id: number | null;
-  period: string | null; topic: string | null; is_active: boolean;
+  period: string | null; topic: string | null; is_active: boolean; image_url: string | null;
 };
 export type ImportReport = { added: number; skipped_duplicates: number; errors: string[] };
 

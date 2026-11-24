@@ -17,3 +17,11 @@ def touch_streak(user: User, today: date | None = None) -> bool:
     user.streak_best = max(user.streak_best, user.streak_current)
     user.last_active_date = today
     return True
+
+
+def effective_streak(user: User, today: date | None = None) -> int:
+    """Ko'rsatish uchun: kecha yoki bugun faol bo'lmagan bo'lsa, ketma-ketlik uzilgan (0)."""
+    today = today or local_today()
+    if user.last_active_date and user.last_active_date >= today - timedelta(days=1):
+        return user.streak_current
+    return 0

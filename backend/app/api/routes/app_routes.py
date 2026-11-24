@@ -12,14 +12,17 @@ from sqlalchemy import select
 from app.api.deps import CurrentUser, Session
 from app.config import settings
 from app.db import local_today, utcnow
-from app.models import Answer, ExamConfig, ExamSession, Question, User
+from app.models import Answer, ExamConfig, ExamSession, LessonSession, Question, User
 from app.services import exam as exam_service
 from app.services.daily import answers_today, daily_question_ids
 from app.services.history import events_for
-from app.services.quiz import create_report, get_question, pick_question_ids, record_answer
+from app.services.quiz import (
+    REPORTS_PER_DAY, create_report, get_question, pick_question_ids, record_answer, reports_last_day,
+)
 from app.services.rating import user_rank, user_week_xp, weekly_leaderboard, xp_for
 from app.services.review import due_count, due_question_ids
 from app.services.stats import answer_totals, learning_path
+from app.services.streak import effective_streak
 from app.services.translit import tr
 
 router = APIRouter(prefix="/api")
@@ -38,6 +41,7 @@ def question_out(q: Question, a: str, chosen: str | None = None) -> dict:
         "period": tr(q.period.name, a) if q.period else None,
         "topic": tr(q.topic.name, a) if q.topic else None,
         "difficulty": q.difficulty,
+        "image": q.image_url,
     }
     if chosen is not None:
         data["chosen"] = chosen
@@ -73,7 +77,7 @@ async def home(user: CurrentUser, session: Session) -> dict:
         "user": {
             "name": user.full_name, "alphabet": a, "is_admin": user.is_admin,
             "alphabet_chosen": user.alphabet_chosen,
-            "streak": user.streak_current, "streak_best": user.streak_best,
+            "streak": effective_streak(user), "streak_best": user.streak_best,
             "reminder_enabled": user.reminder_enabled,
             "reminder_time": user.reminder_time.strftime("%H:%M"),
         },
@@ -134,23 +138,38 @@ async def start_lesson(body: LessonIn, user: CurrentUser, session: Session) -> d
         ids = await pick_question_ids(session, n, topic_id=body.id)
     else:
         ids = await pick_question_ids(session, n)
-    questions = [await get_question(session, i) for i in ids]
+    questions = [q for q in [await get_question(session, i) for i in ids] if q]
     source = body.mode if body.mode in ("daily", "review") else "practice"
-    return {"source": source, "questions": [question_out(q, user.alphabet) for q in questions if q]}
+    lesson = LessonSession(user_id=user.id, source=source, question_ids=[q.id for q in questions])
+    session.add(lesson)
+    await session.commit()
+    return {"lesson_id": lesson.id, "source": source,
+            "questions": [question_out(q, user.alphabet) for q in questions]}
+
+
+LESSON_TTL = timedelta(hours=24)
 
 
 class AnswerIn(BaseModel):
+    lesson_id: int
     question_id: int
     option: Option
-    source: Literal["practice", "daily", "review"] = "practice"
 
 
 @router.post("/answers")
 async def answer(body: AnswerIn, user: CurrentUser, session: Session) -> dict:
+    lesson = await session.get(LessonSession, body.lesson_id)
+    if lesson is None or lesson.user_id != user.id or utcnow() - lesson.created_at > LESSON_TTL:
+        raise HTTPException(404, "Dars topilmadi yoki eskirgan. Yangi dars boshlang")
+    if body.question_id not in lesson.question_ids:
+        raise HTTPException(400, "Bu savol ushbu darsda yo'q")
+    if body.question_id in lesson.answered_ids:
+        raise HTTPException(409, "Bu savolga allaqachon javob berilgan")
     q = await get_question(session, body.question_id)
     if q is None:
         raise HTTPException(404, "Savol topilmadi")
-    result = await record_answer(session, user, q, body.option, source=body.source)
+    lesson.answered_ids = [*lesson.answered_ids, q.id]  # yangi ro'yxat — SQLAlchemy o'zgarishni ko'radi
+    result = await record_answer(session, user, q, body.option, source=lesson.source)
     done = await answers_today(session, user.id)
     await session.commit()
     goal = settings.daily_question_count
@@ -172,6 +191,8 @@ class ReportIn(BaseModel):
 
 @router.post("/reports")
 async def report(body: ReportIn, user: CurrentUser, session: Session, request: Request) -> dict:
+    if await reports_last_day(session, user.id) >= REPORTS_PER_DAY:
+        raise HTTPException(429, "Bugun juda ko'p xabar yubordingiz. Ertaga urinib ko'ring")
     q = await get_question(session, body.question_id)
     if q is None:
         raise HTTPException(404, "Savol topilmadi")

@@ -1,11 +1,12 @@
 """Savollarni Excel (.xlsx) yoki CSV fayldan import qilish.
 
 Fayl birinchi qatorida ustun nomlari bo'lishi kerak:
-    savol | a | b | c | d | togri | izoh | mavzu | davr | qiyinlik
+    savol | a | b | c | d | togri | izoh | mavzu | davr | qiyinlik | rasm
 
 - togri: A, B, C yoki D
 - qiyinlik: 1/2/3 yoki oson/o'rta/qiyin (bo'sh bo'lsa — 1)
 - mavzu va davr bazada bo'lmasa, avtomatik yaratiladi
+- rasm (ixtiyoriy): rasmning https:// havolasi
 - matni bir xil savol ikkinchi marta qo'shilmaydi
 """
 import csv
@@ -17,6 +18,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import OPTIONS, Period, Question, Topic
+from app.services.media import is_valid_image_url
 
 # Ustun nomlarining turli yozilishlari -> ichki nom
 HEADER_ALIASES = {
@@ -28,6 +30,7 @@ HEADER_ALIASES = {
     "mavzu": "topic", "topic": "topic",
     "davr": "period", "period": "period",
     "qiyinlik": "difficulty", "difficulty": "difficulty", "daraja": "difficulty",
+    "rasm": "image", "image": "image", "rasm url": "image", "rasm havolasi": "image",
 }
 REQUIRED = ("text", "a", "b", "c", "d", "correct")
 DIFFICULTY_WORDS = {"oson": 1, "orta": 2, "qiyin": 3}
@@ -157,6 +160,9 @@ async def import_rows(session: AsyncSession, rows: list[dict[str, str]]) -> Impo
             if correct not in OPTIONS:
                 raise ValueError(f"to'g'ri javob A/B/C/D bo'lishi kerak: {row['correct']}")
             difficulty = _difficulty(row.get("difficulty", ""))
+            image = row.get("image", "")
+            if image and not is_valid_image_url(image):
+                raise ValueError(f"rasm havolasi http(s):// bilan boshlanishi kerak: {image}")
         except ValueError as e:
             report.errors.append(f"{line_no}-qator: {e}")
             continue
@@ -170,7 +176,7 @@ async def import_rows(session: AsyncSession, rows: list[dict[str, str]]) -> Impo
         session.add(Question(
             text=row["text"], option_a=row["a"], option_b=row["b"],
             option_c=row["c"], option_d=row["d"], correct_option=correct,
-            explanation=row.get("explanation", ""), difficulty=difficulty,
+            explanation=row.get("explanation", ""), difficulty=difficulty, image_url=image or None,
             topic_id=topic.id if topic else None, period_id=period.id if period else None,
         ))
         existing.add(row["text"])

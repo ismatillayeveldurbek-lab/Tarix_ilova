@@ -1,9 +1,11 @@
 """Test: savollarni tanlash va javobni qayd etish."""
 from dataclasses import dataclass
+from datetime import timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.db import utcnow
 from app.models import Answer, Period, Question, QuestionReport, Topic, User
 from app.services.review import update_review
 from app.services.streak import touch_streak
@@ -60,6 +62,16 @@ async def list_topics(session: AsyncSession, period_id: int | None = None) -> li
     if period_id:
         q = q.where(Topic.period_id == period_id)
     return list(await session.scalars(q))
+
+
+REPORTS_PER_DAY = 20  # bitta foydalanuvchi bir kunda yuborishi mumkin bo'lgan xato xabarlari
+
+
+async def reports_last_day(session: AsyncSession, user_id: int) -> int:
+    return await session.scalar(
+        select(func.count()).select_from(QuestionReport).where(
+            QuestionReport.user_id == user_id, QuestionReport.created_at >= utcnow() - timedelta(days=1))
+    ) or 0
 
 
 async def create_report(

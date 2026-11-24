@@ -1,3 +1,4 @@
+import { useState } from "react";
 import type { Question } from "../lib/types";
 import { Stars } from "./ui";
 
@@ -26,6 +27,7 @@ export function QuestionView({ q, selected, correct, locked, onSelect }: {
         {q.topic && <span className="chip">{q.topic}</span>}
         <Stars n={q.difficulty} />
       </div>
+      {q.image && <QuestionImage src={q.image} />}
       <div className="q-text">{q.text}</div>
       <div className="options">
         {q.options.map((o) => {
@@ -40,5 +42,24 @@ export function QuestionView({ q, selected, correct, locked, onSelect }: {
         })}
       </div>
     </div>
+  );
+}
+
+/** Savol rasmi: bosilsa to'liq ekranda ochiladi */
+function QuestionImage({ src }: { src: string }) {
+  const [zoom, setZoom] = useState(false);
+  const [failed, setFailed] = useState(false);
+  if (failed) return null;
+  return (
+    <>
+      <button type="button" className="q-image" onClick={() => setZoom(true)}>
+        <img src={src} alt="" loading="lazy" onError={() => setFailed(true)} />
+      </button>
+      {zoom && (
+        <div className="zoom" onClick={() => setZoom(false)}>
+          <img src={src} alt="" />
+        </div>
+      )}
+    </>
   );
 }

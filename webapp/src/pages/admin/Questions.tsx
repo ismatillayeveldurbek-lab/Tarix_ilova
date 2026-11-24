@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, Plus } from "../../components/Icons";
+import { ChevronLeft, ChevronRight, Download, Plus } from "../../components/Icons";
 import { Loading, toast } from "../../components/ui";
-import { api } from "../../lib/api";
+import { api, download } from "../../lib/api";
 import { QuestionForm } from "./QuestionForm";
 import { DIFFICULTY, usePeriods, type AdminQuestion } from "./shared";
 
@@ -45,7 +45,13 @@ export function QuestionsPage() {
     <div className="stack">
       <div className="row between">
         <h1>Savollar {data && <span className="muted" style={{ fontSize: 18 }}>({data.total})</span>}</h1>
-        <button className="btn sm" onClick={() => setEditing("new")}><Plus size={18} /> Yangi savol</button>
+        <div className="row">
+          <button className="btn sm white" title="Barcha savollarni Excel'ga yuklab olish (zaxira nusxa)"
+            onClick={() => download("/admin/export/questions.xlsx", "savollar.xlsx").catch((e) => toast(e.message, "error"))}>
+            <Download size={18} /> Excel
+          </button>
+          <button className="btn sm" onClick={() => setEditing("new")}><Plus size={18} /> Yangi savol</button>
+        </div>
       </div>
       <div className="toolbar">
         <input className="input" placeholder="Qidirish..." value={q} onChange={(e) => resetPage(setQ)(e.target.value)} />
@@ -82,6 +88,7 @@ export function QuestionsPage() {
                   <span className="chip gold">{"★".repeat(x.difficulty)}</span>
                   {!x.is_active && <span className="chip red">o'chirilgan</span>}
                   {!x.explanation && <span className="chip red">izoh yo'q</span>}
+                  {x.image_url && <span className="chip purple">🖼 rasm</span>}
                 </div>
               </div>
             </button>

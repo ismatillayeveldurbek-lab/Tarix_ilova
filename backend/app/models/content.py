@@ -1,7 +1,7 @@
 """Test mazmuni: davrlar, mavzular, savollar."""
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, String, Text
+from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, LargeBinary, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db import Base, utcnow
@@ -43,6 +43,8 @@ class Question(Base):
     topic_id: Mapped[int | None] = mapped_column(ForeignKey("topics.id"), index=True)
     period_id: Mapped[int | None] = mapped_column(ForeignKey("periods.id"), index=True)
     difficulty: Mapped[int] = mapped_column(Integer, default=1)  # 1 oson, 2 o'rta, 3 qiyin
+    # Rasm (xarita, portret...): "/api/media/12" (admin yuklagan) yoki https://... havola
+    image_url: Mapped[str | None] = mapped_column(String(500))
 
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
@@ -56,3 +58,14 @@ class Question(Base):
     @property
     def options(self) -> dict[str, str]:
         return {o: self.option(o) for o in OPTIONS}
+
+
+class Media(Base):
+    """Admin yuklagan rasmlar. Bazada saqlanadi — server qayta joylansa ham yo'qolmaydi."""
+
+    __tablename__ = "media"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    mime: Mapped[str] = mapped_column(String(64))
+    data: Mapped[bytes] = mapped_column(LargeBinary)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)

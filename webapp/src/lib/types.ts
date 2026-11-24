@@ -9,6 +9,7 @@ export type Question = {
   period: string | null;
   topic: string | null;
   difficulty: number;
+  image: string | null;
   chosen?: string;
 };
 

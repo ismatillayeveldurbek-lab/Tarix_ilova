@@ -35,4 +35,11 @@ async def learning_path(session: AsyncSession, user: User) -> list[dict]:
         ]
         if items:
             result.append({"id": p.id, "name": p.name, "topics": items})
+    # Davri ko'rsatilmagan mavzular ham yo'lda ko'rinsin
+    orphans = [
+        {"id": t.id, "name": t.name, "total": totals.get(t.id, 0), "solved": solved.get(t.id, 0)}
+        for t in topics if t.period_id is None and totals.get(t.id, 0) > 0
+    ]
+    if orphans:
+        result.append({"id": 0, "name": "Boshqa mavzular", "topics": orphans})
     return result

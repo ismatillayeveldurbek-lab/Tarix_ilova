@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Trash } from "../../components/Icons";
 import { Segmented, Sheet, Switch, toast } from "../../components/ui";
 import { api } from "../../lib/api";
@@ -7,7 +7,7 @@ import { toCyrillic } from "../../lib/translit";
 import { DIFFICULTY, type AdminPeriod, type AdminQuestion } from "./shared";
 
 type Draft = Omit<AdminQuestion, "id" | "period" | "topic">;
-const EMPTY: Draft = { text: "", a: "", b: "", c: "", d: "", correct: "a", explanation: "", difficulty: 1, period_id: null, topic_id: null, is_active: true };
+const EMPTY: Draft = { text: "", a: "", b: "", c: "", d: "", correct: "a", explanation: "", difficulty: 1, period_id: null, topic_id: null, is_active: true, image_url: null };
 
 /** Savol qo'shish / tahrirlash oynasi */
 export function QuestionForm({ question, periods, onClose, onSaved }: {
@@ -57,6 +57,7 @@ export function QuestionForm({ question, periods, onClose, onSaved }: {
         <label className="field"><span>Savol matni</span>
           <textarea className="textarea" value={d.text} onChange={(e) => set("text", e.target.value)} />
         </label>
+        <ImageField value={d.image_url} onChange={(v) => set("image_url", v)} />
         <div className="field"><span>Variantlar (to'g'ri javobni harf ustiga bosib belgilang)</span>
           {(["a", "b", "c", "d"] as const).map((k) => (
             <div key={k} className="opt-edit">
@@ -101,5 +102,47 @@ export function QuestionForm({ question, periods, onClose, onSaved }: {
         </div>
       </div>
     </Sheet>
+  );
+}
+
+/** Rasm: fayl yuklash yoki havola kiritish */
+function ImageField({ value, onChange }: { value: string | null; onChange: (v: string | null) => void }) {
+  const input = useRef<HTMLInputElement>(null);
+  const [busy, setBusy] = useState(false);
+
+  async function upload(file: File) {
+    const form = new FormData();
+    form.append("file", file);
+    setBusy(true);
+    try {
+      const r = await api<{ url: string }>("/admin/media", { form });
+      onChange(r.url);
+    } catch (e) {
+      toast((e as Error).message, "error");
+    } finally {
+      setBusy(false);
+      if (input.current) input.current.value = "";
+    }
+  }
+
+  return (
+    <div className="field"><span>Rasm (ixtiyoriy — xarita, portret, hujjat...)</span>
+      <div className="image-field">
+        <div className="thumb">{value ? <img src={value} alt="" /> : "Rasm yo'q"}</div>
+        <div className="stack grow" style={{ gap: 8, minWidth: 200 }}>
+          <div className="row">
+            <button type="button" className="btn sm white" disabled={busy} onClick={() => input.current?.click()}>
+              {busy ? "Yuklanmoqda..." : "Rasm yuklash"}
+            </button>
+            {value && <button type="button" className="btn sm red" onClick={() => onChange(null)}>Olib tashlash</button>}
+          </div>
+          <input className="input" placeholder="yoki https://... havola" value={value ?? ""}
+            onChange={(e) => onChange(e.target.value || null)} />
+          <div className="tiny muted">PNG, JPG, WEBP yoki GIF · 2 MB gacha</div>
+        </div>
+        <input ref={input} type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f); }} />
+      </div>
+    </div>
   );
 }

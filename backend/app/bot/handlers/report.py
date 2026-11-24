@@ -13,7 +13,7 @@ from app.bot.texts import t
 from app.bot.utils import MENU_TEXTS, esc
 from app.config import settings
 from app.models import User
-from app.services.quiz import create_report, get_question
+from app.services.quiz import REPORTS_PER_DAY, create_report, get_question, reports_last_day
 
 router = Router(name="report")
 log = logging.getLogger(__name__)
@@ -49,6 +49,9 @@ async def save_report(
     await state.set_state(None)
     question = await get_question(session, qid) if qid else None
     if question is None:
+        return
+    if await reports_last_day(session, user.id) >= REPORTS_PER_DAY:
+        await message.answer(t("report_limit", user.alphabet), reply_markup=_continue(data, user))
         return
     report = await create_report(session, user, qid, message.text)
     await message.answer(t("report_thanks", user.alphabet), reply_markup=_continue(data, user))

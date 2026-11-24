@@ -109,3 +109,23 @@ async def test_admin_from_env(session):
     admin = await get_or_create_user(session, 999, "Admin")
     user = await get_or_create_user(session, 5, "User")
     assert admin.is_admin and not user.is_admin
+
+
+def test_effective_streak():
+    from app.services.streak import effective_streak
+
+    class U:
+        streak_current = 5
+        last_active_date = date(2026, 1, 10)
+    assert effective_streak(U(), date(2026, 1, 10)) == 5
+    assert effective_streak(U(), date(2026, 1, 11)) == 5  # bugun hali yechmagan — lekin uzilmagan
+    assert effective_streak(U(), date(2026, 1, 12)) == 0  # bir kun o'tkazib yuborildi
+
+
+async def test_orphan_topics_in_path(session):
+    from app.services.stats import learning_path
+    csv_text = "savol,a,b,c,d,togri,mavzu\nDavrsiz savol?,1,2,3,4,A,Umumiy mavzu\n"
+    await import_file(session, "q.csv", csv_text.encode())
+    user = await get_or_create_user(session, 3, "T")
+    path = await learning_path(session, user)
+    assert path[-1]["id"] == 0 and path[-1]["topics"][0]["name"] == "Umumiy mavzu"

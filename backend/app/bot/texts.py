@@ -68,6 +68,10 @@ TEXTS: dict[str, str] = {
         "⏰ Bugungi <b>{n} ta savol</b> sizni kutmoqda!\n"
         "🔥 Ketma-ket: <b>{streak}</b> kun — uzib qo'ymang!"
     ),
+    "reminder_new": (
+        "⏰ Bugungi <b>{n} ta savol</b> sizni kutmoqda!\n"
+        "🔥 Bugun yangi ketma-ketlikni boshlang — har kuni ozgina, lekin muntazam."
+    ),
     "btn_start_daily": "▶️ Boshlash",
 
     # Imtihon
@@ -95,6 +99,7 @@ TEXTS: dict[str, str] = {
     "report_ask": "Savoldagi xatoni qisqacha yozing (masalan: \"to'g'ri javob B emas, C\").\nBekor qilish: /bekor",
     "report_thanks": "🙏 Rahmat! Xabaringiz adminlarga yuborildi.",
     "report_cancelled": "Bekor qilindi.",
+    "report_limit": "Bugun juda ko'p xabar yubordingiz. Ertaga urinib ko'ring.",
     "btn_continue": "Davom etish ➡️",
 
     # Sozlamalar

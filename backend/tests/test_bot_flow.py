@@ -217,3 +217,22 @@ async def test_scheduler_reminder_and_history(monkeypatch):
     assert any(isinstance(r, SendMessage) and r.chat_id == "@test_kanal" for r in fake.requests)
     assert "Amir Temur" in fake.texts()[-1]
     assert await scheduler.post_history_today(bot) == 0  # ikki marta yuborilmaydi
+
+
+async def test_bot_sends_question_image():
+    from aiogram.methods import SendPhoto
+    from app.models import Media, Question
+    bot, fake, dp = await setup()
+    async with SessionLocal() as s:
+        m = Media(mime="image/png", data=b"\x89PNG\r\n\x1a\nxx")
+        s.add(m)
+        await s.flush()
+        for q in (await s.scalars(select(Question))):
+            q.image_url = f"/api/media/{m.id}"
+        await s.commit()
+    await dp.feed_update(bot, msg("/start"))
+    await dp.feed_update(bot, cb("alph:latn"))
+    await dp.feed_update(bot, msg("📝 Test ishlash"))
+    await dp.feed_update(bot, cb("qm:mixed"))
+    assert any(isinstance(r, SendPhoto) for r in fake.requests)
+    assert "Savol 1/10" in fake.texts()[-1]  # rasmdan keyin savol ham keldi
