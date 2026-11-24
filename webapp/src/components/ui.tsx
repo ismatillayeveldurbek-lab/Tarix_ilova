@@ -94,6 +94,12 @@ export function Avatar({ name, size = "", seed = 0 }: { name: string; size?: "" 
   return <div className={`avatar ${size}`} style={{ "--c": color } as React.CSSProperties}>{letters}</div>;
 }
 
+/** Qiyinlik: to'la yulduzlar oltin rangda, qolganlari xira */
 export function Stars({ n }: { n: number }) {
-  return <span className="chip gold">{"★".repeat(n)}{"☆".repeat(Math.max(0, 3 - n))}</span>;
+  const label = ["", "Oson", "O'rta", "Qiyin"][n] ?? "";
+  return (
+    <span className="chip gold" title={label} aria-label={label}>
+      {"★".repeat(n)}<span style={{ opacity: 0.3 }}>{"★".repeat(Math.max(0, 3 - n))}</span>
+    </span>
+  );
 }

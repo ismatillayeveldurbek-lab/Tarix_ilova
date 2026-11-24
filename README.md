@@ -8,9 +8,13 @@ Interfeys o'zbek tilida, lotin va kirill alifbolarida ishlaydi.
 |---|---|---|---|
 | ![](docs/screenshots/home.png) | ![](docs/screenshots/lesson.png) | ![](docs/screenshots/exam.png) | ![](docs/screenshots/rating.png) |
 
-| Kirill | Qorong'i mavzu | Admin: import | Admin: savol tahriri |
+| Birinchi kirish | Rasmli savol | Natija | Qorong'i mavzu |
 |---|---|---|---|
-| ![](docs/screenshots/cyrillic.png) | ![](docs/screenshots/dark.png) | ![](docs/screenshots/admin-import.png) | ![](docs/screenshots/admin-question.png) |
+| ![](docs/screenshots/onboarding.png) | ![](docs/screenshots/image-question.png) | ![](docs/screenshots/result.png) | ![](docs/screenshots/dark.png) |
+
+| Admin: import | Admin: savol tahriri | Admin: e'lon yuborish |
+|---|---|---|
+| ![](docs/screenshots/admin-import.png) | ![](docs/screenshots/admin-question.png) | ![](docs/screenshots/admin-broadcast.png) |
 
 ## Imkoniyatlar
 
@@ -21,13 +25,16 @@ Interfeys o'zbek tilida, lotin va kirill alifbolarida ishlaydi.
 - 🎯 **Sinov imtihoni**: taymer bilan o'tadi. Natijada taxminiy ball, daraja va har bir savol tahlili ko'rsatiladi.
 - 🏆 **Haftalik reyting**: to'g'ri javob uchun 10 XP, noto'g'ri javob uchun 1 XP beriladi.
 - 📅 **Tarixda bugun**: har kuni 09:00 da kanalga va bot foydalanuvchilariga avtomatik post yuboriladi. Botda `/bugun` buyrug'i ham bor.
-- ⚠️ "Xato bor" tugmasi orqali savoldagi xato adminlarga darhol yetkaziladi.
-- 🔤 Lotin va kirill o'rtasida bir tugma bilan almashish mumkin.
+- 🖼 **Rasmli savollar** (xarita, portret, hujjat). Rasm bosilsa, kattalashadi.
+- ⚠️ "Xato bor" tugmasi orqali savoldagi xato adminlarga darhol yetkaziladi. Bitta foydalanuvchi kuniga 20 tagacha xabar yubora oladi.
+- 🔤 Lotin va kirill o'rtasida bir tugma bilan almashish mumkin. Rim raqamlari (XIV asr, Pyotr I) o'girilmaydi.
 
 **Admin uchun (veb admin panel):**
 - 📊 Statistika: foydalanuvchilar, faollik, aniqlik, davr va qiyinlik bo'yicha savollar soni.
-- ❓ Savollar: qidirish, filtrlash, qo'shish, tahrirlash va o'chirish. Kirillda qanday ko'rinishini oldindan ko'rish mumkin.
+- ❓ Savollar: qidirish, filtrlash, qo'shish, tahrirlash va o'chirish. Rasm yuklash mumkin, kirillda qanday ko'rinishini oldindan ko'rasiz.
 - 📥 **Excel/CSV import** savollar va "Tarixda bugun" uchun. Shablonlarni paneldan yuklab olasiz.
+- 💾 **Excel'ga eksport (zaxira nusxa)** import formatida: yuklab olasiz, tahrirlaysiz va qayta yuklaysiz.
+- 📢 **E'lon yuborish**: hammaga yoki faqat faollarga. Kirill tanlaganlarga matn avtomatik kirillda boradi.
 - 🗂 Davr va mavzular: nomlash va tartiblash.
 - 📅 "Tarixda bugun" voqealari: oy bo'yicha ko'rish, qo'shish va tahrirlash.
 - ⚠️ Xato xabarlari: savolni shu yerning o'zida tuzatish mumkin.
@@ -104,7 +111,7 @@ Frontend'ni o'zgartirayotganda `webapp` papkasida `npm run dev` ni ishga tushiri
 
 ### Testlar
 ```bash
-cd backend && pytest        # 36 ta test: bot oqimi, API, imtihon, import, takrorlash...
+cd backend && pytest        # 49 ta test: bot oqimi, API, imtihon, import, takrorlash...
 cd webapp && npm test       # lotin→kirill o'girish (Python versiyasi bilan bir xil)
 ```
 
@@ -116,15 +123,16 @@ cd webapp && npm test       # lotin→kirill o'girish (Python versiyasi bilan bi
 2. **"🖥 Brauzerda ochish"** tugmasini bosing. Admin panel kompyuterda ochiladi, havola 12 soat amal qiladi.
 3. **Import** bo'limida **Excel shablon** ni yuklab oling va to'ldiring:
 
-| savol | a | b | c | d | togri | izoh | mavzu | davr | qiyinlik |
-|---|---|---|---|---|---|---|---|---|---|
-| Amir Temur qaysi yilda tug'ilgan? | 1320 | 1336 | 1370 | 1405 | B | 1336-yil 9-aprelda... | Amir Temur va Temuriylar | O'rta asrlar | 1 |
+| savol | a | b | c | d | togri | izoh | mavzu | davr | qiyinlik | rasm |
+|---|---|---|---|---|---|---|---|---|---|---|
+| Amir Temur qaysi yilda tug'ilgan? | 1320 | 1336 | 1370 | 1405 | B | 1336-yil 9-aprelda... | Amir Temur va Temuriylar | O'rta asrlar | 1 | |
 
 4. Faylni panelga tashlang. Natija darhol ko'rinadi: nechta savol qo'shildi, nechtasi takroriy chiqdi, qaysi qatorlarda xato bor.
 
 Qoidalar:
 - `togri` ustuniga A, B, C yoki D yoziladi.
 - `qiyinlik` ustuniga 1, 2, 3 yoki `oson`, `o'rta`, `qiyin` yoziladi.
+- `rasm` ixtiyoriy: rasmning `https://` havolasi. Rasmni keyin savolni tahrirlab yuklash ham mumkin.
 - Bazada yo'q mavzu yoki davr avtomatik yaratiladi.
 - **Matnlarni lotinda yozing**, kirill varianti avtomatik hosil bo'ladi.
 - Matni bir xil savol qayta qo'shilmaydi, shuning uchun bitta faylni qayta yuklash xavfsiz.

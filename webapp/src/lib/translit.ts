@@ -9,7 +9,8 @@ const SINGLE: Record<string, string> = {
 };
 const Y_VOWELS: Record<string, string> = { o: "ё", u: "ю", a: "я", e: "е" };
 const VOWELS = new Set("aeiouAEIOU");
-const SKIP = /(<[^>]+>|&#?\w+;|\{[^}]*\}|https?:\/\/\S+|\bXP\b)/;
+// Rim raqamlari (XIV asr, Pyotr I, Kir II) o'girilmaydi
+const SKIP = /(<[^>]+>|&#?\w+;|\{[^}]*\}|https?:\/\/\S+|\bXP\b|\b[IVXLCDM]+\b)/;
 
 const isApo = (ch: string) => ch !== "" && APOSTROPHES.includes(ch);
 const isAlpha = (ch: string) => ch !== "" && ch.toLowerCase() !== ch.toUpperCase();

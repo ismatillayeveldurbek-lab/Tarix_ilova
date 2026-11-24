@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { Clipboard, Home, Trophy, User } from "./components/Icons";
 import { Mascot } from "./components/Mascot";
-import { Loading, ToastHost } from "./components/ui";
+import { ToastHost } from "./components/ui";
 import { AdminApp } from "./pages/admin/AdminApp";
 import { ExamPage } from "./pages/Exam";
 import { HomePage } from "./pages/Home";
+import { Onboarding } from "./pages/Onboarding";
+import { HomeSkeleton } from "./components/Skeleton";
 import { LessonPage } from "./pages/Lesson";
 import { ProfilePage } from "./pages/Profile";
 import { RatingPage } from "./pages/Rating";
@@ -58,7 +60,8 @@ function UserApp() {
       </div>
     );
   }
-  if (!home) return <Loading />;
+  if (!home) return <HomeSkeleton />;
+  if (!home.user.alphabet_chosen && !path.startsWith("/admin")) return <Onboarding />;
 
   if (path === "/lesson") {
     const mode = (params.get("mode") || "mixed") as "daily" | "review" | "mixed" | "period" | "topic";

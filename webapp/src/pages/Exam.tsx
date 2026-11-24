@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Clipboard, Clock, Close } from "../components/Icons";
+import { Confetti } from "../components/Confetti";
+import { CountUp } from "../components/CountUp";
 import { Mascot } from "../components/Mascot";
 import { QuestionView } from "../components/QuestionView";
 import { Loading, Ring, Sheet, toast } from "../components/ui";
@@ -218,6 +220,7 @@ function ExamResult({ result, onDone }: { result: Result; onDone: () => void }) 
   const item = open !== null ? result.items[open] : null;
   return (
     <div className="page no-nav stack">
+      <Confetti run={result.percent >= 50} />
       <div className="result-hero">
         <div className="grade-badge pop">{result.grade}</div>
         <h1 style={{ color: "var(--purple)" }}>{t("Imtihon yakunlandi!")}</h1>
@@ -226,7 +229,7 @@ function ExamResult({ result, onDone }: { result: Result; onDone: () => void }) 
       <div className="row" style={{ justifyContent: "center" }}>
         <Ring value={result.percent / 100} size={150} stroke={14} color="var(--purple)">
           <div className="center">
-            <div style={{ fontSize: 30, fontWeight: 900 }}>{result.score}</div>
+            <div style={{ fontSize: 30, fontWeight: 900 }}>{result.score % 1 ? result.score : <CountUp value={result.score} />}</div>
             <div className="small muted">/ {result.max_score} {t("ball")}</div>
           </div>
         </Ring>

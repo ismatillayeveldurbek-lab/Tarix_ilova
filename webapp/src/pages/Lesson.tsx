@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, Close, Cross, Flag, Flame, Star } from "../components/Icons";
+import { Confetti } from "../components/Confetti";
+import { CountUp } from "../components/CountUp";
 import { Mascot } from "../components/Mascot";
 import { QuestionView } from "../components/QuestionView";
 import { ReportSheet } from "../components/ReportSheet";
@@ -103,6 +105,7 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
     const mood = accuracy >= 70 ? "wow" : accuracy >= 40 ? "happy" : "sad";
     return (
       <div className="page no-nav">
+        <Confetti run={accuracy >= 70 || stats.goal} />
         <div className="result-hero">
           <Mascot mood={mood} size={150} className="pop" />
           <h1 className="pop">{accuracy >= 70 ? t("Dars yakunlandi!") : t("Yaxshi harakat!")}</h1>
@@ -111,14 +114,14 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
           </p>
         </div>
         <div className="tiles">
-          <div className="tile gold pop"><div className="label">{t("Jami XP")}</div><div className="value"><Star size={22} />{stats.xp}</div></div>
-          <div className="tile green pop"><div className="label">{t("Aniqlik")}</div><div className="value">{accuracy}%</div></div>
+          <div className="tile gold pop"><div className="label">{t("Jami XP")}</div><div className="value"><Star size={22} /><CountUp value={stats.xp} /></div></div>
+          <div className="tile green pop"><div className="label">{t("Aniqlik")}</div><div className="value"><CountUp value={accuracy} suffix="%" /></div></div>
           <div className="tile blue pop"><div className="label">{t("Vaqt")}</div><div className="value">{Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}</div></div>
         </div>
         <div className="spacer" />
         {(stats.goal || stats.streakUp) && (
           <div className="card colored orange feature pop">
-            <div className="icon-bubble"><Flame size={34} /></div>
+            <div className="icon-bubble big-flame"><Flame size={40} /></div>
             <div>
               <h3>{t(`${stats.streak} kun ketma-ket!`)}</h3>
               <div className="small muted">{stats.goal ? t("Bugungi maqsad bajarildi 🎉") : t("Ertaga ham qaytib keling!")}</div>
@@ -139,7 +142,8 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
         <div className="grow"><Progress value={(idx + (result ? 1 : 0)) / total} /></div>
         {stats.combo >= 2 && <span className="combo pop">🔥 {stats.combo}</span>}
       </div>
-      <div className="page no-nav" style={{ paddingTop: 4 }}>
+      {/* Izoh oynasi ochiq bo'lsa, pastki variantlarni surib ko'rish uchun joy qoldiramiz */}
+      <div className="page no-nav" style={{ paddingTop: 4, paddingBottom: result ? "min(60vh, 420px)" : undefined }}>
         <div className="small muted bold" style={{ marginBottom: 8 }}>
           {source === "review" ? t("Takrorlash") : source === "daily" ? t("Kunlik mashq") : t("Mashq")} · {idx + 1}/{total}
         </div>

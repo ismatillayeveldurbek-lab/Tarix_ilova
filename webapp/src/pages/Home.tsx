@@ -78,7 +78,7 @@ export function HomePage() {
         {/* Salomlashish */}
         <div className="row" style={{ gap: 4 }}>
           <Mascot size={92} mood={goalDone ? "wow" : "happy"} className="bob" />
-          <div className="card grow" style={{ position: "relative" }}>
+          <div className="bubble left grow">
             <div className="bold">{t(firstName ? `Salom, ${firstName}!` : "Salom!")}</div>
             <div className="small muted">
               {goalDone
@@ -92,9 +92,9 @@ export function HomePage() {
 
         {/* Kunlik mashq */}
         <button className="card tap colored green feature" onClick={() => { haptic.tap(); navigate("/lesson?mode=daily"); }}>
-          <div className="icon-bubble"><Lightning size={30} /></div>
+          <div className="icon-bubble">{goalDone ? <span className="goal-chest">🏆</span> : <Lightning size={30} />}</div>
           <div className="grow stack" style={{ gap: 6 }}>
-            <h3>{t("Kunlik mashq")}</h3>
+            <h3>{goalDone ? t("Maqsad bajarildi!") : t("Kunlik mashq")}</h3>
             <Progress value={done / goal} onColor />
             <div className="small muted">{t(`${Math.min(done, goal)} / ${goal} savol`)}</div>
           </div>
