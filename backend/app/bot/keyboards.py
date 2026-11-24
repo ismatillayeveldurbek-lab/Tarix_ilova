@@ -1,4 +1,6 @@
 """Bot tugmalari."""
+from urllib.parse import urlencode
+
 from aiogram.types import (
     InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, WebAppInfo,
 )
@@ -19,10 +21,10 @@ def main_menu() -> ReplyKeyboardMarkup:
         [KeyboardButton(text=t("btn_daily")), KeyboardButton(text=t("btn_quiz"))],
         [KeyboardButton(text=t("btn_review")), KeyboardButton(text=t("btn_exam"))],
         [KeyboardButton(text=t("btn_rating")), KeyboardButton(text=t("btn_profile"))],
-        [KeyboardButton(text=t("btn_settings"))],
+        [KeyboardButton(text=t("btn_invite")), KeyboardButton(text=t("btn_settings"))],
     ]
     if settings.webapp_url:
-        rows[-1].append(KeyboardButton(text=t("btn_app"), web_app=webapp()))
+        rows.append([KeyboardButton(text=t("btn_app"), web_app=webapp())])
     return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=rows)
 
 
@@ -94,3 +96,9 @@ def report_admin_kb(report_id: int) -> InlineKeyboardMarkup:
     ], [
         InlineKeyboardButton(text="🚫 Savolni o'chirish", callback_data=f"rs:off:{report_id}"),
     ]])
+
+
+def invite_kb(link: str) -> InlineKeyboardMarkup:
+    """Telegram'ning "ulashish" oynasini ochadigan tugma."""
+    url = "https://t.me/share/url?" + urlencode({"url": link, "text": t("share_text")})
+    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=t("btn_share"), url=url)]])

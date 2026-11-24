@@ -12,7 +12,9 @@ async def get_or_create_user(
     if user is None:
         user = User(telegram_id=telegram_id, full_name=full_name, username=username)
         session.add(user)
+        user.is_new = True  # bazaga yozilmaydi; referal faqat yangi foydalanuvchiga ishlaydi
     else:
+        user.is_new = False
         user.full_name = full_name or user.full_name
         user.username = username
         user.is_blocked = False

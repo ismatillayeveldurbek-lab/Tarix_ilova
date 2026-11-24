@@ -5,7 +5,7 @@ Brauzerdagi admin panel esa `Authorization: Bearer <token>` (bot /panel bergan) 
 """
 from typing import Annotated, AsyncIterator
 
-from fastapi import Depends, Header, HTTPException
+from fastapi import Depends, Header, HTTPException, Request
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -13,6 +13,7 @@ from app.config import settings
 from app.db import SessionLocal
 from app.models import User
 from app.security import validate_init_data, verify_admin_token
+from app.services.referrals import parse_ref, register_referral
 from app.services.users import get_or_create_user
 
 
@@ -25,7 +26,7 @@ Session = Annotated[AsyncSession, Depends(get_session)]
 
 
 async def current_user(
-    session: Session, authorization: Annotated[str | None, Header()] = None
+    session: Session, request: Request, authorization: Annotated[str | None, Header()] = None
 ) -> User:
     scheme, _, value = (authorization or "").partition(" ")
     if scheme.lower() == "tma" and value:
@@ -34,7 +35,13 @@ async def current_user(
             raise HTTPException(401, "Telegram ma'lumoti noto'g'ri yoki eskirgan")
         name = " ".join(x for x in (tg.get("first_name"), tg.get("last_name")) if x)
         user = await get_or_create_user(session, int(tg["id"]), name, tg.get("username"))
+        # Mini App referal havola orqali ochilgan bo'lsa (t.me/bot/app?startapp=ref_...)
+        referral = await register_referral(session, user, parse_ref(tg.get("start_param")))
         await session.commit()
+        bot = getattr(request.app.state, "bot", None)
+        if referral and bot is not None:
+            from app.bot.referral import notify_joined
+            await notify_joined(bot, session, referral)
         return user
     if scheme.lower() == "bearer" and value:
         tid = verify_admin_token(value)

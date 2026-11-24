@@ -11,12 +11,13 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import Integer, cast, distinct, func, or_, select
+from sqlalchemy.orm import aliased
 
 from app.api.deps import AdminUser, Session
 from app.bot.broadcast import broadcast
 from app.db import utcnow
 from app.models import (
-    Answer, ExamAnswer, ExamConfig, HistoryEvent, Period, Question, QuestionReport, ReviewItem, Topic, User,
+    Answer, ExamAnswer, ExamConfig, HistoryEvent, Period, Question, QuestionReport, Referral, ReviewItem, Topic, User,
 )
 from app.services.daily import local_midnight_utc
 from app.services.exam import get_active_config, rule_availability
@@ -52,7 +53,18 @@ async def stats(_: AdminUser, session: Session) -> dict:
         .group_by(Topic.id, Topic.name).having(func.count() >= 10)
         .order_by((ok_sum * 1.0 / func.count()).asc()).limit(5)
     )).all()
+    inviter = aliased(User)
+    top_inviters = (await session.execute(
+        select(inviter.full_name, func.count(Referral.id), func.count(Referral.activated_at))
+        .join(Referral, Referral.inviter_id == inviter.id)
+        .group_by(inviter.id, inviter.full_name).order_by(func.count(Referral.activated_at).desc()).limit(5)
+    )).all()
     return {
+        "referrals": {
+            "total": await count(Referral),
+            "active": await count(Referral, Referral.activated_at.is_not(None)),
+            "top": [{"name": n or "Foydalanuvchi", "invited": c, "active": a} for n, c, a in top_inviters],
+        },
         "hard_topics": [{"name": n, "answers": c, "accuracy": round(100 * (k or 0) / c)} for n, c, k in hard],
         "users": await count(User),
         "active_week": await session.scalar(

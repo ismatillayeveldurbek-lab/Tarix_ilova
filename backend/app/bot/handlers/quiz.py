@@ -11,6 +11,7 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import BufferedInputFile, CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.bot.referral import notify_activated
 from app.bot.keyboards import after_answer_kb, answer_kb, list_kb, quiz_mode_kb, report_only_kb
 from app.bot.texts import t
 from app.bot.utils import esc, leave_input_state
@@ -202,6 +203,8 @@ async def on_answer(cb: CallbackQuery, user: User, session: AsyncSession, state:
 
     if await answers_today(session, user.id) == settings.daily_question_count:
         await cb.message.answer(t("goal_done", n=settings.daily_question_count, streak=user.streak_current))
+    if result.referral:  # do'st yetarli savol yechdi — ikkalasiga bonus
+        await notify_activated(cb.bot, session, result.referral)
 
 
 @router.callback_query(F.data.in_({"nxt", "nxt:c"}))

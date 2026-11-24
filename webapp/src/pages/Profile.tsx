@@ -52,6 +52,12 @@ export function ProfilePage() {
         <ChevronRight />
       </button>
 
+      <button className="card tap row" onClick={() => navigate("/invite")}>
+        <span className="rec-icon" style={{ background: "var(--blue-soft)" }}>👥</span>
+        <div className="grow"><div className="bold">Do'stlarni taklif qilish</div><div className="small muted">Har bir faol do'st uchun XP bonus</div></div>
+        <ChevronRight />
+      </button>
+
       <div className="card"><div className="bold" style={{ marginBottom: 10 }}>Shu hafta</div><WeekStrip /></div>
 
       <div className="section-title">Sozlamalar</div>

@@ -18,6 +18,7 @@ type TgWebApp = {
   enableClosingConfirmation?(): void;
   disableClosingConfirmation?(): void;
   showConfirm?(message: string, cb: (ok: boolean) => void): void;
+  openTelegramLink?(url: string): void;
   HapticFeedback?: Haptic;
   BackButton?: { show(): void; hide(): void; onClick(cb: () => void): void; offClick(cb: () => void): void };
   onEvent?(event: string, cb: () => void): void;
@@ -82,4 +83,29 @@ export function confirmDialog(message: string): Promise<boolean> {
     }
     resolve(window.confirm(message));
   });
+}
+
+/** Telegram'ning "ulashish" oynasi: do'stni tanlab, havolani yuborish */
+export function shareLink(url: string, text: string): void {
+  const share = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
+  if (tg?.initData && tg.openTelegramLink) tg.openTelegramLink(share);
+  else window.open(share, "_blank", "noopener");
+}
+
+/** Matnni nusxalash (eski brauzerlar uchun zaxira usul bilan) */
+export async function copyText(text: string): Promise<boolean> {
+  try {
+    await navigator.clipboard.writeText(text);
+    return true;
+  } catch {
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    const ok = document.execCommand("copy");
+    ta.remove();
+    return ok;
+  }
 }

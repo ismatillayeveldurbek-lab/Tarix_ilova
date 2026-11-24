@@ -9,6 +9,7 @@ type Stats = {
   answers_today: number; answers_total: number; accuracy: number; reports_new: number; history_events: number;
   by_difficulty: Record<string, number>; by_period: { name: string; count: number }[];
   hard_topics: { name: string; answers: number; accuracy: number }[];
+  referrals: { total: number; active: number; top: { name: string; invited: number; active: number }[] };
 };
 
 export function Dashboard() {
@@ -31,6 +32,20 @@ export function Dashboard() {
         {tiles.map(([l, v, c]) => (
           <div key={l} className="stat-card" style={{ "--c": c } as React.CSSProperties}><div className="v">{v}</div><div className="l">{l}</div></div>
         ))}
+      </div>
+      <div className="card stack">
+        <div className="row between">
+          <div className="bold">👥 Referal (taklif) tizimi</div>
+          <div className="row small"><span className="chip blue">Takliflar: {s.referrals.total}</span><span className="chip green">Faol: {s.referrals.active}</span></div>
+        </div>
+        {s.referrals.top.length === 0 ? <div className="small muted">Hali taklif yo'q</div> : (
+          <div className="list">
+            {s.referrals.top.map((r, i) => (
+              <div key={i} className="list-row"><span className="rank">{i + 1}</span><span className="grow bold">{r.name}</span>
+                <span className="small muted">{r.invited} ta taklif · {r.active} ta faol</span></div>
+            ))}
+          </div>
+        )}
       </div>
       {s.questions === 0 && (
         <div className="card row" style={{ borderColor: "var(--green)", background: "var(--green-soft)" }}>

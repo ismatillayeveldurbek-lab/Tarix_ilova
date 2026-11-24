@@ -17,6 +17,7 @@ from app.services.quiz import (
     REPORTS_PER_DAY, create_report, get_question, pick_question_ids, record_answer, reports_last_day,
 )
 from app.services.progress import group_by_period, overall_percent, recommendation, topic_progress, weak_topics
+from app.services.referrals import ensure_ref_code, referral_link, referral_stats
 from app.services.rating import user_rank, user_week_xp, weekly_leaderboard, xp_for
 from app.services.review import due_count, due_question_ids
 from app.services.stats import answer_totals, learning_path
@@ -112,6 +113,30 @@ async def update_me(body: MeUpdate, user: CurrentUser, session: Session) -> dict
     return {"ok": True}
 
 
+# ---------- Referal ----------
+
+async def _bot_username(request: Request) -> str:
+    bot = getattr(request.app.state, "bot", None)
+    if bot is not None:
+        from app.bot.referral import bot_username
+        return await bot_username(bot)
+    return settings.bot_username.lstrip("@")
+
+
+@router.get("/referrals")
+async def referrals(user: CurrentUser, session: Session, request: Request) -> dict:
+    code = await ensure_ref_code(session, user)
+    stats = await referral_stats(session, user)
+    await session.commit()
+    return {
+        "link": referral_link(await _bot_username(request), code),
+        "min_answers": settings.referral_min_answers,
+        "xp_inviter": settings.referral_xp_inviter,
+        "xp_invited": settings.referral_xp_invited,
+        **stats,
+    }
+
+
 # ---------- O'zlashtirish ----------
 
 @router.get("/progress")
@@ -166,7 +191,7 @@ class AnswerIn(BaseModel):
 
 
 @router.post("/answers")
-async def answer(body: AnswerIn, user: CurrentUser, session: Session) -> dict:
+async def answer(body: AnswerIn, user: CurrentUser, session: Session, request: Request) -> dict:
     lesson = await session.get(LessonSession, body.lesson_id)
     if lesson is None or lesson.user_id != user.id or utcnow() - lesson.created_at > LESSON_TTL:
         raise HTTPException(404, "Dars topilmadi yoki eskirgan. Yangi dars boshlang")
@@ -179,14 +204,20 @@ async def answer(body: AnswerIn, user: CurrentUser, session: Session) -> dict:
         raise HTTPException(404, "Savol topilmadi")
     lesson.answered_ids = [*lesson.answered_ids, q.id]  # yangi ro'yxat — SQLAlchemy o'zgarishni ko'radi
     result = await record_answer(session, user, q, body.option, source=lesson.source)
+    referral = result.referral
     done = await answers_today(session, user.id)
     await session.commit()
     goal = settings.daily_question_count
+    bot = getattr(request.app.state, "bot", None)
+    if referral and bot is not None:  # do'st yetarli savol yechdi — taklif qilganga xabar
+        from app.bot.referral import notify_activated
+        await notify_activated(bot, session, referral)
     return {
         "is_correct": result.is_correct,
         "correct_option": q.correct_option,
         "explanation": q.explanation,
         "xp": xp_for(result.is_correct),
+        "referral_bonus": settings.referral_xp_invited if referral else 0,
         "streak": user.streak_current,
         "streak_increased": result.streak_increased,
         "today_done": done, "goal": goal, "goal_reached": done == goal,

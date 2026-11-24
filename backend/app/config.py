@@ -29,6 +29,12 @@ class Settings(BaseSettings):
     history_post_time: str = "09:00"  # "Tarixda bugun" posti vaqti
     webapp_url: str = ""         # Mini App manzili (https://...), masalan Railway domeni
     port: int = 8000
+    bot_username: str = ""        # havolalar uchun; bo'sh bo'lsa bot o'zi aniqlaydi
+
+    # Referal tizimi
+    referral_min_answers: int = 5   # do'st shuncha savol yechgach taklif "faol" bo'ladi
+    referral_xp_inviter: int = 50   # taklif qilganga bonus
+    referral_xp_invited: int = 20   # taklif qilinganga bonus
     # FAQAT kompyuterda sinash uchun: Telegram'siz brauzerda shu ID bilan kirish.
     # Serverda HECH QACHON yoqmang!
     dev_telegram_id: int = 0

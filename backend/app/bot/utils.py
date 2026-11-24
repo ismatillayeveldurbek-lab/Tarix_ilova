@@ -11,7 +11,7 @@ def esc(text: str) -> str:
 
 
 MENU_KEYS = (
-    "btn_quiz", "btn_daily", "btn_review", "btn_exam", "btn_rating", "btn_profile", "btn_settings", "btn_app",
+    "btn_quiz", "btn_daily", "btn_review", "btn_exam", "btn_rating", "btn_profile", "btn_settings", "btn_app", "btn_invite",
 )
 MENU_TEXTS: set[str] = {t(k) for k in MENU_KEYS}
 

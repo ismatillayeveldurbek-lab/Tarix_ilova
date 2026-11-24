@@ -155,6 +155,12 @@ export function HomePage() {
           </div>
         )}
 
+        <button className="card tap row invite-card" onClick={() => { haptic.tap(); navigate("/invite"); }}>
+          <span className="rec-icon" style={{ background: "rgba(255,255,255,.22)" }}>👥</span>
+          <div className="grow"><div className="bold">Do'stlaringizni taklif qiling</div><div className="small" style={{ opacity: 0.9 }}>Birga o'qing va bonus XP oling</div></div>
+          <ChevronRight />
+        </button>
+
         {/* Mavzular yo'li */}
         <div className="section-title" style={{ marginTop: 12 }}>Mavzular</div>
         {home.path.length === 0 && (

@@ -6,7 +6,8 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import utcnow
-from app.models import Answer, Period, Question, QuestionReport, Topic, User
+from app.models import Answer, Period, Question, QuestionReport, Referral, Topic, User
+from app.services.referrals import try_activate
 from app.services.review import update_review
 from app.services.streak import touch_streak
 
@@ -35,6 +36,7 @@ async def get_question(session: AsyncSession, question_id: int) -> Question | No
 class AnswerResult:
     is_correct: bool
     streak_increased: bool
+    referral: Referral | None = None  # shu javob bilan taklif faollashgan bo'lsa
 
 
 async def record_answer(
@@ -50,7 +52,8 @@ async def record_answer(
     await update_review(session, user.id, question.id, is_correct)
     streak_up = touch_streak(user)
     await session.flush()
-    return AnswerResult(is_correct=is_correct, streak_increased=streak_up)
+    referral = await try_activate(session, user)
+    return AnswerResult(is_correct=is_correct, streak_increased=streak_up, referral=referral)
 
 
 async def list_periods(session: AsyncSession) -> list[Period]:

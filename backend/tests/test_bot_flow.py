@@ -4,7 +4,7 @@ from datetime import datetime
 
 from aiogram import Bot
 from aiogram.client.session.base import BaseSession
-from aiogram.methods import AnswerCallbackQuery, EditMessageText, SendMessage, TelegramMethod
+from aiogram.methods import AnswerCallbackQuery, EditMessageText, GetMe, SendMessage, TelegramMethod
 from aiogram.types import CallbackQuery, Chat, InlineKeyboardMarkup, Message, Update, User as TgUser
 from sqlalchemy import func, select
 
@@ -25,6 +25,8 @@ class FakeSession(BaseSession):
 
     async def make_request(self, bot, method, timeout=None):
         self.requests.append(method)
+        if isinstance(method, GetMe):
+            return TgUser(id=42, is_bot=True, first_name="Tarix", username="tarix_test_bot")
         if isinstance(method, (SendMessage, EditMessageText)):
             markup = getattr(method, "reply_markup", None)
             return Message(message_id=next(_ids), date=datetime.now(), chat=CHAT, text=method.text,
@@ -47,12 +49,13 @@ class FakeSession(BaseSession):
 
 
 def msg(text: str, user: TgUser = TG_USER) -> Update:
+    chat = Chat(id=user.id, type="private")  # har foydalanuvchi o'z chatida
     return Update(update_id=next(_ids), message=Message(
-        message_id=next(_ids), date=datetime.now(), chat=CHAT, from_user=user, text=text))
+        message_id=next(_ids), date=datetime.now(), chat=chat, from_user=user, text=text))
 
 
 def cb(data: str, user: TgUser = TG_USER) -> Update:
-    m = Message(message_id=next(_ids), date=datetime.now(), chat=CHAT, text="x")
+    m = Message(message_id=next(_ids), date=datetime.now(), chat=Chat(id=user.id, type="private"), text="x")
     return Update(update_id=next(_ids), callback_query=CallbackQuery(
         id=str(next(_ids)), from_user=user, chat_instance="ci", message=m, data=data))
 
@@ -189,10 +192,10 @@ async def test_review_daily_rating_history():
 
 
 async def test_scheduler_reminder_and_history(monkeypatch):
-    from datetime import date, datetime, time as dtime
+    from datetime import date, datetime
     from app.bot import scheduler
     from app.config import settings
-    from app.models import HistoryEvent, User
+    from app.models import HistoryEvent
 
     bot, fake, dp = await setup()
     await dp.feed_update(bot, msg("/start"))

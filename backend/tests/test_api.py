@@ -6,22 +6,21 @@ import time
 from urllib.parse import urlencode
 
 import httpx
-import pytest
 
 from app.api.app import create_app
 from app.config import settings
-from app.db import SessionLocal
 from app.security import make_admin_token, validate_init_data
-from tests.test_services import load_sample
 
 
-def init_data(user_id: int, first_name: str = "Ali", auth_date: int | None = None) -> str:
+def init_data(user_id: int, first_name: str = "Ali", auth_date: int | None = None, start_param: str = "") -> str:
     """Telegram qanday imzolasa, xuddi shunday imzolangan initData yasaydi."""
     fields = {
         "auth_date": str(auth_date or int(time.time())),
         "query_id": "AAH",
         "user": json.dumps({"id": user_id, "first_name": first_name}),
     }
+    if start_param:
+        fields["start_param"] = start_param
     check = "\n".join(f"{k}={v}" for k, v in sorted(fields.items()))
     secret = hmac.new(b"WebAppData", settings.bot_token.encode(), hashlib.sha256).digest()
     fields["hash"] = hmac.new(secret, check.encode(), hashlib.sha256).hexdigest()
@@ -32,16 +31,6 @@ def client(auth: str | None = None) -> httpx.AsyncClient:
     headers = {"Authorization": auth} if auth else {}
     return httpx.AsyncClient(transport=httpx.ASGITransport(app=create_app()),
                              base_url="http://test", headers=headers)
-
-
-@pytest.fixture
-async def seeded():
-    from app.models import ExamConfig
-    from scripts.seed import DEFAULT_EXAM
-    async with SessionLocal() as s:
-        await load_sample(s)
-        s.add(ExamConfig(**DEFAULT_EXAM))
-        await s.commit()
 
 
 def test_init_data_validation():
@@ -243,7 +232,6 @@ async def test_export_roundtrip(seeded):
 
 
 async def test_broadcast(seeded):
-    import asyncio
     from app.api.app import create_app
 
     sent = []
@@ -282,6 +270,6 @@ async def test_progress_api(seeded):
         # bitta mavzuda 3 ta xato -> zaif mavzu
         lesson = (await c.post("/api/lessons", json={"mode": "topic", "id": p["recommendation"]["id"]})).json()
         for q in lesson["questions"]:
-            res = (await c.post("/api/answers", json={"lesson_id": lesson["lesson_id"], "question_id": q["id"], "option": "a"})).json()
+            await c.post("/api/answers", json={"lesson_id": lesson["lesson_id"], "question_id": q["id"], "option": "a"})
         home = (await c.get("/api/home")).json()
         assert "mastery" in home and "recommendation" in home

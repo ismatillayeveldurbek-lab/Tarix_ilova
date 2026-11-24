@@ -24,6 +24,27 @@ TEXTS: dict[str, str] = {
     "btn_settings": "⚙️ Sozlamalar",
     "btn_daily": "🔥 Kunlik 10 savol",
     "btn_app": "📱 Ilovani ochish",
+    "btn_invite": "👥 Do'stlarni taklif qilish",
+    "btn_share": "📤 Do'stga yuborish",
+
+    # Referal
+    "invite": (
+        "👥 <b>Do'stlaringizni taklif qiling!</b>\n\n"
+        "Do'stingiz havolangiz orqali botga kirib, <b>{min} ta savol</b> yechsa:\n"
+        "• sizga — <b>+{xp_inviter} XP</b>\n"
+        "• do'stingizga — <b>+{xp_invited} XP</b>\n"
+        "XP haftalik reytingga qo'shiladi.\n\n"
+        "Taklif qilganlar: <b>{invited}</b> · faol: <b>{active}</b> · topilgan XP: <b>{earned}</b>\n\n"
+        "Sizning havolangiz:\n{link}"
+    ),
+    "share_text": "Tarixdan milliy sertifikatga birga tayyorlanamiz! Har kuni 10 ta savol, izohlar va sinov imtihoni 📜",
+    "ref_joined": (
+        "🎉 Do'stingiz <b>{name}</b> havolangiz orqali qo'shildi!\n"
+        "U {min} ta savol yechgach, sizga <b>+{xp} XP</b> beriladi."
+    ),
+    "ref_activated": "🎁 <b>{name}</b> {min} ta savol yechdi — sizga <b>+{xp} XP</b> qo'shildi!",
+    "ref_welcome": "👋 Sizni do'stingiz <b>{name}</b> taklif qildi! {min} ta savol yeching va <b>+{xp} XP</b> bonus oling.",
+    "ref_bonus": "🎁 Taklif bonusi: <b>+{xp} XP</b>! Haftalik reytingga qo'shildi.",
     "coming_soon": "🔜 Bu bo'lim keyingi bosqichda qo'shiladi.",
 
     # Test

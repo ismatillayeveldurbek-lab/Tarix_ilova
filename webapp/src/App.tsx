@@ -9,6 +9,7 @@ import { HomeSkeleton } from "./components/Skeleton";
 import { LessonPage } from "./pages/Lesson";
 import { ProfilePage } from "./pages/Profile";
 import { ProgressPage } from "./pages/Progress";
+import { InvitePage } from "./pages/Invite";
 import { RatingPage } from "./pages/Rating";
 import { goBack, navigate, useRoute } from "./lib/router";
 import { StoreProvider, useStore } from "./lib/store";
@@ -66,7 +67,7 @@ function UserApp() {
     const id = params.get("id") ? Number(params.get("id")) : null;
     return <LessonPage key={`${mode}-${id}`} mode={mode} id={id} />;
   }
-  const page = path === "/progress" ? <ProgressPage /> : path === "/exam" ? <ExamPage /> : path === "/rating" ? <RatingPage /> : path === "/profile" ? <ProfilePage /> : <HomePage />;
+  const page = path === "/invite" ? <InvitePage /> : path === "/progress" ? <ProgressPage /> : path === "/exam" ? <ExamPage /> : path === "/rating" ? <RatingPage /> : path === "/profile" ? <ProfilePage /> : <HomePage />;
   return <>{page}<BottomNav path={TABS.some((x) => x.path === path) ? path : "/"} /></>;
 }
 

@@ -13,7 +13,7 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import BotCommand, MenuButtonWebApp
 
-from app.bot.handlers import admin, menu, quiz, report, settings as settings_handlers, start
+from app.bot.handlers import admin, invite, menu, quiz, report, settings as settings_handlers, start
 from app.bot.keyboards import webapp
 from app.bot.middlewares import DbUserMiddleware
 from app.bot.scheduler import create_scheduler
@@ -30,7 +30,7 @@ def create_dispatcher() -> Dispatcher:
     # Tartib muhim: xato xabari kutilayotganda matn avval report'ga tushadi
     dp.include_routers(
         start.router, report.router, admin.router, quiz.router,
-        settings_handlers.router, menu.router,
+        settings_handlers.router, invite.router, menu.router,
     )
     return dp
 
@@ -49,6 +49,7 @@ async def prepare_bot(bot: Bot) -> None:
     await bot.set_my_commands([
         BotCommand(command="start", description="Boshlash"),
         BotCommand(command="bugun", description="Tarixda bugun"),
+        BotCommand(command="taklif", description="Do'stlarni taklif qilish"),
     ])
     if settings.webapp_url:
         await bot.set_chat_menu_button(menu_button=MenuButtonWebApp(text="📱 Ilova", web_app=webapp()))

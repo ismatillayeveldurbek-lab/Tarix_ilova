@@ -44,6 +44,13 @@ export type AnswerResult = {
   today_done: number;
   goal: number;
   goal_reached: boolean;
+  referral_bonus: number;
+};
+
+export type Referrals = {
+  link: string; min_answers: number; xp_inviter: number; xp_invited: number;
+  invited: number; active: number; earned_xp: number;
+  friends: { name: string; joined_at: string; active: boolean }[];
 };
 
 /** Mavzu bo'yicha natija */

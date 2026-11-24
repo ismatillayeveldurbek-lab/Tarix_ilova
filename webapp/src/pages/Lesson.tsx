@@ -64,10 +64,11 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
       const r = await api<AnswerResult>("/answers", { body: { lesson_id: lessonId, question_id: q.id, option: selected } });
       setResult(r);
       if (r.is_correct) haptic.success(); else haptic.error();
+      if (r.referral_bonus) toast(`🎁 Taklif bonusi: +${r.referral_bonus} XP!`, "success");
       setStats((s) => {
         const combo = r.is_correct ? s.combo + 1 : 0;
         return {
-          correct: s.correct + (r.is_correct ? 1 : 0), xp: s.xp + r.xp, combo, best: Math.max(s.best, combo),
+          correct: s.correct + (r.is_correct ? 1 : 0), xp: s.xp + r.xp + r.referral_bonus, combo, best: Math.max(s.best, combo),
           goal: s.goal || r.goal_reached, streakUp: s.streakUp || r.streak_increased, streak: r.streak,
         };
       });

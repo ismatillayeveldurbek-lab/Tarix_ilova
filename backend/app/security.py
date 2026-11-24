@@ -32,9 +32,12 @@ def validate_init_data(init_data: str, max_age: int = 24 * 3600) -> dict | None:
     if time.time() - int(pairs.get("auth_date", 0)) > max_age:
         return None
     try:
-        return json.loads(pairs["user"])
+        user = json.loads(pairs["user"])
     except (KeyError, ValueError):
         return None
+    if "start_param" in pairs:  # Mini App havolasidagi parametr (masalan, referal kodi)
+        user["start_param"] = pairs["start_param"]
+    return user
 
 
 def _admin_secret() -> bytes:
