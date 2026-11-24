@@ -1,13 +1,16 @@
 """Admin bo'limi: statistika, xato xabarlari, savollarni import qilish."""
 from aiogram import Bot, F, Router
 from aiogram.filters import Command, Filter
-from aiogram.types import CallbackQuery, FSInputFile, Message, TelegramObject
+from aiogram.types import (
+    CallbackQuery, FSInputFile, InlineKeyboardButton, InlineKeyboardMarkup, Message, TelegramObject,
+)
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.bot.keyboards import report_admin_kb
+from app.bot.keyboards import report_admin_kb, webapp
 from app.bot.utils import esc
-from app.config import BASE_DIR
+from app.config import BASE_DIR, settings
+from app.security import make_admin_token
 from app.models import Question, QuestionReport, User
 from app.services.importer import import_file
 
@@ -29,6 +32,7 @@ HELP = (
     "❓ Faol savollar: <b>{questions}</b>\n"
     "⚠️ Yangi xato xabarlari: <b>{reports}</b>\n\n"
     "<b>Buyruqlar:</b>\n"
+    "/panel — 🖥 veb admin panel (savollar, import, imtihon formati...)\n"
     "/reports — yangi xato xabarlarini ko'rish\n"
     "/shablon — import uchun namuna CSV fayl\n"
     "📎 Savollarni qo'shish: .xlsx yoki .csv faylni shu chatga yuboring"
@@ -45,6 +49,26 @@ async def admin_home(message: Message, session: AsyncSession) -> None:
         select(func.count()).select_from(QuestionReport).where(QuestionReport.status == "new")
     )
     await message.answer(HELP.format(users=users, questions=questions, reports=reports))
+
+
+@router.message(Command("panel"))
+async def admin_panel(message: Message, user: User) -> None:
+    if not settings.webapp_url:
+        await message.answer(
+            "🖥 Admin panel ilova bilan birga ishlaydi. Avval .env faylida WEBAPP_URL ni kiriting "
+            "(masalan, https://sizning-domeningiz)."
+        )
+        return
+    token = make_admin_token(user.telegram_id)
+    url = settings.webapp_url.rstrip("/") + f"/#/admin?token={token}"
+    kb = InlineKeyboardMarkup(inline_keyboard=[
+        [InlineKeyboardButton(text="🖥 Brauzerda ochish (kompyuter uchun qulay)", url=url)],
+        [InlineKeyboardButton(text="📱 Telegram ichida ochish", web_app=webapp("admin"))],
+    ])
+    await message.answer(
+        "🛠 <b>Admin panel</b>\n\nBrauzer havolasi 12 soat amal qiladi. Uni hech kimga yubormang!",
+        reply_markup=kb,
+    )
 
 
 @router.message(Command("reports"))

@@ -52,35 +52,46 @@ class ImportReport:
     errors: list[str] = field(default_factory=list)
 
 
-def read_rows(filename: str, content: bytes) -> list[dict[str, str]]:
-    """Faylni o'qib, har bir qatorni {ichki_nom: qiymat} lug'atiga aylantiradi."""
+def read_table(filename: str, content: bytes) -> list[list]:
+    """Excel yoki CSV faylni qatorlar ro'yxatiga aylantiradi."""
     name = filename.lower()
     if name.endswith(".xlsx"):
-        wb = load_workbook(io.BytesIO(content), read_only=True, data_only=True)
-        raw = [list(r) for r in wb.active.iter_rows(values_only=True)]
-    elif name.endswith(".csv"):
-        text = content.decode("utf-8-sig")
+        try:
+            wb = load_workbook(io.BytesIO(content), read_only=True, data_only=True)
+        except Exception:
+            raise ValueError("Excel fayl o'qilmadi (fayl buzilgan yoki .xlsx emas)") from None
+        return [list(r) for r in wb.active.iter_rows(values_only=True)]
+    if name.endswith(".csv"):
+        try:
+            text = content.decode("utf-8-sig")
+        except UnicodeDecodeError:
+            text = content.decode("cp1251")  # Excel ba'zan shu kodlashda saqlaydi
         try:
             dialect = csv.Sniffer().sniff(text[:4096], delimiters=",;\t")
         except csv.Error:
             dialect = csv.excel
-        raw = list(csv.reader(io.StringIO(text), dialect))
-    else:
-        raise ValueError("Faqat .xlsx yoki .csv fayl qabul qilinadi")
+        return list(csv.reader(io.StringIO(text), dialect))
+    raise ValueError("Faqat .xlsx yoki .csv fayl qabul qilinadi")
 
+
+def _map_rows(raw: list[list], aliases: dict[str, str], required: tuple[str, ...]) -> list[dict[str, str]]:
     if not raw:
         return []
-    headers = [HEADER_ALIASES.get(_key(h)) for h in raw[0]]
-    missing = [r for r in REQUIRED if r not in headers]
+    headers = [aliases.get(_key(h)) for h in raw[0]]
+    missing = [r for r in required if r not in headers]
     if missing:
         raise ValueError("Ustunlar topilmadi: " + ", ".join(missing))
-
     rows = []
     for values in raw[1:]:
         row = {h: _norm(v) for h, v in zip(headers, values) if h}
         if any(row.values()):
             rows.append(row)
     return rows
+
+
+def read_rows(filename: str, content: bytes) -> list[dict[str, str]]:
+    """Savollar faylini o'qib, har bir qatorni {ichki_nom: qiymat} lug'atiga aylantiradi."""
+    return _map_rows(read_table(filename, content), HEADER_ALIASES, REQUIRED)
 
 
 def _difficulty(value: str) -> int:
@@ -171,3 +182,40 @@ async def import_rows(session: AsyncSession, rows: list[dict[str, str]]) -> Impo
 
 async def import_file(session: AsyncSession, filename: str, content: bytes) -> ImportReport:
     return await import_rows(session, read_rows(filename, content))
+
+
+# ---------- "Tarixda bugun" voqealari ----------
+# Ustunlar: oy | kun | yil | sarlavha | matn
+HISTORY_ALIASES = {
+    "oy": "month", "month": "month", "kun": "day", "day": "day", "yil": "year", "year": "year",
+    "sarlavha": "title", "title": "title", "voqea": "title",
+    "matn": "text", "text": "text", "izoh": "text",
+}
+
+
+async def import_history_file(session: AsyncSession, filename: str, content: bytes) -> ImportReport:
+    from app.models import HistoryEvent
+
+    rows = _map_rows(read_table(filename, content), HISTORY_ALIASES, ("month", "day", "title"))
+    report = ImportReport()
+    existing = {(e.month, e.day, e.title) for e in await session.scalars(select(HistoryEvent))}
+    for line_no, row in enumerate(rows, start=2):
+        try:
+            month, day = int(float(row["month"])), int(float(row["day"]))
+            year = int(float(row["year"])) if row.get("year") else None
+            if not (1 <= month <= 12 and 1 <= day <= 31):
+                raise ValueError("oy 1–12, kun 1–31 bo'lishi kerak")
+            if not row.get("title"):
+                raise ValueError("sarlavha bo'sh")
+        except (ValueError, KeyError) as e:
+            report.errors.append(f"{line_no}-qator: {e}")
+            continue
+        key = (month, day, row["title"])
+        if key in existing:
+            report.skipped_duplicates += 1
+            continue
+        session.add(HistoryEvent(month=month, day=day, year=year, title=row["title"], text=row.get("text", "")))
+        existing.add(key)
+        report.added += 1
+    await session.flush()
+    return report

@@ -18,7 +18,8 @@ SINGLE = {
 Y_VOWELS = {"o": "ё", "u": "ю", "a": "я", "e": "е"}
 VOWELS = set("aeiouAEIOU")
 
-_SKIP = re.compile(r"(<[^>]+>|&#?\w+;|\{[^}]*\}|https?://\S+)")
+# O'girilmaydigan bo'laklar: HTML teglari, &amp; belgilari, {o'zgaruvchilar}, havolalar va XP
+_SKIP = re.compile(r"(<[^>]+>|&#?\w+;|\{[^}]*\}|https?://\S+|\bXP\b)")
 
 
 def _case(src: str, cyr: str) -> str:

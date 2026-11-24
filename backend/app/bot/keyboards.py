@@ -1,7 +1,10 @@
 """Bot tugmalari."""
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup
+from aiogram.types import (
+    InlineKeyboardButton, InlineKeyboardMarkup, KeyboardButton, ReplyKeyboardMarkup, WebAppInfo,
+)
 
 from app.bot.texts import t
+from app.config import settings
 from app.services.translit import tr
 
 
@@ -12,15 +15,37 @@ def alphabet_kb() -> InlineKeyboardMarkup:
     ]])
 
 
+def webapp(path: str = "") -> WebAppInfo | None:
+    """Mini App manzili. path — ilova ichidagi sahifa, masalan "exam"."""
+    if not settings.webapp_url:
+        return None
+    return WebAppInfo(url=settings.webapp_url.rstrip("/") + "/" + (f"#/{path}" if path else ""))
+
+
 def main_menu(a: str) -> ReplyKeyboardMarkup:
-    return ReplyKeyboardMarkup(
-        resize_keyboard=True,
-        keyboard=[
-            [KeyboardButton(text=t("btn_quiz", a)), KeyboardButton(text=t("btn_review", a))],
-            [KeyboardButton(text=t("btn_exam", a)), KeyboardButton(text=t("btn_rating", a))],
-            [KeyboardButton(text=t("btn_profile", a)), KeyboardButton(text=t("btn_settings", a))],
-        ],
-    )
+    rows = [
+        [KeyboardButton(text=t("btn_daily", a)), KeyboardButton(text=t("btn_quiz", a))],
+        [KeyboardButton(text=t("btn_review", a)), KeyboardButton(text=t("btn_exam", a))],
+        [KeyboardButton(text=t("btn_rating", a)), KeyboardButton(text=t("btn_profile", a))],
+        [KeyboardButton(text=t("btn_settings", a))],
+    ]
+    if settings.webapp_url:
+        rows[-1].append(KeyboardButton(text=t("btn_app", a), web_app=webapp()))
+    return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=rows)
+
+
+def webapp_button_kb(text: str, path: str = "") -> InlineKeyboardMarkup | None:
+    info = webapp(path)
+    if info is None:
+        return None
+    return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=text, web_app=info)]])
+
+
+def reminder_kb(a: str) -> InlineKeyboardMarkup:
+    rows = [[InlineKeyboardButton(text=t("btn_start_daily", a), callback_data="daily:start")]]
+    if settings.webapp_url:
+        rows.append([InlineKeyboardButton(text=t("btn_app", a), web_app=webapp())])
+    return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
 def quiz_mode_kb(a: str) -> InlineKeyboardMarkup:

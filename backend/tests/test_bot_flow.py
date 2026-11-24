@@ -95,10 +95,11 @@ async def test_full_quiz_flow_in_cyrillic():
         choice = q.correct_option if i % 2 else next(o for o in "abcd" if o != q.correct_option)
         correct_count += i % 2
         await dp.feed_update(bot, cb(f"ans:{qid}:{choice}"))
-        assert ("Тўғри" in fake.texts()[-1]) or ("Нотўғри" in fake.texts()[-1])
-        assert "Изоҳ" in fake.texts()[-1]
+        edited = [r.text for r in fake.requests if isinstance(r, EditMessageText)][-1]
+        assert ("Тўғри" in edited) or ("Нотўғри" in edited)
+        assert "Изоҳ" in edited
         # A/B/C/D harflari lotinda qolishi kerak
-        assert "<b>A)</b>" in fake.texts()[-1]
+        assert "<b>A)</b>" in edited
 
         # ikkinchi marta bosish qabul qilinmaydi
         await dp.feed_update(bot, cb(f"ans:{qid}:a"))
@@ -107,6 +108,8 @@ async def test_full_quiz_flow_in_cyrillic():
         await dp.feed_update(bot, cb("nxt"))
 
     assert "5/10" in fake.texts()[-1] and "50%" in fake.texts()[-1]
+    assert "+55 XP" in fake.texts()[-1]  # 5×10 + 5×1
+    assert any("Кунлик мақсад бажарилди" in x for x in fake.texts())
     async with SessionLocal() as s:
         assert await s.scalar(select(func.count()).select_from(Answer)) == 10
         assert await s.scalar(select(func.count()).select_from(ReviewItem)) == 5
@@ -155,3 +158,62 @@ async def test_settings_switch_and_profile():
     assert "Алифбо" in fake.texts()[-1] or "Алифбо" in fake.texts()[-2]
     await dp.feed_update(bot, msg("👤 Профил"))
     assert "Жами жавоблар" in fake.texts()[-1]
+
+
+async def test_review_daily_rating_history():
+    bot, fake, dp = await setup()
+    await dp.feed_update(bot, msg("/start"))
+    await dp.feed_update(bot, cb("alph:latn"))
+
+    await dp.feed_update(bot, msg("🔁 Xatolar ustida ishlash"))
+    assert "takrorlash kerak bo'lgan savol yo'q" in fake.texts()[-1]
+
+    await dp.feed_update(bot, msg("🔥 Kunlik 10 savol"))
+    assert "Kunlik mashq" in fake.texts()[-2] and "Savol 1/10" in fake.texts()[-1]
+    qid = int(fake.last_markup().inline_keyboard[0][0].callback_data.split(":")[1])
+    from app.models import Question
+    async with SessionLocal() as s:
+        q = await s.get(Question, qid)
+    wrong = next(o for o in "abcd" if o != q.correct_option)
+    await dp.feed_update(bot, cb(f"ans:{qid}:{wrong}"))
+
+    # xato savol takrorlashga tushdi; vaqtini o'tkazib yuboramiz
+    from datetime import timedelta
+    from app.db import utcnow
+    async with SessionLocal() as s:
+        item = await s.scalar(select(ReviewItem))
+        item.next_review_at = utcnow() - timedelta(minutes=1)
+        await s.commit()
+    await dp.feed_update(bot, msg("🔁 Xatolar ustida ishlash"))
+    assert "1 ta savol" in fake.texts()[-2]
+
+    await dp.feed_update(bot, msg("🏆 Reyting"))
+    assert "Haftalik reyting" in fake.texts()[-1] and "1 XP" in fake.texts()[-1]
+
+    await dp.feed_update(bot, msg("/bugun"))
+    assert "Tarixda bugun" in fake.texts()[-1] or "voqea kiritilmagan" in fake.texts()[-1]
+
+
+async def test_scheduler_reminder_and_history(monkeypatch):
+    from datetime import date, datetime, time as dtime
+    from app.bot import scheduler
+    from app.config import settings
+    from app.models import HistoryEvent, User
+
+    bot, fake, dp = await setup()
+    await dp.feed_update(bot, msg("/start"))
+    async with SessionLocal() as s:
+        s.add(HistoryEvent(month=4, day=9, year=1336, title="Amir Temur tavalludi", text="..."))
+        await s.commit()
+
+    now = datetime(2026, 4, 9, 19, 0, tzinfo=settings.tz)
+    assert await scheduler.send_reminders(bot, now) == 1
+    assert "sizni kutmoqda" in fake.texts()[-1]
+    assert await scheduler.send_reminders(bot, now) == 0  # shu kuni qayta yuborilmaydi
+
+    monkeypatch.setattr(scheduler, "local_today", lambda: date(2026, 4, 9))
+    monkeypatch.setattr(settings, "channel_id", "@test_kanal")
+    assert await scheduler.post_history_today(bot) == 1
+    assert any(isinstance(r, SendMessage) and r.chat_id == "@test_kanal" for r in fake.requests)
+    assert "Amir Temur" in fake.texts()[-1]
+    assert await scheduler.post_history_today(bot) == 0  # ikki marta yuborilmaydi

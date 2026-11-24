@@ -53,12 +53,16 @@ async def save_report(
     report = await create_report(session, user, qid, message.text)
     await message.answer(t("report_thanks", user.alphabet), reply_markup=_continue(data, user))
 
-    # Adminlarga darhol xabar beramiz
+    await notify_admins(bot, report, question, user)
+
+
+async def notify_admins(bot: Bot, report, question, user: User) -> None:
+    """Yangi xato xabari haqida adminlarga darhol yozadi."""
     note = (
         f"⚠️ <b>Yangi xato xabari #{report.id}</b>\n"
         f"Savol #{question.id}: {esc(question.text[:300])}\n"
         f"To'g'ri javob: {question.correct_option.upper()}\n\n"
-        f"💬 {esc(message.text)}\n"
+        f"💬 {esc(report.comment)}\n"
         f"👤 {esc(user.full_name)} (id {user.telegram_id})"
     )
     for admin_id in settings.admin_id_list:

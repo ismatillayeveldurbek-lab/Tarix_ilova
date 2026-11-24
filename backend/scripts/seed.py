@@ -1,18 +1,19 @@
 """Namuna ma'lumotlarni bazaga yuklaydi: 20 ta savol va "Tarixda bugun" voqealari.
 
 Ishga tushirish (backend/ papkasida, `alembic upgrade head` dan keyin):
-    python -m scripts.seed
+    python -m scripts.seed                 # namuna savollar + voqealar + imtihon formati
+    python -m scripts.seed --faqat-format  # faqat imtihon formati (serverda shu ishlatiladi)
 Qayta ishga tushirish xavfsiz — takroriy yozuvlar qo'shilmaydi.
 """
 import asyncio
-import csv
+import sys
 
 from sqlalchemy import select
 
 from app.config import BASE_DIR
 from app.db import SessionLocal
-from app.models import ExamConfig, HistoryEvent
-from app.services.importer import import_file
+from app.models import ExamConfig
+from app.services.importer import import_file, import_history_file
 
 DATA = BASE_DIR / "data"
 
@@ -35,34 +36,27 @@ DEFAULT_EXAM = dict(
 )
 
 
-async def seed() -> None:
+async def seed(samples: bool = True) -> None:
     async with SessionLocal() as session:
-        path = DATA / "sample_questions.csv"
-        report = await import_file(session, path.name, path.read_bytes())
-        print(f"Savollar: +{report.added}, takroriy {report.skipped_duplicates}, xato {len(report.errors)}")
-        for err in report.errors:
-            print("  ", err)
-
-        existing = {(e.month, e.day, e.title) for e in await session.scalars(select(HistoryEvent))}
-        added = 0
-        with open(DATA / "history_events.csv", encoding="utf-8") as f:
-            for row in csv.DictReader(f):
-                key = (int(row["oy"]), int(row["kun"]), row["sarlavha"])
-                if key in existing:
-                    continue
-                session.add(HistoryEvent(
-                    month=key[0], day=key[1], year=int(row["yil"]) if row["yil"] else None,
-                    title=row["sarlavha"], text=row["matn"],
-                ))
-                added += 1
-        print(f"'Tarixda bugun' voqealari: +{added}")
-
+        if samples:
+            await load_samples(session)
         if not await session.scalar(select(ExamConfig).limit(1)):
             session.add(ExamConfig(**DEFAULT_EXAM))
             print("Imtihon formati (namuna) qo'shildi")
-
         await session.commit()
 
 
+async def load_samples(session) -> None:
+    path = DATA / "sample_questions.csv"
+    report = await import_file(session, path.name, path.read_bytes())
+    print(f"Savollar: +{report.added}, takroriy {report.skipped_duplicates}, xato {len(report.errors)}")
+    for err in report.errors:
+        print("  ", err)
+
+    path = DATA / "history_events.csv"
+    h = await import_history_file(session, path.name, path.read_bytes())
+    print(f"'Tarixda bugun' voqealari: +{h.added}")
+
+
 if __name__ == "__main__":
-    asyncio.run(seed())
+    asyncio.run(seed(samples="--faqat-format" not in sys.argv))

@@ -26,6 +26,7 @@ class User(Base):
 
     is_admin: Mapped[bool] = mapped_column(Boolean, default=False)
     is_blocked: Mapped[bool] = mapped_column(Boolean, default=False)  # botni bloklagan
+    last_reminder_date: Mapped[date | None] = mapped_column(Date)  # eslatma ikki marta ketmasin
 
     # --- Kelajak uchun (hozir ishlatilmaydi) ---
     premium_until: Mapped[datetime | None] = mapped_column(DateTime)

@@ -1,163 +1,193 @@
-# Tarix — milliy sertifikatga tayyorgarlik boti 📜
+# Tarix — milliy sertifikatga tayyorgarlik 📜
 
-Telegram bot va Mini App: tarix fanidan milliy sertifikat imtihoniga tayyorlanuvchilar uchun.
-Interfeys o'zbek tilida, lotin va kirill alifbolari bilan.
+Tarix fanidan milliy sertifikat imtihoniga tayyorlanuvchilar uchun **Telegram bot** va **Mini App**.
+Ilova o'yin uslubida: XP ballari, ketma-ket kunlar, mavzular yo'li va haftalik reyting bor.
+Interfeys o'zbek tilida, lotin va kirill alifbolarida ishlaydi.
 
-## Bosqichlar
+| Bosh sahifa | Dars | Imtihon | Reyting |
+|---|---|---|---|
+| ![](docs/screenshots/home.png) | ![](docs/screenshots/lesson.png) | ![](docs/screenshots/exam.png) | ![](docs/screenshots/rating.png) |
 
-| # | Bosqich | Holat |
-|---|---|---|
-| 1 | Bot ishga tushadi: `/start`, alifbo tanlash, menyu, baza | ✅ |
-| 2 | Test oqimi: savol → javob → izoh, "Xato bor" tugmasi, CSV/Excel import, admin | ✅ |
-| 3 | Xatolar ustida ishlash (spaced repetition), streak, kunlik eslatma 19:00 | ⏳ |
-| 4 | Sinov imtihoni (taymer, ball, daraja), haftalik reyting, "Tarixda bugun" (kanal + bot) | ⏳ |
-| 5 | Mini App (FastAPI + React), hosting | ⏳ |
+| Kirill | Qorong'i mavzu | Admin: import | Admin: savol tahriri |
+|---|---|---|---|
+| ![](docs/screenshots/cyrillic.png) | ![](docs/screenshots/dark.png) | ![](docs/screenshots/admin-import.png) | ![](docs/screenshots/admin-question.png) |
+
+## Imkoniyatlar
+
+**O'quvchi uchun (bot va Mini App):**
+- 📝 Test mashqlari: aralash, davr bo'yicha yoki mavzu bo'yicha. Har javobdan keyin 💡 izoh ko'rsatiladi.
+- 🔥 **Kunlik 10 savol**: avval takrorlash vaqti kelgan savollar, keyin yangilari. Ketma-ket kunlar hisoblanadi, har kuni 19:00 da eslatma keladi.
+- 🔁 **Xatolar ustida ishlash** (oraliqli takrorlash): xato savol 1, 2, 4, 7, 15 va 30 kundan keyin qayta beriladi.
+- 🎯 **Sinov imtihoni**: taymer bilan o'tadi. Natijada taxminiy ball, daraja va har bir savol tahlili ko'rsatiladi.
+- 🏆 **Haftalik reyting**: to'g'ri javob uchun 10 XP, noto'g'ri javob uchun 1 XP beriladi.
+- 📅 **Tarixda bugun**: har kuni 09:00 da kanalga va bot foydalanuvchilariga avtomatik post yuboriladi. Botda `/bugun` buyrug'i ham bor.
+- ⚠️ "Xato bor" tugmasi orqali savoldagi xato adminlarga darhol yetkaziladi.
+- 🔤 Lotin va kirill o'rtasida bir tugma bilan almashish mumkin.
+
+**Admin uchun (veb admin panel):**
+- 📊 Statistika: foydalanuvchilar, faollik, aniqlik, davr va qiyinlik bo'yicha savollar soni.
+- ❓ Savollar: qidirish, filtrlash, qo'shish, tahrirlash va o'chirish. Kirillda qanday ko'rinishini oldindan ko'rish mumkin.
+- 📥 **Excel/CSV import** savollar va "Tarixda bugun" uchun. Shablonlarni paneldan yuklab olasiz.
+- 🗂 Davr va mavzular: nomlash va tartiblash.
+- 📅 "Tarixda bugun" voqealari: oy bo'yicha ko'rish, qo'shish va tahrirlash.
+- ⚠️ Xato xabarlari: savolni shu yerning o'zida tuzatish mumkin.
+- 🎯 **Imtihon formati**: savollar soni, ballar, qiyinlik va davr filtrlari, darajalar. Rasmiy spetsifikatsiya chiqqanda kodga tegmasdan shu yerda o'zgartirasiz.
 
 ---
 
-## Kompyuteringizda ishga tushirish (qadam-baqadam)
+## Qanday ishlaydi
 
-### 0. Kerakli dasturlar
-- **Python 3.12 yoki yangiroq**: https://www.python.org/downloads/
-  (Windows'da o'rnatishda **"Add Python to PATH"** belgisini qo'ying.)
+```
+                 ┌──────────────── bitta server (python -m app.main) ────────────────┐
+ Telegram ──────►│  aiogram bot   ─┐                                                 │
+                 │  APScheduler   ─┼──► services/ (biznes logika) ──► PostgreSQL/SQLite│
+ Mini App ──────►│  FastAPI /api  ─┘                                                 │
+ (React)         │  webapp/dist  (Mini App + admin panel fayllari)                   │
+                 └───────────────────────────────────────────────────────────────────┘
+```
+
+Bot, Mini App API, admin panel va kunlik eslatmalar **bitta jarayonda** ishlaydi, shuning uchun serverga joylash oson.
+Mantiq `services/` papkasida bir marta yozilgan, bot ham, Mini App ham undan foydalanadi.
+
+---
+
+## 1. Kompyuterda ishga tushirish
+
+### Kerakli dasturlar
+- **Python 3.12+**: https://www.python.org/downloads/ (Windows'da "Add Python to PATH" belgisini qo'ying)
+- **Node.js 20+**: https://nodejs.org/ (Mini App'ni yig'ish uchun kerak)
 - **Git**: https://git-scm.com/
 
-Tekshirish uchun terminalda (Windows'da PowerShell) quyidagilarni yozing:
-```bash
-python --version
-git --version
-```
+### Bot tokeni
+1. Telegramda **@BotFather** ga `/newbot` yozing va ko'rsatmalarga amal qiling. Oxirida token olasiz.
+2. **@userinfobot** ga yozib, o'z Telegram ID raqamingizni bilib oling. Bu raqam sizni admin qiladi.
 
-### 1. Bot tokenini olish
-1. Telegramda **@BotFather** ni oching va `/newbot` yozing.
-2. Botga nom bering (masalan, `Tarix Sertifikat`), so'ng username bering (oxiri `bot` bilan tugashi kerak).
-3. BotFather sizga `123456789:AAH...` ko'rinishidagi **token** beradi.
-   ⚠️ Tokenni hech kimga ko'rsatmang va kodga yozmang. U faqat `.env` faylida saqlanadi.
-4. O'z Telegram ID raqamingizni bilish uchun **@userinfobot** ga yozing. Bu raqam sizni admin qiladi.
-
-### 2. Loyihani yuklab olish
+### O'rnatish
 ```bash
 git clone https://github.com/ismatillayeveldurbek-lab/Tarix_ilova.git
-cd Tarix_ilova/backend
-```
+cd Tarix_ilova
 
-### 3. Virtual muhit (loyiha kutubxonalari uchun alohida "quti")
-```bash
+# Mini App'ni yig'ish (bir marta, va frontend o'zgarganda)
+cd webapp
+npm install
+npm run build
+cd ..
+
+# Python qismi
+cd backend
 python -m venv .venv
-# Windows:
-.venv\Scripts\activate
-# macOS / Linux:
-source .venv/bin/activate
-
+.venv\Scripts\activate          # macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
+copy .env.example .env          # macOS/Linux: cp .env.example .env
 ```
-Muhit faol bo'lsa, terminal qatori boshida `(.venv)` yozuvi chiqadi.
-Har safar yangi terminal ochganingizda `activate` buyrug'ini qayta yozing.
+`backend/.env` faylini oching va `BOT_TOKEN` hamda `ADMIN_IDS` ni yozing. **Tokenni hech qachon kodga yozmang.**
 
-### 4. `.env` faylini yaratish
-`backend/.env.example` faylidan nusxa olib, nomini `.env` qiling:
 ```bash
-# Windows:
-copy .env.example .env
-# macOS / Linux:
-cp .env.example .env
+alembic upgrade head            # jadvallarni yaratadi
+python -m scripts.seed          # 20 ta namuna savol (sinash uchun). Faqat imtihon formati kerak bo'lsa: --faqat-format
+python -m app.main              # bot + Mini App + admin panel
 ```
-`.env` faylini istalgan matn muharririda oching va to'ldiring:
-```
-BOT_TOKEN=BotFather bergan token
-ADMIN_IDS=sizning Telegram ID raqamingiz
-```
-`.env` fayli `.gitignore` ichida ko'rsatilgan, shuning uchun GitHub'ga **yuklanmaydi**.
+Endi Telegramda botingizga `/start` yozing.
 
-### 5. Bazani yaratish va namuna savollarni yuklash
+### Mini App va admin panelni brauzerda ko'rish (Telegram'siz)
+Telegram Mini App faqat **HTTPS** manzilda ochiladi. Kompyuterda sinash uchun esa "dev rejim" bor:
 ```bash
-alembic upgrade head      # jadvallarni yaratadi (tarix.db fayli paydo bo'ladi)
-python -m scripts.seed    # 20 ta savol, "Tarixda bugun" voqealari, imtihon formati
+# backend/.env ichiga qo'shing (FAQAT kompyuterda!):
+DEV_TELEGRAM_ID=sizning_ID_raqamingiz
 ```
+Keyin `python -m app.main` ni ishga tushirib, brauzerda http://localhost:8000 ni oching.
+Admin panel http://localhost:8000/#/admin manzilida.
 
-### 6. Botni ishga tushirish
-```bash
-python -m app.bot.main
-```
-Terminalda `Bot ishga tushdi: @sizning_botingiz` chiqadi. Telegramda botingizni ochib, `/start` bosing.
-Botni to'xtatish uchun terminalda `Ctrl + C` bosing.
+> ⚠️ Serverga joylashda `DEV_TELEGRAM_ID` ni **0** qoldiring. Aks holda har kim admin bo'lib kira oladi.
 
-### 7. Testlarni ishga tushirish (ixtiyoriy)
+Frontend'ni o'zgartirayotganda `webapp` papkasida `npm run dev` ni ishga tushiring. U o'zgarishlarni darhol ko'rsatadi: http://localhost:5173.
+
+### Testlar
 ```bash
-pytest
+cd backend && pytest        # 36 ta test: bot oqimi, API, imtihon, import, takrorlash...
+cd webapp && npm test       # lotin→kirill o'girish (Python versiyasi bilan bir xil)
 ```
-Testlar botni Telegramga ulanmasdan sinaydi: o'girish, import, takrorlash tizimi va to'liq test oqimi.
 
 ---
 
-## Bot imkoniyatlari (hozircha)
+## 2. Savollarni joylash
 
-**Foydalanuvchi uchun:**
-- `/start` buyrug'i va alifbo tanlash (lotin / kirill). Keyin `/alifbo` yoki ⚙️ Sozlamalar orqali almashtirish mumkin.
-- 📝 **Test ishlash**: aralash, davr bo'yicha yoki mavzu bo'yicha, har safar 10 ta savol.
-- Har javobdan keyin ✅/❌ belgisi, to'g'ri javob va 💡 izoh ko'rsatiladi.
-- ⚠️ **Xato bor** tugmasi savoldagi xatoni adminga yuboradi.
-- 👤 **Profil**: statistika, streak va takrorlash kutayotgan savollar soni.
-
-**Admin uchun** (`ADMIN_IDS` da ko'rsatilgan ID egalari):
-- `/admin` — statistika va buyruqlar ro'yxati
-- `/reports` — yangi xato xabarlari, har birida tugmalar bor: ✅ Tuzatildi / ❌ Rad etish / 🚫 Savolni o'chirish
-- `/shablon` — import uchun namuna CSV fayl
-- 📎 **.xlsx yoki .csv faylni botga yuborsangiz**, savollar import qilinadi
-
-### Savollar fayli formati
+1. Telegramda botga **/panel** yozing (sizning ID raqamingiz `ADMIN_IDS` da bo'lishi kerak).
+2. **"🖥 Brauzerda ochish"** tugmasini bosing. Admin panel kompyuterda ochiladi, havola 12 soat amal qiladi.
+3. **Import** bo'limida **Excel shablon** ni yuklab oling va to'ldiring:
 
 | savol | a | b | c | d | togri | izoh | mavzu | davr | qiyinlik |
 |---|---|---|---|---|---|---|---|---|---|
 | Amir Temur qaysi yilda tug'ilgan? | 1320 | 1336 | 1370 | 1405 | B | 1336-yil 9-aprelda... | Amir Temur va Temuriylar | O'rta asrlar | 1 |
 
+4. Faylni panelga tashlang. Natija darhol ko'rinadi: nechta savol qo'shildi, nechtasi takroriy chiqdi, qaysi qatorlarda xato bor.
+
+Qoidalar:
 - `togri` ustuniga A, B, C yoki D yoziladi.
-- `qiyinlik` ustuniga 1, 2, 3 yoki `oson`, `o'rta`, `qiyin` yoziladi. Bo'sh qolsa, 1 deb olinadi.
+- `qiyinlik` ustuniga 1, 2, 3 yoki `oson`, `o'rta`, `qiyin` yoziladi.
 - Bazada yo'q mavzu yoki davr avtomatik yaratiladi.
-- Matni bir xil bo'lgan savol qayta qo'shilmaydi.
-- CSV faylda vergul (`,`) ham, nuqta-vergul (`;`) ham ishlaydi. Fayl UTF-8 kodlashda bo'lishi kerak.
-- **Savollar faqat lotinda yoziladi**, kirill varianti avtomatik hosil bo'ladi.
+- **Matnlarni lotinda yozing**, kirill varianti avtomatik hosil bo'ladi.
+- Matni bir xil savol qayta qo'shilmaydi, shuning uchun bitta faylni qayta yuklash xavfsiz.
+- "Tarixda bugun" uchun ustunlar: `oy | kun | yil | sarlavha | matn`.
+
+Botga `.xlsx` yoki `.csv` faylni to'g'ridan-to'g'ri yuborsangiz ham import ishlaydi.
+
+**Namuna savollarni o'chirish:** Admin panel → Savollar → savolni bosing → 🗑. Yoki bazani noldan yarating va `python -m scripts.seed --faqat-format` ni ishga tushiring.
+
+---
+
+## 3. Serverga joylash (Railway misolida)
+
+Mini App ishlashi uchun ilova internetda **HTTPS** manzilga ega bo'lishi kerak.
+
+1. https://railway.app da ro'yxatdan o'ting va **New Project → Deploy from GitHub repo** orqali shu repozitoriyni tanlang. Railway `Dockerfile` ni o'zi topadi.
+2. Loyihaga **PostgreSQL** qo'shing: **New → Database → PostgreSQL**.
+3. Ilova xizmatining **Variables** bo'limiga quyidagilarni kiriting:
+   ```
+   BOT_TOKEN=...
+   ADMIN_IDS=...
+   DATABASE_URL=${{Postgres.DATABASE_URL}}
+   CHANNEL_ID=@kanalingiz          # "Tarixda bugun" uchun. Bot kanalda admin bo'lishi kerak
+   WEBAPP_URL=https://<railway bergan domen>
+   PORT=8000
+   ```
+4. **Settings → Networking → Generate Domain** orqali domen oling, so'ng uni `WEBAPP_URL` ga yozing.
+5. Ilova qayta ishga tushganda bot avtomatik ravishda quyidagilarni qo'shadi:
+   - chat pastidagi **"📱 Ilova"** tugmasi;
+   - menyudagi **"📱 Ilovani ochish"** tugmasi.
+
+Ilova har safar ishga tushganda jadvallarni o'zi yangilaydi (`alembic upgrade head`), namuna savollarni esa **yuklamaydi**.
+Boshqa xosting (Render, VPS) uchun ham shu `Dockerfile` ishlaydi.
+Kompyuterda PostgreSQL bilan sinash uchun: `docker compose up --build`.
 
 ---
 
 ## Loyiha tuzilmasi
 
 ```
-backend/
-├── .env.example          # sozlamalar namunasi
-├── requirements.txt      # Python kutubxonalari
-├── alembic/              # baza migratsiyalari (jadval o'zgarishlari tarixi)
-├── app/
-│   ├── config.py         # .env'ni o'qiydi
-│   ├── db.py             # bazaga ulanish
-│   ├── models/           # jadvallar
-│   ├── services/         # biznes logika (bot ham, Mini App ham shundan foydalanadi)
-│   │   ├── translit.py   #   lotin → kirill
-│   │   ├── quiz.py       #   savol tanlash, javobni qayd etish
-│   │   ├── review.py     #   Leitner qutilari (spaced repetition)
-│   │   ├── streak.py     #   kunlik streak
-│   │   └── importer.py   #   Excel/CSV import
-│   └── bot/
-│       ├── main.py       # botni ishga tushirish
-│       ├── texts.py      # BARCHA matnlar shu yerda
-│       ├── keyboards.py  # tugmalar
-│       ├── middlewares.py
-│       └── handlers/     # start, quiz, report, settings, admin, menu
-├── data/                 # namuna savollar va "Tarixda bugun" voqealari
-├── scripts/seed.py       # namuna ma'lumotlarni yuklash
-└── tests/                # avtomatik testlar
+├── Dockerfile, docker-compose.yml
+├── backend/
+│   ├── .env.example            # sozlamalar namunasi
+│   ├── alembic/                # baza migratsiyalari
+│   ├── app/
+│   │   ├── main.py             # TO'LIQ ilova: bot + API + eslatmalar
+│   │   ├── config.py, db.py, security.py
+│   │   ├── models/             # jadvallar
+│   │   ├── services/           # mantiq: quiz, review, exam, rating, daily, history, importer, translit...
+│   │   ├── bot/                # Telegram bot: handlers/, texts.py, scheduler.py
+│   │   └── api/                # FastAPI: routes/app_routes.py (Mini App), routes/admin.py
+│   ├── data/                   # namuna savollar va voqealar
+│   ├── scripts/seed.py
+│   └── tests/
+└── webapp/                     # Mini App + admin panel (React + TypeScript)
+    └── src/
+        ├── pages/              # Home, Lesson, Exam, Rating, Profile, admin/*
+        ├── components/         # Mascot (ilova qahramoni), Icons, ui
+        └── lib/                # api, telegram, translit, router, store
 ```
 
-## Asosiy g'oyalar
-
-- **Matnlar faqat lotinda saqlanadi.** Kirill tanlagan foydalanuvchiga `translit.py` ko'rsatish paytida o'giradi, shuning uchun har bir savolni ikki marta yozish kerak emas.
-- **Xatolar ustida ishlash (Leitner tizimi).** Xato javob berilgan savol 0-qutiga tushadi va ertaga qayta beriladi. Har to'g'ri javobda keyingi qutiga o'tadi: oraliqlar 1 → 2 → 4 → 7 → 15 → 30 kun. Oxirgi qutidan o'tgan savol "o'zlashtirildi" deb belgilanadi.
-- **Imtihon formati sozlanadi.** `exam_configs` jadvalida JSON ko'rinishida saqlanadi: qaysi qiyinlikdan nechta savol, har birining bali va daraja chegaralari. Rasmiy spetsifikatsiya chiqqanda kodni emas, faqat sozlamani o'zgartirasiz.
-- **Kelajakka tayyor.** `users` jadvalida `premium_until` (Click/Payme obunasi) va `referred_by` (referal) maydonlari bor. Mavzular bo'yicha o'zlashtirish foizi `answers` jadvalidan hisoblanadi.
-
-## PostgreSQL'ga o'tish (serverda)
-`.env` faylida bazaning manzilini o'zgartirish kifoya:
-```
-DATABASE_URL=postgresql+asyncpg://user:parol@host:5432/tarix
-```
-So'ng `alembic upgrade head` va `python -m scripts.seed` buyruqlarini ishga tushiring.
+## Kelajak uchun tayyor
+- **Premium (Click/Payme):** `users.premium_until` maydoni bor. To'lov webhook'lari `api/routes/` ga yangi fayl sifatida qo'shiladi.
+- **Referal tizimi:** `users.referred_by` maydoni bor. `/start <kod>` deep-link orqali ishlaydi.
+- **Mavzular bo'yicha o'zlashtirish foizi:** `answers` jadvalidan hisoblanadi. Mini App'da mavzu tugunlari allaqachon progressni ko'rsatadi.
+- **AI yordamchi va o'yin rejimlari:** yangi `services/` moduli va yangi sahifa sifatida qo'shiladi.

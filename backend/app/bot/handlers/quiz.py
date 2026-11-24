@@ -14,7 +14,10 @@ from app.bot.texts import both, t
 from app.bot.utils import esc, leave_input_state
 from app.config import settings
 from app.models import Question, User
+from app.services.daily import answers_today, daily_question_ids
 from app.services.quiz import get_question, list_periods, list_topics, pick_question_ids, record_answer
+from app.services.rating import xp_for
+from app.services.review import due_question_ids
 from app.services.translit import tr
 
 router = Router(name="quiz")
@@ -57,7 +60,7 @@ async def start_quiz(
     if not ids:
         await message.answer(t("no_questions", user.alphabet))
         return
-    quiz = {"ids": ids, "idx": 0, "correct": 0, "answered": False, "source": source}
+    quiz = {"ids": ids, "idx": 0, "correct": 0, "xp": 0, "answered": False, "source": source}
     await state.update_data(quiz=quiz)
     await send_current_question(message, state, user, session)
 
@@ -75,6 +78,36 @@ async def send_current_question(
 async def open_quiz_menu(message: Message, user: User, state: FSMContext) -> None:
     await leave_input_state(state)
     await message.answer(t("choose_mode", user.alphabet), reply_markup=quiz_mode_kb(user.alphabet))
+
+
+@router.message(F.text.in_(both("btn_daily")))
+async def open_daily(message: Message, user: User, session: AsyncSession, state: FSMContext) -> None:
+    await leave_input_state(state)
+    await start_daily(message, state, user, session)
+
+
+@router.callback_query(F.data == "daily:start")
+async def daily_from_reminder(cb: CallbackQuery, user: User, session: AsyncSession, state: FSMContext) -> None:
+    await cb.answer()
+    await start_daily(cb.message, state, user, session)
+
+
+async def start_daily(message: Message, state: FSMContext, user: User, session: AsyncSession) -> None:
+    ids = await daily_question_ids(session, user.id)
+    if ids:
+        await message.answer(t("daily_start", user.alphabet, n=len(ids)))
+    await start_quiz(message, state, user, session, ids, source="daily")
+
+
+@router.message(F.text.in_(both("btn_review")))
+async def open_review(message: Message, user: User, session: AsyncSession, state: FSMContext) -> None:
+    await leave_input_state(state)
+    ids = await due_question_ids(session, user.id, settings.quiz_length)
+    if not ids:
+        await message.answer(t("review_empty", user.alphabet))
+        return
+    await message.answer(t("review_start", user.alphabet, n=len(ids)))
+    await start_quiz(message, state, user, session, ids, source="review")
 
 
 @router.callback_query(F.data.startswith("qm:"))
@@ -141,6 +174,7 @@ async def on_answer(cb: CallbackQuery, user: User, session: AsyncSession, state:
     result = await record_answer(session, user, q, chosen, source=quiz["source"])
     quiz["answered"] = True
     quiz["correct"] += int(result.is_correct)
+    quiz["xp"] = quiz.get("xp", 0) + xp_for(result.is_correct)
     quiz["had_wrong"] = quiz.get("had_wrong", False) or not result.is_correct
     await state.update_data(quiz=quiz)
 
@@ -148,6 +182,9 @@ async def on_answer(cb: CallbackQuery, user: User, session: AsyncSession, state:
     text = format_question(q, a, quiz["idx"] + 1, len(quiz["ids"])) + "\n\n" + format_result(q, a, chosen)
     await cb.message.edit_text(text, reply_markup=after_answer_kb(q.id, a, last))
     await cb.answer("✅" if result.is_correct else "❌")
+
+    if await answers_today(session, user.id) == settings.daily_question_count:
+        await cb.message.answer(t("goal_done", a, n=settings.daily_question_count, streak=user.streak_current))
 
 
 @router.callback_query(F.data.in_({"nxt", "nxt:c"}))
@@ -176,7 +213,8 @@ async def on_next(cb: CallbackQuery, user: User, session: AsyncSession, state: F
         await state.update_data(quiz=None)
         total = len(quiz["ids"])
         text = t("quiz_done", a, correct=quiz["correct"], total=total,
-                 percent=round(100 * quiz["correct"] / total), streak=user.streak_current)
+                 percent=round(100 * quiz["correct"] / total), xp=quiz.get("xp", 0),
+                 streak=user.streak_current)
         if quiz.get("had_wrong"):
             text += t("quiz_done_review_hint", a)
         await cb.message.answer(text)

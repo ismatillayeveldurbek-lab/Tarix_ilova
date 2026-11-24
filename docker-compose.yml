@@ -1,0 +1,22 @@
+# Kompyuterda PostgreSQL bilan to'liq ishga tushirish:  docker compose up --build
+# (backend/.env faylida BOT_TOKEN, ADMIN_IDS, WEBAPP_URL bo'lishi kerak)
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tarix
+      POSTGRES_PASSWORD: tarix
+      POSTGRES_DB: tarix
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+  app:
+    build: .
+    env_file: backend/.env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://tarix:tarix@db:5432/tarix
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+volumes:
+  pgdata:
