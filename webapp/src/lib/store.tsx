@@ -1,17 +1,13 @@
-// Ilova bo'ylab umumiy ma'lumot: foydalanuvchi, statistika va alifbo.
+// Ilova bo'ylab umumiy ma'lumot: foydalanuvchi va statistika.
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { api } from "./api";
-import { tr, type Alphabet } from "./translit";
 import type { Home } from "./types";
 
 type Store = {
   home: Home | null;
   error: string | null;
-  alphabet: Alphabet;
   reload: () => Promise<void>;
   setHome: (h: Home) => void;
-  /** Lotinda yozilgan matnni foydalanuvchi alifbosiga o'giradi */
-  t: (text: string) => string;
 };
 
 const Ctx = createContext<Store | null>(null);
@@ -33,10 +29,7 @@ export function StoreProvider({ children, enabled }: { children: ReactNode; enab
     if (enabled) void reload();
   }, [enabled, reload]);
 
-  const alphabet: Alphabet = home?.user.alphabet ?? "latn";
-  const t = useCallback((text: string) => tr(text, alphabet), [alphabet]);
-
-  return <Ctx.Provider value={{ home, error, alphabet, reload, setHome, t }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ home, error, reload, setHome }}>{children}</Ctx.Provider>;
 }
 
 export function useStore(): Store {

@@ -70,24 +70,21 @@ async def setup():
     return bot, fake, DP
 
 
-async def test_full_quiz_flow_in_cyrillic():
+async def test_full_quiz_flow():
     bot, fake, dp = await setup()
 
     await dp.feed_update(bot, msg("/start"))
-    assert "Alifboni tanlang" in fake.texts()[-1]
+    assert "Tarix — milliy sertifikatga tayyorgarlik" in fake.texts()[-1]
 
-    await dp.feed_update(bot, cb("alph:cyrl"))
-    assert "Тарих" in fake.texts()[-1]  # xush kelibsiz xabari kirillda
-
-    await dp.feed_update(bot, msg("📝 Тест ишлаш"))  # menyu tugmasi kirillda
-    assert fake.texts()[-1] == "Қандай тест ишлайсиз?"
+    await dp.feed_update(bot, msg("📝 Test ishlash"))
+    assert fake.texts()[-1] == "Qanday test ishlaysiz?"
 
     await dp.feed_update(bot, cb("qm:mixed"))
     correct_count = 0
     for i in range(10):
         q_markup = fake.last_markup()
         qid = int(q_markup.inline_keyboard[0][0].callback_data.split(":")[1])
-        assert f"Савол {i + 1}/10" in fake.texts()[-1]
+        assert f"Savol {i + 1}/10" in fake.texts()[-1]
         # juft savollarga xato, toq savollarga to'g'ri javob beramiz
         from app.models import Question
         async with SessionLocal() as s:
@@ -96,8 +93,8 @@ async def test_full_quiz_flow_in_cyrillic():
         correct_count += i % 2
         await dp.feed_update(bot, cb(f"ans:{qid}:{choice}"))
         edited = [r.text for r in fake.requests if isinstance(r, EditMessageText)][-1]
-        assert ("Тўғри" in edited) or ("Нотўғри" in edited)
-        assert "Изоҳ" in edited
+        assert ("To'g'ri" in edited) or ("Noto'g'ri" in edited)
+        assert "Izoh" in edited
         # A/B/C/D harflari lotinda qolishi kerak
         assert "<b>A)</b>" in edited
 
@@ -109,7 +106,7 @@ async def test_full_quiz_flow_in_cyrillic():
 
     assert "5/10" in fake.texts()[-1] and "50%" in fake.texts()[-1]
     assert "+55 XP" in fake.texts()[-1]  # 5×10 + 5×1
-    assert any("Кунлик мақсад бажарилди" in x for x in fake.texts())
+    assert any("Kunlik maqsad bajarildi" in x for x in fake.texts())
     async with SessionLocal() as s:
         assert await s.scalar(select(func.count()).select_from(Answer)) == 10
         assert await s.scalar(select(func.count()).select_from(ReviewItem)) == 5
@@ -118,7 +115,6 @@ async def test_full_quiz_flow_in_cyrillic():
 async def test_report_flow_and_admin_view():
     bot, fake, dp = await setup()
     await dp.feed_update(bot, msg("/start"))
-    await dp.feed_update(bot, cb("alph:latn"))
     await dp.feed_update(bot, msg("📝 Test ishlash"))
     await dp.feed_update(bot, cb("qm:mixed"))
     qid = int(fake.last_markup().inline_keyboard[0][0].callback_data.split(":")[1])
@@ -148,22 +144,20 @@ async def test_report_flow_and_admin_view():
         assert (await s.get(QuestionReport, report.id)).status == "fixed"
 
 
-async def test_settings_switch_and_profile():
+async def test_settings_and_profile():
     bot, fake, dp = await setup()
     await dp.feed_update(bot, msg("/start"))
-    await dp.feed_update(bot, cb("alph:latn"))
     await dp.feed_update(bot, msg("⚙️ Sozlamalar"))
-    assert "Lotin" in fake.texts()[-1] and "19:00" in fake.texts()[-1]
-    await dp.feed_update(bot, cb("set:alphabet"))
-    assert "Алифбо" in fake.texts()[-1] or "Алифбо" in fake.texts()[-2]
-    await dp.feed_update(bot, msg("👤 Профил"))
-    assert "Жами жавоблар" in fake.texts()[-1]
+    assert "19:00" in fake.texts()[-1]
+    await dp.feed_update(bot, cb("set:reminder"))
+    assert "o'chirilgan" in fake.texts()[-1]
+    await dp.feed_update(bot, msg("👤 Profil"))
+    assert "Jami javoblar" in fake.texts()[-1]
 
 
 async def test_review_daily_rating_history():
     bot, fake, dp = await setup()
     await dp.feed_update(bot, msg("/start"))
-    await dp.feed_update(bot, cb("alph:latn"))
 
     await dp.feed_update(bot, msg("🔁 Xatolar ustida ishlash"))
     assert "takrorlash kerak bo'lgan savol yo'q" in fake.texts()[-1]
@@ -231,7 +225,6 @@ async def test_bot_sends_question_image():
             q.image_url = f"/api/media/{m.id}"
         await s.commit()
     await dp.feed_update(bot, msg("/start"))
-    await dp.feed_update(bot, cb("alph:latn"))
     await dp.feed_update(bot, msg("📝 Test ishlash"))
     await dp.feed_update(bot, cb("qm:mixed"))
     assert any(isinstance(r, SendPhoto) for r in fake.requests)

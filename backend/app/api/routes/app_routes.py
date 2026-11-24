@@ -1,7 +1,4 @@
-"""Mini App uchun API (foydalanuvchi tomoni).
-
-Barcha matnlar foydalanuvchi alifbosida (lotin/kirill) qaytariladi.
-"""
+"""Mini App uchun API (foydalanuvchi tomoni)."""
 from datetime import UTC, time, timedelta
 from typing import Literal
 
@@ -23,7 +20,6 @@ from app.services.rating import user_rank, user_week_xp, weekly_leaderboard, xp_
 from app.services.review import due_count, due_question_ids
 from app.services.stats import answer_totals, learning_path
 from app.services.streak import effective_streak
-from app.services.translit import tr
 
 router = APIRouter(prefix="/api")
 Option = Literal["a", "b", "c", "d"]
@@ -33,13 +29,13 @@ def iso(dt) -> str:
     return dt.replace(tzinfo=UTC).isoformat().replace("+00:00", "Z")
 
 
-def question_out(q: Question, a: str, chosen: str | None = None) -> dict:
+def question_out(q: Question, chosen: str | None = None) -> dict:
     data = {
         "id": q.id,
-        "text": tr(q.text, a),
-        "options": [{"key": k, "text": tr(v, a)} for k, v in q.options.items()],
-        "period": tr(q.period.name, a) if q.period else None,
-        "topic": tr(q.topic.name, a) if q.topic else None,
+        "text": q.text,
+        "options": [{"key": k, "text": v} for k, v in q.options.items()],
+        "period": q.period.name if q.period else None,
+        "topic": q.topic.name if q.topic else None,
         "difficulty": q.difficulty,
         "image": q.image_url,
     }
@@ -64,19 +60,17 @@ async def week_activity(session, user: User) -> list[dict]:
 
 @router.get("/home")
 async def home(user: CurrentUser, session: Session) -> dict:
-    a = user.alphabet
     total, correct = await answer_totals(session, user.id)
     path = await learning_path(session, user)
     for p in path:
-        p["name"] = tr(p["name"], a)
+        p["name"] = p["name"]
         for t_ in p["topics"]:
-            t_["name"] = tr(t_["name"], a)
+            t_["name"] = t_["name"]
     config = await exam_service.get_active_config(session)
     events = await events_for(session)
     return {
         "user": {
-            "name": user.full_name, "alphabet": a, "is_admin": user.is_admin,
-            "alphabet_chosen": user.alphabet_chosen,
+            "name": user.full_name, "is_admin": user.is_admin,
             "streak": effective_streak(user), "streak_best": user.streak_best,
             "reminder_enabled": user.reminder_enabled,
             "reminder_time": user.reminder_time.strftime("%H:%M"),
@@ -88,26 +82,22 @@ async def home(user: CurrentUser, session: Session) -> dict:
         "due_count": await due_count(session, user.id),
         "path": path,
         "exam": {
-            "name": tr(config.name, a), "count": await exam_service.expected_questions(session, config),
+            "name": config.name, "count": await exam_service.expected_questions(session, config),
             "minutes": config.duration_minutes,
         } if config else None,
         "history_today": [
-            {"year": e.year, "title": tr(e.title, a), "text": tr(e.text, a)} for e in events
+            {"year": e.year, "title": e.title, "text": e.text} for e in events
         ],
     }
 
 
 class MeUpdate(BaseModel):
-    alphabet: Literal["latn", "cyrl"] | None = None
     reminder_enabled: bool | None = None
     reminder_time: str | None = Field(None, pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
 
 
 @router.patch("/me")
 async def update_me(body: MeUpdate, user: CurrentUser, session: Session) -> dict:
-    if body.alphabet:
-        user.alphabet = body.alphabet
-        user.alphabet_chosen = True
     if body.reminder_enabled is not None:
         user.reminder_enabled = body.reminder_enabled
     if body.reminder_time:
@@ -144,7 +134,7 @@ async def start_lesson(body: LessonIn, user: CurrentUser, session: Session) -> d
     session.add(lesson)
     await session.commit()
     return {"lesson_id": lesson.id, "source": source,
-            "questions": [question_out(q, user.alphabet) for q in questions]}
+            "questions": [question_out(q) for q in questions]}
 
 
 LESSON_TTL = timedelta(hours=24)
@@ -176,7 +166,7 @@ async def answer(body: AnswerIn, user: CurrentUser, session: Session) -> dict:
     return {
         "is_correct": result.is_correct,
         "correct_option": q.correct_option,
-        "explanation": tr(q.explanation, user.alphabet),
+        "explanation": q.explanation,
         "xp": xp_for(result.is_correct),
         "streak": user.streak_current,
         "streak_increased": result.streak_increased,
@@ -221,10 +211,10 @@ async def rating(user: CurrentUser, session: Session) -> dict:
 async def _exam_payload(session, exam: ExamSession, user: User) -> dict:
     config = await session.get(ExamConfig, exam.config_id)
     items = await exam_service.exam_items(session, exam)
-    questions = [question_out(await get_question(session, i.question_id), user.alphabet, i.chosen_option or "")
+    questions = [question_out(await get_question(session, i.question_id), i.chosen_option or "")
                  for i in items]
     return {
-        "id": exam.id, "name": tr(config.name, user.alphabet) if config else "",
+        "id": exam.id, "name": config.name if config else "",
         "deadline": iso(exam.deadline_at), "now": iso(utcnow()), "questions": questions,
     }
 
@@ -241,7 +231,7 @@ async def exam_info(user: CurrentUser, session: Session) -> dict:
     max_score = float(config.scoring.get("max_score", 0)) if config else 0
     return {
         "config": {
-            "name": tr(config.name, user.alphabet), "count": await exam_service.expected_questions(session, config),
+            "name": config.name, "count": await exam_service.expected_questions(session, config),
             "minutes": config.duration_minutes, "max_score": max_score,
             "grades": config.grades,
         } if config else None,
@@ -288,14 +278,13 @@ async def exam_finish(exam_id: int, user: CurrentUser, session: Session) -> dict
     exam = await _get_own_exam(session, exam_id, user)
     result = await exam_service.finish_exam(session, exam, user)
     await session.commit()
-    a = user.alphabet
     items = []
     for i in result.items:
         q = await get_question(session, i.question_id)
         items.append({
-            **question_out(q, a, i.chosen_option or ""),
+            **question_out(q, i.chosen_option or ""),
             "correct_option": q.correct_option, "is_correct": bool(i.is_correct),
-            "explanation": tr(q.explanation, a), "points": i.points,
+            "explanation": q.explanation, "points": i.points,
         })
     return {
         "score": result.score, "max_score": result.max_score, "percent": result.percent,

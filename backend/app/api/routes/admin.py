@@ -301,13 +301,13 @@ class BroadcastIn(BaseModel):
     audience: Literal["all", "active7", "active30"] = "all"
 
 
-async def _recipients(session, audience: str) -> list[tuple[int, str]]:
-    q = select(User.telegram_id, User.alphabet).where(User.is_blocked.is_(False))
+async def _recipients(session, audience: str) -> list[int]:
+    q = select(User.telegram_id).where(User.is_blocked.is_(False))
     if audience != "all":
         days = 7 if audience == "active7" else 30
         active = select(Answer.user_id).where(Answer.answered_at >= utcnow() - timedelta(days=days))
         q = q.where(User.id.in_(active))
-    return [(tid, a) for tid, a in (await session.execute(q)).all()]
+    return list(await session.scalars(q))
 
 
 @router.get("/broadcast")

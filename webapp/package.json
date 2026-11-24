@@ -6,8 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
-    "preview": "vite preview",
-    "test": "node --experimental-strip-types --no-warnings scripts/test-translit.mjs"
+    "preview": "vite preview"
   },
   "dependencies": {
     "react": "19.3.1",

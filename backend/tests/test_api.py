@@ -66,12 +66,11 @@ async def test_lesson_flow(seeded):
         assert home["path"] and home["path"][0]["topics"]
         assert len(home["week"]["days"]) == 7
 
-        await c.patch("/api/me", json={"alphabet": "cyrl", "reminder_time": "20:30"})
+        await c.patch("/api/me", json={"reminder_time": "20:30"})
         lesson = (await c.post("/api/lessons", json={"mode": "daily"})).json()
         assert len(lesson["questions"]) == 10
         q = lesson["questions"][0]
         assert "correct_option" not in q  # javob oldindan yuborilmaydi
-        assert any(ch in q["text"] for ch in "аоиуе")  # kirillda
 
         lid = lesson["lesson_id"]
         res = (await c.post("/api/answers", json={"lesson_id": lid, "question_id": q["id"], "option": "a"})).json()
@@ -91,7 +90,7 @@ async def test_lesson_flow(seeded):
         assert rating["rows"][0]["is_me"] and rating["me"]["rank"] == 1
 
         home = (await c.get("/api/home")).json()
-        assert home["user"]["alphabet"] == "cyrl" and home["user"]["reminder_time"] == "20:30"
+        assert home["user"]["reminder_time"] == "20:30"
         assert home["week"]["days"][-1]["active"]
 
 
@@ -256,7 +255,7 @@ async def test_broadcast(seeded):
     async with client("tma " + init_data(999)) as c:
         await c.get("/api/home")
     async with client("tma " + init_data(400)) as c:
-        await c.patch("/api/me", json={"alphabet": "cyrl"})
+        await c.get("/api/home")
 
     app = create_app()
     headers = {"Authorization": "Bearer " + make_admin_token(999)}
@@ -271,5 +270,4 @@ async def test_broadcast(seeded):
         status = (await c.get("/api/admin/broadcast")).json()["status"]
         assert status["sent"] == 2 and not status["running"]
     texts = dict(sent)
-    assert texts[400] == "Янги саволлар &lt;қўшилди&gt;!"  # kirill + HTML xavfsiz
-    assert texts[999] == "Yangi savollar &lt;qo'shildi&gt;!"
+    assert texts[400] == texts[999] == "Yangi savollar &lt;qo'shildi&gt;!"  # HTML xavfsiz

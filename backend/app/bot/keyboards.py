@@ -5,14 +5,6 @@ from aiogram.types import (
 
 from app.bot.texts import t
 from app.config import settings
-from app.services.translit import tr
-
-
-def alphabet_kb() -> InlineKeyboardMarkup:
-    return InlineKeyboardMarkup(inline_keyboard=[[
-        InlineKeyboardButton(text="Lotin", callback_data="alph:latn"),
-        InlineKeyboardButton(text="Кирилл", callback_data="alph:cyrl"),
-    ]])
 
 
 def webapp(path: str = "") -> WebAppInfo | None:
@@ -22,15 +14,15 @@ def webapp(path: str = "") -> WebAppInfo | None:
     return WebAppInfo(url=settings.webapp_url.rstrip("/") + "/" + (f"#/{path}" if path else ""))
 
 
-def main_menu(a: str) -> ReplyKeyboardMarkup:
+def main_menu() -> ReplyKeyboardMarkup:
     rows = [
-        [KeyboardButton(text=t("btn_daily", a)), KeyboardButton(text=t("btn_quiz", a))],
-        [KeyboardButton(text=t("btn_review", a)), KeyboardButton(text=t("btn_exam", a))],
-        [KeyboardButton(text=t("btn_rating", a)), KeyboardButton(text=t("btn_profile", a))],
-        [KeyboardButton(text=t("btn_settings", a))],
+        [KeyboardButton(text=t("btn_daily")), KeyboardButton(text=t("btn_quiz"))],
+        [KeyboardButton(text=t("btn_review")), KeyboardButton(text=t("btn_exam"))],
+        [KeyboardButton(text=t("btn_rating")), KeyboardButton(text=t("btn_profile"))],
+        [KeyboardButton(text=t("btn_settings"))],
     ]
     if settings.webapp_url:
-        rows[-1].append(KeyboardButton(text=t("btn_app", a), web_app=webapp()))
+        rows[-1].append(KeyboardButton(text=t("btn_app"), web_app=webapp()))
     return ReplyKeyboardMarkup(resize_keyboard=True, keyboard=rows)
 
 
@@ -41,25 +33,25 @@ def webapp_button_kb(text: str, path: str = "") -> InlineKeyboardMarkup | None:
     return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=text, web_app=info)]])
 
 
-def reminder_kb(a: str) -> InlineKeyboardMarkup:
-    rows = [[InlineKeyboardButton(text=t("btn_start_daily", a), callback_data="daily:start")]]
+def reminder_kb() -> InlineKeyboardMarkup:
+    rows = [[InlineKeyboardButton(text=t("btn_start_daily"), callback_data="daily:start")]]
     if settings.webapp_url:
-        rows.append([InlineKeyboardButton(text=t("btn_app", a), web_app=webapp())])
+        rows.append([InlineKeyboardButton(text=t("btn_app"), web_app=webapp())])
     return InlineKeyboardMarkup(inline_keyboard=rows)
 
 
-def quiz_mode_kb(a: str) -> InlineKeyboardMarkup:
+def quiz_mode_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=t("mode_mixed", a), callback_data="qm:mixed")],
-        [InlineKeyboardButton(text=t("mode_period", a), callback_data="qm:period")],
-        [InlineKeyboardButton(text=t("mode_topic", a), callback_data="qm:topic")],
+        [InlineKeyboardButton(text=t("mode_mixed"), callback_data="qm:mixed")],
+        [InlineKeyboardButton(text=t("mode_period"), callback_data="qm:period")],
+        [InlineKeyboardButton(text=t("mode_topic"), callback_data="qm:topic")],
     ])
 
 
-def list_kb(items: list[tuple[str, str]], a: str) -> InlineKeyboardMarkup:
+def list_kb(items: list[tuple[str, str]]) -> InlineKeyboardMarkup:
     """items: [(matn, callback_data), ...] — har biri alohida qatorda."""
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=tr(text, a), callback_data=data)] for text, data in items
+        [InlineKeyboardButton(text=text, callback_data=data)] for text, data in items
     ])
 
 
@@ -70,29 +62,28 @@ def answer_kb(question_id: int) -> InlineKeyboardMarkup:
     ]])
 
 
-def after_answer_kb(question_id: int, a: str, last: bool) -> InlineKeyboardMarkup:
+def after_answer_kb(question_id: int, last: bool) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=t("btn_finish" if last else "btn_next", a), callback_data="nxt")],
-        [InlineKeyboardButton(text=t("btn_report", a), callback_data=f"rep:{question_id}")],
+        [InlineKeyboardButton(text=t("btn_finish" if last else "btn_next"), callback_data="nxt")],
+        [InlineKeyboardButton(text=t("btn_report"), callback_data=f"rep:{question_id}")],
     ])
 
 
-def report_only_kb(question_id: int, a: str) -> InlineKeyboardMarkup:
+def report_only_kb(question_id: int) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=t("btn_report", a), callback_data=f"rep:{question_id}")],
+        [InlineKeyboardButton(text=t("btn_report"), callback_data=f"rep:{question_id}")],
     ])
 
 
-def continue_kb(a: str) -> InlineKeyboardMarkup:
+def continue_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=t("btn_continue", a), callback_data="nxt")],
+        [InlineKeyboardButton(text=t("btn_continue"), callback_data="nxt")],
     ])
 
 
-def settings_kb(a: str) -> InlineKeyboardMarkup:
+def settings_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(inline_keyboard=[
-        [InlineKeyboardButton(text=t("btn_switch_alphabet", a), callback_data="set:alphabet")],
-        [InlineKeyboardButton(text=t("btn_toggle_reminder", a), callback_data="set:reminder")],
+        [InlineKeyboardButton(text=t("btn_toggle_reminder"), callback_data="set:reminder")],
     ])
 
 

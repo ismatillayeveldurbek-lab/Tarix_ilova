@@ -447,23 +447,7 @@ table.grades td { padding: 6px 4px; border-bottom: 1px solid var(--border); }
 /* chap tomonga qaragan dumcha (qahramon chapda) */
 .bubble.left::before { left: -12px; top: 22px; border-width: 9px 12px 9px 0; border-color: transparent var(--border) transparent transparent; }
 .bubble.left::after { left: -8px; top: 24px; border-width: 7px 10px 7px 0; border-color: transparent var(--surface) transparent transparent; }
-/* pastga qaragan dumcha (qahramon pastda) */
-.onboarding .bubble::before { left: 50%; bottom: -12px; margin-left: -9px; border-width: 12px 9px 0; border-color: var(--border) transparent transparent; }
-.onboarding .bubble::after { left: 50%; bottom: -8px; margin-left: -7px; border-width: 10px 7px 0; border-color: var(--surface) transparent transparent; }
-.onboarding .bubble { font-weight: 800; margin-bottom: 4px; }
 
-.feature-line { padding: 10px 12px; border: 2px solid var(--border); border-radius: 16px; gap: 14px; }
-.feature-emoji { font-size: 28px; width: 44px; height: 44px; display: grid; place-items: center; background: var(--surface-2); border-radius: 12px; }
-.alphabet-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.alphabet-pick .pick {
-  display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 18px 8px;
-  border: 2px solid var(--border); border-radius: 18px; background: var(--surface); box-shadow: 0 4px 0 var(--border);
-  font-weight: 900; font-size: 16px; transition: transform .06s;
-}
-.alphabet-pick .pick .big { font-size: 38px; line-height: 1; color: var(--muted); }
-.alphabet-pick .pick:active { transform: translateY(4px); box-shadow: none; }
-.alphabet-pick .pick.on { border-color: var(--blue); background: var(--blue-soft); box-shadow: 0 4px 0 var(--blue); color: var(--blue); }
-.alphabet-pick .pick.on .big { color: var(--blue); }
 
 /* Javob animatsiyalari */
 .option.correct { animation: bounce .45s cubic-bezier(.3,1.6,.6,1); }

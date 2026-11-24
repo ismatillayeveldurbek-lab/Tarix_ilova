@@ -3,7 +3,6 @@ import { Trash } from "../../components/Icons";
 import { Segmented, Sheet, Switch, toast } from "../../components/ui";
 import { api } from "../../lib/api";
 import { confirmDialog } from "../../lib/telegram";
-import { toCyrillic } from "../../lib/translit";
 import { DIFFICULTY, type AdminPeriod, type AdminQuestion } from "./shared";
 
 type Draft = Omit<AdminQuestion, "id" | "period" | "topic">;
@@ -15,7 +14,6 @@ export function QuestionForm({ question, periods, onClose, onSaved }: {
 }) {
   const [d, setD] = useState<Draft>(question ? { ...question } : { ...EMPTY, period_id: periods[0]?.id ?? null });
   const [busy, setBusy] = useState(false);
-  const [preview, setPreview] = useState(false);
   const set = <K extends keyof Draft>(k: K, v: Draft[K]) => setD((x) => ({ ...x, [k]: v }));
   const topics = periods.find((p) => p.id === d.period_id)?.topics ?? [];
   const valid = d.text.trim() && d.a.trim() && d.b.trim() && d.c.trim() && d.d.trim();
@@ -53,7 +51,6 @@ export function QuestionForm({ question, periods, onClose, onSaved }: {
           <h2 style={{ fontSize: 22 }}>{question ? `Savol #${question.id}` : "Yangi savol"}</h2>
           <div className="row small bold">Faol <Switch on={d.is_active} onChange={(v) => set("is_active", v)} /></div>
         </div>
-        <div className="tiny muted">Matnlarni <b>lotin</b> alifbosida yozing — kirill varianti avtomatik hosil bo'ladi.</div>
         <label className="field"><span>Savol matni</span>
           <textarea className="textarea" value={d.text} onChange={(e) => set("text", e.target.value)} />
         </label>
@@ -87,14 +84,6 @@ export function QuestionForm({ question, periods, onClose, onSaved }: {
           <Segmented<number> value={d.difficulty} onChange={(v) => set("difficulty", v)}
             options={[1, 2, 3].map((n) => ({ value: n, label: `${"★".repeat(n)} ${DIFFICULTY[n]}` }))} />
         </div>
-        <button type="button" className="btn ghost" onClick={() => setPreview(!preview)}>{preview ? "Kirill ko'rinishini yopish" : "Kirillda qanday ko'rinadi?"}</button>
-        {preview && (
-          <div className="card small">
-            <b>{toCyrillic(d.text)}</b>
-            {(["a", "b", "c", "d"] as const).map((k) => <div key={k}>{k.toUpperCase()}) {toCyrillic(d[k])}</div>)}
-            {d.explanation && <div className="muted" style={{ marginTop: 6 }}>💡 {toCyrillic(d.explanation)}</div>}
-          </div>
-        )}
         <div className="row">
           {question && <button className="btn red" onClick={remove} aria-label="O'chirish"><Trash size={20} /></button>}
           <button className="btn white grow" onClick={onClose}>Bekor qilish</button>

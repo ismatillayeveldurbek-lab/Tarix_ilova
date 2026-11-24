@@ -16,7 +16,7 @@ type Mode = "daily" | "review" | "mixed" | "period" | "topic";
 const PRAISE = ["Barakalla!", "Zo'r!", "Ajoyib!", "To'ppa-to'g'ri!", "Qoyil!"];
 
 export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
-  const { t, reload } = useStore();
+  const { reload } = useStore();
   const [questions, setQuestions] = useState<Question[] | null>(null);
   const [source, setSource] = useState("practice");
   const [lessonId, setLessonId] = useState(0);
@@ -42,13 +42,13 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
       <div className="page no-nav">
         <div className="empty" style={{ minHeight: "70vh", justifyContent: "center" }}>
           <Mascot mood={mode === "review" ? "wow" : "think"} size={140} className="bob" />
-          <h2>{mode === "review" ? t("Takrorlash uchun savol yo'q!") : t("Bu bo'limda savol yo'q")}</h2>
+          <h2>{mode === "review" ? "Takrorlash uchun savol yo'q!" : "Bu bo'limda savol yo'q"}</h2>
           <p className="muted">
             {mode === "review"
-              ? t("Xato javob bergan savollaringiz shu yerga tushadi va 1, 2, 4, 7, 15, 30 kunlik oraliqlarda qayta beriladi.")
-              : t("Tez orada savollar qo'shiladi.")}
+              ? "Xato javob bergan savollaringiz shu yerga tushadi va 1, 2, 4, 7, 15, 30 kunlik oraliqlarda qayta beriladi."
+              : "Tez orada savollar qo'shiladi."}
           </p>
-          <button className="btn block" onClick={() => navigate("/", true)}>{t("Bosh sahifa")}</button>
+          <button className="btn block" onClick={() => navigate("/", true)}>Bosh sahifa</button>
         </div>
       </div>
     );
@@ -93,7 +93,7 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
 
   async function quit() {
     if (idx === 0 && !result) return navigate("/", true);
-    if (await confirmDialog(t("Darsni tugatasizmi? Berilgan javoblar saqlanadi."))) {
+    if (await confirmDialog("Darsni tugatasizmi? Berilgan javoblar saqlanadi.")) {
       void reload();
       navigate("/", true);
     }
@@ -108,28 +108,28 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
         <Confetti run={accuracy >= 70 || stats.goal} />
         <div className="result-hero">
           <Mascot mood={mood} size={150} className="pop" />
-          <h1 className="pop">{accuracy >= 70 ? t("Dars yakunlandi!") : t("Yaxshi harakat!")}</h1>
+          <h1 className="pop">{accuracy >= 70 ? "Dars yakunlandi!" : "Yaxshi harakat!"}</h1>
           <p className="muted">
-            {accuracy >= 70 ? t("Bilimingiz mustahkamlanmoqda. Shu zaylda davom eting!") : t("Xatolar ustida ishlash bo'limida ularni qayta mashq qiling.")}
+            {accuracy >= 70 ? "Bilimingiz mustahkamlanmoqda. Shu zaylda davom eting!" : "Xatolar ustida ishlash bo'limida ularni qayta mashq qiling."}
           </p>
         </div>
         <div className="tiles">
-          <div className="tile gold pop"><div className="label">{t("Jami XP")}</div><div className="value"><Star size={22} /><CountUp value={stats.xp} /></div></div>
-          <div className="tile green pop"><div className="label">{t("Aniqlik")}</div><div className="value"><CountUp value={accuracy} suffix="%" /></div></div>
-          <div className="tile blue pop"><div className="label">{t("Vaqt")}</div><div className="value">{Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}</div></div>
+          <div className="tile gold pop"><div className="label">Jami XP</div><div className="value"><Star size={22} /><CountUp value={stats.xp} /></div></div>
+          <div className="tile green pop"><div className="label">Aniqlik</div><div className="value"><CountUp value={accuracy} suffix="%" /></div></div>
+          <div className="tile blue pop"><div className="label">Vaqt</div><div className="value">{Math.floor(seconds / 60)}:{String(seconds % 60).padStart(2, "0")}</div></div>
         </div>
         <div className="spacer" />
         {(stats.goal || stats.streakUp) && (
           <div className="card colored orange feature pop">
             <div className="icon-bubble big-flame"><Flame size={40} /></div>
             <div>
-              <h3>{t(`${stats.streak} kun ketma-ket!`)}</h3>
-              <div className="small muted">{stats.goal ? t("Bugungi maqsad bajarildi 🎉") : t("Ertaga ham qaytib keling!")}</div>
+              <h3>{`${stats.streak} kun ketma-ket!`}</h3>
+              <div className="small muted">{stats.goal ? "Bugungi maqsad bajarildi 🎉" : "Ertaga ham qaytib keling!"}</div>
             </div>
           </div>
         )}
         <div className="footer-bar"><div className="inner">
-          <button className="btn block" onClick={() => navigate("/", true)}>{t("Davom etish")}</button>
+          <button className="btn block" onClick={() => navigate("/", true)}>Davom etish</button>
         </div></div>
       </div>
     );
@@ -145,7 +145,7 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
       {/* Izoh oynasi ochiq bo'lsa, pastki variantlarni surib ko'rish uchun joy qoldiramiz */}
       <div className="page no-nav" style={{ paddingTop: 4, paddingBottom: result ? "min(60vh, 420px)" : undefined }}>
         <div className="small muted bold" style={{ marginBottom: 8 }}>
-          {source === "review" ? t("Takrorlash") : source === "daily" ? t("Kunlik mashq") : t("Mashq")} · {idx + 1}/{total}
+          {source === "review" ? "Takrorlash" : source === "daily" ? "Kunlik mashq" : "Mashq"} · {idx + 1}/{total}
         </div>
         <QuestionView q={q} selected={selected} correct={result?.correct_option} locked={!!result || busy}
           onSelect={(k) => { haptic.select(); setSelected(k); }} />
@@ -153,7 +153,7 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
 
       {!result ? (
         <div className="footer-bar"><div className="inner">
-          <button className="btn block" disabled={!selected || busy} onClick={check}>{t("Tekshirish")}</button>
+          <button className="btn block" disabled={!selected || busy} onClick={check}>Tekshirish</button>
         </div></div>
       ) : (
         <div className={`feedback ${result.is_correct ? "ok" : "bad"}`}>
@@ -161,22 +161,22 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
             <div className="row between">
               <h3>
                 {result.is_correct ? <Check size={30} /> : <Cross size={30} />}
-                {result.is_correct ? t(PRAISE[idx % PRAISE.length]) : t("Noto'g'ri")}
+                {result.is_correct ? PRAISE[idx % PRAISE.length] : "Noto'g'ri"}
               </h3>
-              <button className="icon-btn" onClick={() => setReport(true)} aria-label={t("Xato bor")} title={t("Xato bor")}>
+              <button className="icon-btn" onClick={() => setReport(true)} aria-label="Xato bor" title="Xato bor">
                 <Flag size={22} />
               </button>
             </div>
             {!result.is_correct && (
               <div className="bold" style={{ color: "var(--red)" }}>
-                {t("To'g'ri javob")}: {result.correct_option.toUpperCase()}) {q.options.find((o) => o.key === result.correct_option)?.text}
+                To'g'ri javob: {result.correct_option.toUpperCase()}) {q.options.find((o) => o.key === result.correct_option)?.text}
               </div>
             )}
             {result.explanation && (
-              <div className="explain"><b>💡 {t("Izoh")}</b>{result.explanation}</div>
+              <div className="explain"><b>💡 Izoh</b>{result.explanation}</div>
             )}
             <button className={`btn block ${result.is_correct ? "" : "red"}`} onClick={next}>
-              {idx + 1 >= total ? t("Yakunlash") : t("Davom etish")}
+              {idx + 1 >= total ? "Yakunlash" : "Davom etish"}
             </button>
           </div>
         </div>

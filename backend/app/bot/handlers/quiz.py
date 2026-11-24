@@ -12,7 +12,7 @@ from aiogram.types import BufferedInputFile, CallbackQuery, Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.bot.keyboards import after_answer_kb, answer_kb, list_kb, quiz_mode_kb, report_only_kb
-from app.bot.texts import both, t
+from app.bot.texts import t
 from app.bot.utils import esc, leave_input_state
 from app.config import settings
 from app.models import Media, Question, User
@@ -21,7 +21,6 @@ from app.services.media import media_id
 from app.services.quiz import get_question, list_periods, list_topics, pick_question_ids, record_answer
 from app.services.rating import xp_for
 from app.services.review import due_question_ids
-from app.services.translit import tr
 
 router = Router(name="quiz")
 log = logging.getLogger(__name__)
@@ -29,29 +28,29 @@ log = logging.getLogger(__name__)
 
 # ---------- Ko'rinish ----------
 
-def format_question(q: Question, a: str, n: int, total: int) -> str:
+def format_question(q: Question, n: int, total: int) -> str:
     meta = " · ".join(x for x in (
         q.period.name if q.period else "", q.topic.name if q.topic else ""
     ) if x)
-    lines = [t("question_header", a, n=n, total=total) + "  " + "⭐" * q.difficulty]
+    lines = [t("question_header", n=n, total=total) + "  " + "⭐" * q.difficulty]
     if meta:
-        lines.append(f"<i>{esc(tr(meta, a))}</i>")
-    lines += ["", esc(tr(q.text, a)), ""]
-    lines += [f"<b>{letter.upper()})</b> {esc(tr(text, a))}" for letter, text in q.options.items()]
+        lines.append(f"<i>{esc(meta)}</i>")
+    lines += ["", esc(q.text), ""]
+    lines += [f"<b>{letter.upper()})</b> {esc(text)}" for letter, text in q.options.items()]
     return "\n".join(lines)
 
 
-def format_result(q: Question, a: str, chosen: str) -> str:
+def format_result(q: Question, chosen: str) -> str:
     if chosen == q.correct_option:
-        lines = [t("correct", a)]
+        lines = [t("correct")]
     else:
         lines = [
-            t("wrong", a, letter=q.correct_option.upper(),
-              answer=esc(tr(q.option(q.correct_option), a))),
-            t("your_answer", a, letter=chosen.upper()),
+            t("wrong", letter=q.correct_option.upper(),
+              answer=esc(q.option(q.correct_option))),
+            t("your_answer", letter=chosen.upper()),
         ]
     if q.explanation:
-        lines += ["", t("explanation", a, text=esc(tr(q.explanation, a)))]
+        lines += ["", t("explanation", text=esc(q.explanation))]
     return "\n".join(lines)
 
 
@@ -62,7 +61,7 @@ async def start_quiz(
     ids: list[int], source: str = "practice",
 ) -> None:
     if not ids:
-        await message.answer(t("no_questions", user.alphabet))
+        await message.answer(t("no_questions"))
         return
     quiz = {"ids": ids, "idx": 0, "correct": 0, "xp": 0, "answered": False, "source": source}
     await state.update_data(quiz=quiz)
@@ -76,7 +75,7 @@ async def send_current_question(
     q = await get_question(session, quiz["ids"][quiz["idx"]])
     if q.image_url:
         await send_image(message, session, q.image_url)
-    text = format_question(q, user.alphabet, quiz["idx"] + 1, len(quiz["ids"]))
+    text = format_question(q, quiz["idx"] + 1, len(quiz["ids"]))
     await message.answer(text, reply_markup=answer_kb(q.id))
 
 
@@ -94,13 +93,13 @@ async def send_image(message: Message, session: AsyncSession, url: str) -> None:
         log.warning("Savol rasmi yuborilmadi (%s): %s", url, e)
 
 
-@router.message(F.text.in_(both("btn_quiz")))
+@router.message(F.text.in_({t("btn_quiz")}))
 async def open_quiz_menu(message: Message, user: User, state: FSMContext) -> None:
     await leave_input_state(state)
-    await message.answer(t("choose_mode", user.alphabet), reply_markup=quiz_mode_kb(user.alphabet))
+    await message.answer(t("choose_mode"), reply_markup=quiz_mode_kb())
 
 
-@router.message(F.text.in_(both("btn_daily")))
+@router.message(F.text.in_({t("btn_daily")}))
 async def open_daily(message: Message, user: User, session: AsyncSession, state: FSMContext) -> None:
     await leave_input_state(state)
     await start_daily(message, state, user, session)
@@ -115,24 +114,23 @@ async def daily_from_reminder(cb: CallbackQuery, user: User, session: AsyncSessi
 async def start_daily(message: Message, state: FSMContext, user: User, session: AsyncSession) -> None:
     ids = await daily_question_ids(session, user.id)
     if ids:
-        await message.answer(t("daily_start", user.alphabet, n=len(ids)))
+        await message.answer(t("daily_start", n=len(ids)))
     await start_quiz(message, state, user, session, ids, source="daily")
 
 
-@router.message(F.text.in_(both("btn_review")))
+@router.message(F.text.in_({t("btn_review")}))
 async def open_review(message: Message, user: User, session: AsyncSession, state: FSMContext) -> None:
     await leave_input_state(state)
     ids = await due_question_ids(session, user.id, settings.quiz_length)
     if not ids:
-        await message.answer(t("review_empty", user.alphabet))
+        await message.answer(t("review_empty"))
         return
-    await message.answer(t("review_start", user.alphabet, n=len(ids)))
+    await message.answer(t("review_start", n=len(ids)))
     await start_quiz(message, state, user, session, ids, source="review")
 
 
 @router.callback_query(F.data.startswith("qm:"))
 async def on_mode(cb: CallbackQuery, user: User, session: AsyncSession, state: FSMContext) -> None:
-    a = user.alphabet
     mode = cb.data.split(":")[1]
     if mode == "mixed":
         await cb.message.delete()
@@ -143,7 +141,7 @@ async def on_mode(cb: CallbackQuery, user: User, session: AsyncSession, state: F
         prefix = "per" if mode == "period" else "tps"
         key = "choose_period" if mode == "period" else "choose_period_for_topic"
         await cb.message.edit_text(
-            t(key, a), reply_markup=list_kb([(p.name, f"{prefix}:{p.id}") for p in periods], a)
+            t(key), reply_markup=list_kb([(p.name, f"{prefix}:{p.id}") for p in periods])
         )
     await cb.answer()
 
@@ -161,8 +159,8 @@ async def on_period(cb: CallbackQuery, user: User, session: AsyncSession, state:
 async def on_period_for_topic(cb: CallbackQuery, user: User, session: AsyncSession) -> None:
     topics = await list_topics(session, int(cb.data.split(":")[1]))
     await cb.message.edit_text(
-        t("choose_topic", user.alphabet),
-        reply_markup=list_kb([(tp.name, f"tp:{tp.id}") for tp in topics], user.alphabet),
+        t("choose_topic"),
+        reply_markup=list_kb([(tp.name, f"tp:{tp.id}") for tp in topics]),
     )
     await cb.answer()
 
@@ -180,14 +178,13 @@ async def on_topic(cb: CallbackQuery, user: User, session: AsyncSession, state: 
 
 @router.callback_query(F.data.startswith("ans:"))
 async def on_answer(cb: CallbackQuery, user: User, session: AsyncSession, state: FSMContext) -> None:
-    a = user.alphabet
     _, qid_str, chosen = cb.data.split(":")
     qid = int(qid_str)
     quiz = (await state.get_data()).get("quiz")
 
     # Eski xabardagi tugma bosilgan yoki savolga allaqachon javob berilgan bo'lsa
     if not quiz or quiz["ids"][quiz["idx"]] != qid or quiz["answered"]:
-        await cb.answer(t("quiz_expired", a), show_alert=True)
+        await cb.answer(t("quiz_expired"), show_alert=True)
         return
 
     q = await get_question(session, qid)
@@ -199,20 +196,19 @@ async def on_answer(cb: CallbackQuery, user: User, session: AsyncSession, state:
     await state.update_data(quiz=quiz)
 
     last = quiz["idx"] + 1 >= len(quiz["ids"])
-    text = format_question(q, a, quiz["idx"] + 1, len(quiz["ids"])) + "\n\n" + format_result(q, a, chosen)
-    await cb.message.edit_text(text, reply_markup=after_answer_kb(q.id, a, last))
+    text = format_question(q, quiz["idx"] + 1, len(quiz["ids"])) + "\n\n" + format_result(q, chosen)
+    await cb.message.edit_text(text, reply_markup=after_answer_kb(q.id, last))
     await cb.answer("✅" if result.is_correct else "❌")
 
     if await answers_today(session, user.id) == settings.daily_question_count:
-        await cb.message.answer(t("goal_done", a, n=settings.daily_question_count, streak=user.streak_current))
+        await cb.message.answer(t("goal_done", n=settings.daily_question_count, streak=user.streak_current))
 
 
 @router.callback_query(F.data.in_({"nxt", "nxt:c"}))
 async def on_next(cb: CallbackQuery, user: User, session: AsyncSession, state: FSMContext) -> None:
-    a = user.alphabet
     quiz = (await state.get_data()).get("quiz")
     if not quiz:
-        await cb.answer(t("quiz_expired", a), show_alert=True)
+        await cb.answer(t("quiz_expired"), show_alert=True)
         return
     if not quiz["answered"]:  # joriy savolga hali javob berilmagan
         await cb.answer()
@@ -221,7 +217,7 @@ async def on_next(cb: CallbackQuery, user: User, session: AsyncSession, state: F
     # Oldingi xabardan "Keyingi" tugmasini olib tashlaymiz ("Xato bor" qoladi)
     try:
         if cb.data == "nxt":
-            await cb.message.edit_reply_markup(reply_markup=report_only_kb(quiz["ids"][quiz["idx"]], a))
+            await cb.message.edit_reply_markup(reply_markup=report_only_kb(quiz["ids"][quiz["idx"]]))
         else:
             await cb.message.edit_reply_markup(reply_markup=None)
     except TelegramBadRequest:
@@ -232,11 +228,11 @@ async def on_next(cb: CallbackQuery, user: User, session: AsyncSession, state: F
     if quiz["idx"] >= len(quiz["ids"]):
         await state.update_data(quiz=None)
         total = len(quiz["ids"])
-        text = t("quiz_done", a, correct=quiz["correct"], total=total,
+        text = t("quiz_done", correct=quiz["correct"], total=total,
                  percent=round(100 * quiz["correct"] / total), xp=quiz.get("xp", 0),
                  streak=user.streak_current)
         if quiz.get("had_wrong"):
-            text += t("quiz_done_review_hint", a)
+            text += t("quiz_done_review_hint")
         await cb.message.answer(text)
     else:
         await state.update_data(quiz=quiz)

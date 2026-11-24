@@ -47,9 +47,8 @@ def create_bot() -> Bot:
 async def prepare_bot(bot: Bot) -> None:
     """Buyruqlar ro'yxati va (bo'lsa) Mini App menyu tugmasini o'rnatadi."""
     await bot.set_my_commands([
-        BotCommand(command="start", description="Boshlash / Бошлаш"),
-        BotCommand(command="bugun", description="Tarixda bugun / Тарихда бугун"),
-        BotCommand(command="alifbo", description="Lotin / Кирилл"),
+        BotCommand(command="start", description="Boshlash"),
+        BotCommand(command="bugun", description="Tarixda bugun"),
     ])
     if settings.webapp_url:
         await bot.set_chat_menu_button(menu_button=MenuButtonWebApp(text="📱 Ilova", web_app=webapp()))

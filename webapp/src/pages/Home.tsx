@@ -20,7 +20,6 @@ const UNIT_COLORS: [string, string][] = [
 const OFFSETS = [0, 52, 76, 52, 0, -52, -76, -52];
 
 function Unit({ period, index }: { period: PeriodNode; index: number }) {
-  const { t } = useStore();
   const [c, cd] = UNIT_COLORS[index % UNIT_COLORS.length];
   const solved = period.topics.reduce((s, x) => s + x.solved, 0);
   const total = period.topics.reduce((s, x) => s + x.total, 0);
@@ -30,9 +29,9 @@ function Unit({ period, index }: { period: PeriodNode; index: number }) {
         onClick={() => { haptic.tap(); navigate(period.id ? `/lesson?mode=period&id=${period.id}` : "/lesson?mode=mixed"); }}>
         <div className="row between">
           <div className="grow">
-            <div className="tiny">{period.id ? t(`${index + 1}-bo'lim`) : t("Qo'shimcha")}</div>
+            <div className="tiny">{period.id ? `${index + 1}-bo'lim` : "Qo'shimcha"}</div>
             <h2>{period.name}</h2>
-            <div className="small" style={{ opacity: 0.9, marginTop: 4 }}>{t(`${solved} / ${total} savol yechilgan`)}</div>
+            <div className="small" style={{ opacity: 0.9, marginTop: 4 }}>{`${solved} / ${total} savol yechilgan`}</div>
           </div>
           <div className="icon-bubble" style={{ width: 48, height: 48, borderRadius: 14, background: "rgba(255,255,255,.22)", display: "grid", placeItems: "center" }}>
             <Book size={26} />
@@ -65,7 +64,7 @@ function Unit({ period, index }: { period: PeriodNode; index: number }) {
 }
 
 export function HomePage() {
-  const { home, t } = useStore();
+  const { home } = useStore();
   if (!home) return null;
   const { done, goal } = home.today;
   const goalDone = done >= goal;
@@ -79,13 +78,13 @@ export function HomePage() {
         <div className="row" style={{ gap: 4 }}>
           <Mascot size={92} mood={goalDone ? "wow" : "happy"} className="bob" />
           <div className="bubble left grow">
-            <div className="bold">{t(firstName ? `Salom, ${firstName}!` : "Salom!")}</div>
+            <div className="bold">{firstName ? `Salom, ${firstName}!` : "Salom!"}</div>
             <div className="small muted">
               {goalDone
-                ? t("Bugungi maqsad bajarildi! Zo'r ish 🎉")
+                ? "Bugungi maqsad bajarildi! Zo'r ish 🎉"
                 : done > 0
-                  ? t(`Yana ${goal - done} ta savol — va bugungi maqsad bajariladi!`)
-                  : t(`Bugun ${goal} ta savol yechib, ketma-ketlikni davom ettiring.`)}
+                  ? `Yana ${goal - done} ta savol — va bugungi maqsad bajariladi!`
+                  : `Bugun ${goal} ta savol yechib, ketma-ketlikni davom ettiring.`}
             </div>
           </div>
         </div>
@@ -94,9 +93,9 @@ export function HomePage() {
         <button className="card tap colored green feature" onClick={() => { haptic.tap(); navigate("/lesson?mode=daily"); }}>
           <div className="icon-bubble">{goalDone ? <span className="goal-chest">🏆</span> : <Lightning size={30} />}</div>
           <div className="grow stack" style={{ gap: 6 }}>
-            <h3>{goalDone ? t("Maqsad bajarildi!") : t("Kunlik mashq")}</h3>
+            <h3>{goalDone ? "Maqsad bajarildi!" : "Kunlik mashq"}</h3>
             <Progress value={done / goal} onColor />
-            <div className="small muted">{t(`${Math.min(done, goal)} / ${goal} savol`)}</div>
+            <div className="small muted">{`${Math.min(done, goal)} / ${goal} savol`}</div>
           </div>
           <ChevronRight />
         </button>
@@ -105,14 +104,14 @@ export function HomePage() {
           <button className={`card tap colored orange ${home.due_count ? "" : "disabled"}`}
             onClick={() => { haptic.tap(); navigate("/lesson?mode=review"); }}>
             <Refresh size={28} />
-            <h3 style={{ fontSize: 16, marginTop: 8 }}>{t("Xatolar ustida ishlash")}</h3>
-            <div className="small muted">{home.due_count ? t(`${home.due_count} ta savol kutmoqda`) : t("Hozircha yo'q")}</div>
+            <h3 style={{ fontSize: 16, marginTop: 8 }}>Xatolar ustida ishlash</h3>
+            <div className="small muted">{home.due_count ? `${home.due_count} ta savol kutmoqda` : "Hozircha yo'q"}</div>
           </button>
           <button className="card tap colored purple" onClick={() => { haptic.tap(); navigate("/exam"); }}>
             <Clipboard size={28} />
-            <h3 style={{ fontSize: 16, marginTop: 8 }}>{t("Sinov imtihoni")}</h3>
+            <h3 style={{ fontSize: 16, marginTop: 8 }}>Sinov imtihoni</h3>
             <div className="small muted">
-              {home.exam ? t(`${home.exam.count} savol · ${home.exam.minutes} daqiqa`) : t("Tez orada")}
+              {home.exam ? `${home.exam.count} savol · ${home.exam.minutes} daqiqa` : "Tez orada"}
             </div>
           </button>
         </div>
@@ -121,7 +120,7 @@ export function HomePage() {
         {home.history_today.length > 0 && (
           <div className="card" style={{ borderColor: "var(--blue)", background: "var(--blue-soft)" }}>
             <div className="row" style={{ color: "var(--blue)", marginBottom: 6 }}>
-              <Calendar size={22} /><span className="bold">{t("Tarixda bugun")}</span>
+              <Calendar size={22} /><span className="bold">Tarixda bugun</span>
             </div>
             <div className="stack" style={{ gap: 8 }}>
               {home.history_today.map((e, i) => (
@@ -135,16 +134,16 @@ export function HomePage() {
         )}
 
         {/* Mavzular yo'li */}
-        <div className="section-title" style={{ marginTop: 12 }}>{t("Mavzular")}</div>
+        <div className="section-title" style={{ marginTop: 12 }}>Mavzular</div>
         {home.path.length === 0 && (
           <div className="card empty">
             <Mascot mood="think" size={90} />
-            <div className="muted">{t("Hozircha savollar qo'shilmagan. Admin panel orqali savollar yuklang.")}</div>
+            <div className="muted">Hozircha savollar qo'shilmagan. Admin panel orqali savollar yuklang.</div>
           </div>
         )}
         {home.path.map((p, i) => <Unit key={p.id} period={p} index={i} />)}
         <button className="btn white block" onClick={() => navigate("/lesson?mode=mixed")}>
-          {t("Aralash test")}
+          Aralash test
         </button>
       </div>
     </>

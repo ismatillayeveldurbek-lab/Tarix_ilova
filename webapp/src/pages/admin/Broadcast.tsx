@@ -2,7 +2,6 @@ import { useCallback, useEffect, useState } from "react";
 import { Progress, Segmented, toast } from "../../components/ui";
 import { api } from "../../lib/api";
 import { confirmDialog } from "../../lib/telegram";
-import { toCyrillic } from "../../lib/translit";
 
 type Status = { total?: number; sent?: number; failed?: number; running?: boolean; started_at?: string };
 type Info = { status: Status; recipients: number; bot_ready: boolean };
@@ -42,7 +41,7 @@ export function BroadcastPage() {
   return (
     <div className="stack">
       <h1>E'lon yuborish</h1>
-      <p className="muted">Xabar bot orqali yuboriladi. Lotinda yozing — kirill tanlagan foydalanuvchilarga avtomatik kirillda boradi.</p>
+      <p className="muted">Xabar bot orqali barcha tanlangan foydalanuvchilarga yuboriladi.</p>
       {info && !info.bot_ready && (
         <div className="card" style={{ borderColor: "var(--red)", background: "var(--red-soft)" }}>
           Bot ishga tushmagan. Ilovani <code>python -m app.main</code> orqali ishga tushiring.
@@ -66,10 +65,6 @@ export function BroadcastPage() {
           <button className="btn block" disabled={!text.trim() || busy || !info?.bot_ready || !!s.running} onClick={send}>Yuborish</button>
         </div>
         <div className="stack">
-          <div className="card stack" style={{ gap: 8 }}>
-            <div className="bold">Ko'rinishi (kirill)</div>
-            <div style={{ whiteSpace: "pre-wrap" }} className={text ? "" : "muted"}>{text ? toCyrillic(text) : "Matn kiriting..."}</div>
-          </div>
           {s.total !== undefined && (
             <div className="card stack" style={{ gap: 8 }}>
               <div className="bold">{s.running ? "Yuborilmoqda..." : "Oxirgi e'lon"}</div>

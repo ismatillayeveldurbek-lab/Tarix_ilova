@@ -27,8 +27,8 @@ async def safe_send(bot: Bot, chat_id: int | str, text: str,
     return None
 
 
-async def broadcast(bot: Bot, recipients: list[tuple[int, str]], text: str, status: dict) -> None:
-    """Admin e'loni. recipients: [(telegram_id, alifbo)]. Matn har kimga o'z alifbosida boradi.
+async def broadcast(bot: Bot, recipients: list[int], text: str, status: dict) -> None:
+    """Admin e'loni. recipients: foydalanuvchilarning Telegram ID'lari.
 
     status lug'ati jarayonda yangilanadi — admin panel undan progressni ko'rsatadi.
     """
@@ -38,15 +38,13 @@ async def broadcast(bot: Bot, recipients: list[tuple[int, str]], text: str, stat
 
     from app.db import SessionLocal
     from app.models import User
-    from app.services.translit import tr
 
     safe = html.escape(text, quote=False)
-    texts = {"latn": safe, "cyrl": tr(safe, "cyrl")}
     blocked: list[int] = []
     status.update(total=len(recipients), sent=0, failed=0, running=True)
     try:
-        for tid, alphabet in recipients:
-            ok = await safe_send(bot, tid, texts.get(alphabet, safe))
+        for tid in recipients:
+            ok = await safe_send(bot, tid, safe)
             if ok:
                 status["sent"] += 1
             else:

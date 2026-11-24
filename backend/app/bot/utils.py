@@ -2,7 +2,7 @@ import html
 
 from aiogram.fsm.context import FSMContext
 
-from app.bot.texts import both
+from app.bot.texts import t
 
 
 def esc(text: str) -> str:
@@ -13,7 +13,7 @@ def esc(text: str) -> str:
 MENU_KEYS = (
     "btn_quiz", "btn_daily", "btn_review", "btn_exam", "btn_rating", "btn_profile", "btn_settings", "btn_app",
 )
-MENU_TEXTS: set[str] = set().union(*(both(k) for k in MENU_KEYS))
+MENU_TEXTS: set[str] = {t(k) for k in MENU_KEYS}
 
 
 async def leave_input_state(state: FSMContext) -> None:

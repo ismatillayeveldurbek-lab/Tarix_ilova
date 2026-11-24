@@ -89,7 +89,6 @@ export function ImportPage() {
             "qiyinlik — 1, 2, 3 yoki oson / o'rta / qiyin (bo'sh bo'lsa 1)",
             "rasm — ixtiyoriy, https:// havola (yoki keyin savolni tahrirlab rasm yuklang)",
             "Yangi davr va mavzular avtomatik yaratiladi",
-            "Matnlarni lotinda yozing — kirill avtomatik",
           ]} />
         <UploadBox kind="history" title="📅 Tarixda bugun"
           columns={["oy", "kun", "yil", "sarlavha", "matn"]}

@@ -2,15 +2,15 @@
 
 Tarix fanidan milliy sertifikat imtihoniga tayyorlanuvchilar uchun **Telegram bot** va **Mini App**.
 Ilova o'yin uslubida: XP ballari, ketma-ket kunlar, mavzular yo'li va haftalik reyting bor.
-Interfeys o'zbek tilida, lotin va kirill alifbolarida ishlaydi.
+Interfeys o'zbek tilida.
 
 | Bosh sahifa | Dars | Imtihon | Reyting |
 |---|---|---|---|
 | ![](docs/screenshots/home.png) | ![](docs/screenshots/lesson.png) | ![](docs/screenshots/exam.png) | ![](docs/screenshots/rating.png) |
 
-| Birinchi kirish | Rasmli savol | Natija | Qorong'i mavzu |
-|---|---|---|---|
-| ![](docs/screenshots/onboarding.png) | ![](docs/screenshots/image-question.png) | ![](docs/screenshots/result.png) | ![](docs/screenshots/dark.png) |
+| Rasmli savol | Natija | Qorong'i mavzu |
+|---|---|---|
+| ![](docs/screenshots/image-question.png) | ![](docs/screenshots/result.png) | ![](docs/screenshots/dark.png) |
 
 | Admin: import | Admin: savol tahriri | Admin: e'lon yuborish |
 |---|---|---|
@@ -27,14 +27,13 @@ Interfeys o'zbek tilida, lotin va kirill alifbolarida ishlaydi.
 - 📅 **Tarixda bugun**: har kuni 09:00 da kanalga va bot foydalanuvchilariga avtomatik post yuboriladi. Botda `/bugun` buyrug'i ham bor.
 - 🖼 **Rasmli savollar** (xarita, portret, hujjat). Rasm bosilsa, kattalashadi.
 - ⚠️ "Xato bor" tugmasi orqali savoldagi xato adminlarga darhol yetkaziladi. Bitta foydalanuvchi kuniga 20 tagacha xabar yubora oladi.
-- 🔤 Lotin va kirill o'rtasida bir tugma bilan almashish mumkin. Rim raqamlari (XIV asr, Pyotr I) o'girilmaydi.
 
 **Admin uchun (veb admin panel):**
 - 📊 Statistika: foydalanuvchilar, faollik, aniqlik, davr va qiyinlik bo'yicha savollar soni.
-- ❓ Savollar: qidirish, filtrlash, qo'shish, tahrirlash va o'chirish. Rasm yuklash mumkin, kirillda qanday ko'rinishini oldindan ko'rasiz.
+- ❓ Savollar: qidirish, filtrlash, qo'shish, tahrirlash va o'chirish. Rasm yuklash mumkin.
 - 📥 **Excel/CSV import** savollar va "Tarixda bugun" uchun. Shablonlarni paneldan yuklab olasiz.
 - 💾 **Excel'ga eksport (zaxira nusxa)** import formatida: yuklab olasiz, tahrirlaysiz va qayta yuklaysiz.
-- 📢 **E'lon yuborish**: hammaga yoki faqat faollarga. Kirill tanlaganlarga matn avtomatik kirillda boradi.
+- 📢 **E'lon yuborish**: hammaga yoki faqat faol foydalanuvchilarga.
 - 🗂 Davr va mavzular: nomlash va tartiblash.
 - 📅 "Tarixda bugun" voqealari: oy bo'yicha ko'rish, qo'shish va tahrirlash.
 - ⚠️ Xato xabarlari: savolni shu yerning o'zida tuzatish mumkin.
@@ -111,8 +110,7 @@ Frontend'ni o'zgartirayotganda `webapp` papkasida `npm run dev` ni ishga tushiri
 
 ### Testlar
 ```bash
-cd backend && pytest        # 49 ta test: bot oqimi, API, imtihon, import, takrorlash...
-cd webapp && npm test       # lotin→kirill o'girish (Python versiyasi bilan bir xil)
+cd backend && pytest      # bot oqimi, API, imtihon, import, takrorlash...
 ```
 
 ---
@@ -134,7 +132,6 @@ Qoidalar:
 - `qiyinlik` ustuniga 1, 2, 3 yoki `oson`, `o'rta`, `qiyin` yoziladi.
 - `rasm` ixtiyoriy: rasmning `https://` havolasi. Rasmni keyin savolni tahrirlab yuklash ham mumkin.
 - Bazada yo'q mavzu yoki davr avtomatik yaratiladi.
-- **Matnlarni lotinda yozing**, kirill varianti avtomatik hosil bo'ladi.
 - Matni bir xil savol qayta qo'shilmaydi, shuning uchun bitta faylni qayta yuklash xavfsiz.
 - "Tarixda bugun" uchun ustunlar: `oy | kun | yil | sarlavha | matn`.
 
@@ -181,7 +178,7 @@ Kompyuterda PostgreSQL bilan sinash uchun: `docker compose up --build`.
 │   │   ├── main.py             # TO'LIQ ilova: bot + API + eslatmalar
 │   │   ├── config.py, db.py, security.py
 │   │   ├── models/             # jadvallar
-│   │   ├── services/           # mantiq: quiz, review, exam, rating, daily, history, importer, translit...
+│   │   ├── services/           # mantiq: quiz, review, exam, rating, daily, history, importer...
 │   │   ├── bot/                # Telegram bot: handlers/, texts.py, scheduler.py
 │   │   └── api/                # FastAPI: routes/app_routes.py (Mini App), routes/admin.py
 │   ├── data/                   # namuna savollar va voqealar
@@ -191,7 +188,7 @@ Kompyuterda PostgreSQL bilan sinash uchun: `docker compose up --build`.
     └── src/
         ├── pages/              # Home, Lesson, Exam, Rating, Profile, admin/*
         ├── components/         # Mascot (ilova qahramoni), Icons, ui
-        └── lib/                # api, telegram, translit, router, store
+        └── lib/                # api, telegram, router, store
 ```
 
 ## Kelajak uchun tayyor

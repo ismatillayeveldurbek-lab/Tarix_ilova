@@ -27,14 +27,14 @@ class ReportStates(StatesGroup):
 async def ask_report(cb: CallbackQuery, user: User, state: FSMContext) -> None:
     await state.set_state(ReportStates.waiting_comment)
     await state.update_data(report_qid=int(cb.data.split(":")[1]))
-    await cb.message.answer(t("report_ask", user.alphabet))
+    await cb.message.answer(t("report_ask"))
     await cb.answer()
 
 
 @router.message(StateFilter(ReportStates.waiting_comment), Command("bekor"))
 async def cancel_report(message: Message, user: User, state: FSMContext) -> None:
     await state.set_state(None)
-    await message.answer(t("report_cancelled", user.alphabet), reply_markup=_continue(await state.get_data(), user))
+    await message.answer(t("report_cancelled"), reply_markup=_continue(await state.get_data(), user))
 
 
 @router.message(
@@ -51,10 +51,10 @@ async def save_report(
     if question is None:
         return
     if await reports_last_day(session, user.id) >= REPORTS_PER_DAY:
-        await message.answer(t("report_limit", user.alphabet), reply_markup=_continue(data, user))
+        await message.answer(t("report_limit"), reply_markup=_continue(data, user))
         return
     report = await create_report(session, user, qid, message.text)
-    await message.answer(t("report_thanks", user.alphabet), reply_markup=_continue(data, user))
+    await message.answer(t("report_thanks"), reply_markup=_continue(data, user))
 
     await notify_admins(bot, report, question, user)
 
@@ -78,4 +78,4 @@ async def notify_admins(bot: Bot, report, question, user: User) -> None:
 def _continue(data: dict, user: User):
     """Test davom etayotgan bo'lsa — 'Davom etish' tugmasini ko'rsatamiz."""
     quiz = data.get("quiz")
-    return continue_kb(user.alphabet) if quiz and quiz.get("answered") else None
+    return continue_kb() if quiz and quiz.get("answered") else None

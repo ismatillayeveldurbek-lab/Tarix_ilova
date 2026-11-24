@@ -14,9 +14,6 @@ class User(Base):
     full_name: Mapped[str] = mapped_column(String(255), default="")
     username: Mapped[str | None] = mapped_column(String(64))
 
-    alphabet: Mapped[str] = mapped_column(String(4), default="latn")  # 'latn' | 'cyrl'
-    alphabet_chosen: Mapped[bool] = mapped_column(Boolean, default=False)
-
     reminder_enabled: Mapped[bool] = mapped_column(Boolean, default=True)
     reminder_time: Mapped[time] = mapped_column(Time, default=time(19, 0))
 

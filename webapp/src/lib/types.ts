@@ -1,5 +1,3 @@
-import type { Alphabet } from "./translit";
-
 export type Option = { key: "a" | "b" | "c" | "d"; text: string };
 
 export type Question = {
@@ -19,8 +17,6 @@ export type PeriodNode = { id: number; name: string; topics: TopicNode[] };
 export type Home = {
   user: {
     name: string;
-    alphabet: Alphabet;
-    alphabet_chosen: boolean;
     is_admin: boolean;
     streak: number;
     streak_best: number;

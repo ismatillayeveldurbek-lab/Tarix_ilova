@@ -5,7 +5,6 @@ import { ToastHost } from "./components/ui";
 import { AdminApp } from "./pages/admin/AdminApp";
 import { ExamPage } from "./pages/Exam";
 import { HomePage } from "./pages/Home";
-import { Onboarding } from "./pages/Onboarding";
 import { HomeSkeleton } from "./components/Skeleton";
 import { LessonPage } from "./pages/Lesson";
 import { ProfilePage } from "./pages/Profile";
@@ -22,12 +21,11 @@ const TABS = [
 ];
 
 function BottomNav({ path }: { path: string }) {
-  const { t } = useStore();
   return (
     <nav className="bottom-nav"><div className="inner">
       {TABS.map(({ path: p, label, icon: Icon }) => (
         <button key={p} className={path === p ? "active" : ""} onClick={() => { haptic.select(); navigate(p, true); }}>
-          <span className="nav-icon"><Icon size={26} /></span>{t(label)}
+          <span className="nav-icon"><Icon size={26} /></span>{label}
         </button>
       ))}
     </div></nav>
@@ -47,21 +45,20 @@ function useBackButton(show: boolean) {
 
 function UserApp() {
   const { path, params } = useRoute();
-  const { home, error, t } = useStore();
+  const { home, error } = useStore();
   useBackButton(path !== "/");
 
   if (error && !home) {
     return (
       <div className="page empty" style={{ minHeight: "80vh", justifyContent: "center" }}>
         <Mascot mood="sad" size={130} />
-        <h2>{t("Ulanib bo'lmadi")}</h2>
+        <h2>Ulanib bo'lmadi</h2>
         <p className="muted">{error}</p>
-        <button className="btn" onClick={() => window.location.reload()}>{t("Qayta urinish")}</button>
+        <button className="btn" onClick={() => window.location.reload()}>Qayta urinish</button>
       </div>
     );
   }
   if (!home) return <HomeSkeleton />;
-  if (!home.user.alphabet_chosen && !path.startsWith("/admin")) return <Onboarding />;
 
   if (path === "/lesson") {
     const mode = (params.get("mode") || "mixed") as "daily" | "review" | "mixed" | "period" | "topic";

@@ -43,11 +43,10 @@ async def send_reminders(bot: Bot, now: datetime | None = None) -> int:
             done = await answers_today(session, user.id)
             if done >= settings.daily_question_count:
                 continue
-            a = user.alphabet
             streak = effective_streak(user, today)
             left = settings.daily_question_count - done
-            text = t("reminder", a, n=left, streak=streak) if streak else t("reminder_new", a, n=left)
-            ok = await safe_send(bot, user.telegram_id, text, reply_markup=reminder_kb(a))
+            text = t("reminder", n=left, streak=streak) if streak else t("reminder_new", n=left)
+            ok = await safe_send(bot, user.telegram_id, text, reply_markup=reminder_kb())
             if ok is False:
                 user.is_blocked = True
             sent += bool(ok)
@@ -68,14 +67,14 @@ async def post_history_today(bot: Bot) -> int:
             e.last_posted_year = today.year
         await session.commit()
 
+        post = format_post(events, today)
         if settings.channel_id:
-            await safe_send(bot, settings.channel_id, format_post(events, today, "latn"))
+            await safe_send(bot, settings.channel_id, post)
 
-        posts = {a: format_post(events, today, a) for a in ("latn", "cyrl")}
         users = list(await session.scalars(select(User).where(User.is_blocked.is_(False))))
         sent = 0
         for user in users:
-            ok = await safe_send(bot, user.telegram_id, posts[user.alphabet])
+            ok = await safe_send(bot, user.telegram_id, post)
             if ok is False:
                 user.is_blocked = True
             sent += bool(ok)

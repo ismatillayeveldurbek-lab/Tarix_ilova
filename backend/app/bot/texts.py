@@ -1,13 +1,10 @@
-"""Botning barcha matnlari shu yerda, LOTIN yozuvida.
+"""Botning barcha matnlari shu yerda.
 
-Kirill tanlagan foydalanuvchiga `t()` funksiyasi avtomatik o'giradi.
 Matnni o'zgartirmoqchi bo'lsangiz, faqat shu faylni tahrirlang.
 """
-from app.services.translit import tr
 
 TEXTS: dict[str, str] = {
     # Boshlash
-    "choose_alphabet": "Assalomu alaykum! Alifboni tanlang:\nАссалому алайкум! Алифбони танланг:",
     "welcome": (
         "<b>Tarix — milliy sertifikatga tayyorgarlik</b> 📜\n\n"
         "Bu yerda siz:\n"
@@ -17,7 +14,6 @@ TEXTS: dict[str, str] = {
         "• sinov imtihonini topshirasiz.\n\n"
         "Quyidagi menyudan boshlang 👇"
     ),
-    "alphabet_saved": "✅ Alifbo saqlandi.",
 
     # Menyu tugmalari
     "btn_quiz": "📝 Test ishlash",
@@ -105,12 +101,10 @@ TEXTS: dict[str, str] = {
     # Sozlamalar
     "settings": (
         "⚙️ <b>Sozlamalar</b>\n\n"
-        "Alifbo: <b>{alph}</b>\n"
         "Kunlik eslatma: <b>{reminder}</b>"
     ),
     "on": "yoqilgan ({time})",
     "off": "o'chirilgan",
-    "btn_switch_alphabet": "🔤 Alifboni almashtirish",
     "btn_toggle_reminder": "🔔 Eslatmani yoqish/o'chirish",
 
     # Profil
@@ -124,16 +118,6 @@ TEXTS: dict[str, str] = {
 }
 
 
-def t(key: str, alphabet: str = "latn", **kwargs) -> str:
-    """Matnni alifboga o'giradi, so'ng {o'zgaruvchilarni} qo'yadi.
-
-    Diqqat: kwargs qiymatlari o'girilmaydi (masalan, A/B/C/D harflari lotinda qolishi kerak).
-    Savol matni kabi dinamik qiymatlarni chaqiruvchi o'zi `tr()` orqali o'giradi.
-    """
-    text = tr(TEXTS[key], alphabet)
-    return text.format(**kwargs) if kwargs else text
-
-
-def both(key: str) -> set[str]:
-    """Tugma matnining ikkala alifbodagi ko'rinishi (filtrlar uchun)."""
-    return {t(key, "latn"), t(key, "cyrl")}
+def t(key: str, **kwargs) -> str:
+    """Matnni oladi va {o'zgaruvchilarni} qo'yadi."""
+    return TEXTS[key].format(**kwargs) if kwargs else TEXTS[key]
