@@ -40,7 +40,7 @@ function Unit({ period, index }: { period: PeriodNode; index: number }) {
       </button>
       <div className="path">
         {period.topics.map((topic, i) => {
-          const pct = topic.total ? topic.solved / topic.total : 0;
+          const pct = topic.percent / 100;
           const done = topic.total > 0 && topic.solved >= topic.total;
           return (
             <div key={topic.id} className="path-node" style={{ transform: `translateX(${OFFSETS[i % OFFSETS.length]}px)` }}>
@@ -115,6 +115,28 @@ export function HomePage() {
             </div>
           </button>
         </div>
+
+        {/* Tavsiya: zaif yoki yangi mavzu */}
+        {home.recommendation && (
+          <button className="card tap row" style={{ borderColor: home.recommendation.kind === "weak" ? "var(--red)" : "var(--blue)" }}
+            onClick={() => { haptic.tap(); navigate(`/lesson?mode=topic&id=${home.recommendation!.id}`); }}>
+            <span className="rec-icon" style={{ background: home.recommendation.kind === "weak" ? "var(--red-soft)" : "var(--blue-soft)" }}>
+              {home.recommendation.kind === "weak" ? "🎯" : "🚀"}
+            </span>
+            <div className="grow" style={{ minWidth: 0 }}>
+              <div className="tiny bold muted" style={{ textTransform: "uppercase", letterSpacing: ".6px" }}>
+                {home.recommendation.kind === "weak" ? "Mustahkamlash kerak" : "Yangi mavzu"}
+              </div>
+              <div className="bold ellipsis">{home.recommendation.name}</div>
+              <div className="small muted">
+                {home.recommendation.kind === "weak"
+                  ? `Aniqlik ${home.recommendation.accuracy}% — keling, mashq qilamiz`
+                  : `${home.recommendation.total} ta savol sizni kutmoqda`}
+              </div>
+            </div>
+            <ChevronRight />
+          </button>
+        )}
 
         {/* Tarixda bugun */}
         {home.history_today.length > 0 && (

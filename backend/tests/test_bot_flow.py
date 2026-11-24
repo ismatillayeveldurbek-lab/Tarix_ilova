@@ -229,3 +229,25 @@ async def test_bot_sends_question_image():
     await dp.feed_update(bot, cb("qm:mixed"))
     assert any(isinstance(r, SendPhoto) for r in fake.requests)
     assert "Savol 1/10" in fake.texts()[-1]  # rasmdan keyin savol ham keldi
+
+
+async def test_profile_shows_weak_topics():
+    from datetime import timedelta
+    from app.db import utcnow
+    from app.models import Answer, Question, User
+    bot, fake, dp = await setup()
+    await dp.feed_update(bot, msg("/start"))
+    async with SessionLocal() as s:
+        user = await s.scalar(select(User).where(User.telegram_id == 100))
+        q = await s.scalar(select(Question).order_by(Question.id))
+        for i in range(3):
+            s.add(Answer(user_id=user.id, question_id=q.id, chosen_option="a", is_correct=False,
+                         answered_at=utcnow() - timedelta(minutes=i)))
+        await s.commit()
+    await dp.feed_update(bot, msg("👤 Profil"))
+    sent = [r for r in fake.requests if isinstance(r, SendMessage)][-1]
+    assert "Zaif mavzular" in sent.text and "O'zlashtirish" in sent.text.replace("o'zlashtirish", "O'zlashtirish")
+    button = sent.reply_markup.inline_keyboard[0][0]
+    assert button.callback_data.startswith("tp:") and "0%" in button.text
+    await dp.feed_update(bot, cb(button.callback_data))  # tugma mavzu testini boshlaydi
+    assert "Savol 1/" in fake.texts()[-1]

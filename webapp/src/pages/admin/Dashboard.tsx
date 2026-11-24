@@ -8,6 +8,7 @@ type Stats = {
   users: number; active_week: number; questions: number; questions_inactive: number;
   answers_today: number; answers_total: number; accuracy: number; reports_new: number; history_events: number;
   by_difficulty: Record<string, number>; by_period: { name: string; count: number }[];
+  hard_topics: { name: string; answers: number; accuracy: number }[];
 };
 
 export function Dashboard() {
@@ -58,6 +59,21 @@ export function Dashboard() {
               </div>
             ))}
           </div>
+          {s.hard_topics.length > 0 && (
+            <>
+              <div className="bold" style={{ marginTop: 8 }}>Eng qiyin mavzular (o'quvchilar aniqligi)</div>
+              <div className="bars">
+                {s.hard_topics.map((h) => (
+                  <div key={h.name} className="bar-row">
+                    <span>{h.name}</span>
+                    <Progress value={h.accuracy / 100} thin color={h.accuracy < 50 ? "var(--red)" : "var(--gold)"} />
+                    <span className="bold">{h.accuracy}%</span>
+                  </div>
+                ))}
+              </div>
+              <div className="small muted">Kamida 10 ta javob berilgan mavzular. Bu mavzularga izoh va savollarni ko'paytirish foydali.</div>
+            </>
+          )}
           <div className="small muted">O'chirilgan savollar: {s.questions_inactive} · "Tarixda bugun" voqealari: {s.history_events} · Jami javoblar: {s.answers_total}</div>
         </div>
       </div>

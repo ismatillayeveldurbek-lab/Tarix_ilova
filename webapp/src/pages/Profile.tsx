@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Bell, ChevronRight, Shield } from "../components/Icons";
 import { WeekStrip } from "../components/WeekStrip";
-import { Avatar, Switch, toast } from "../components/ui";
+import { Avatar, levelColor, Ring, Switch, toast } from "../components/ui";
 import { api } from "../lib/api";
 import { navigate } from "../lib/router";
 import { useStore } from "../lib/store";
@@ -43,6 +43,14 @@ export function ProfilePage() {
         <div className="stat-card" style={{ "--c": "var(--blue)" } as React.CSSProperties}><div className="v">{home.totals.answers}</div><div className="l">Jami javoblar</div></div>
         <div className="stat-card" style={{ "--c": "var(--green)" } as React.CSSProperties}><div className="v">{accuracy}%</div><div className="l">Aniqlik</div></div>
       </div>
+
+      <button className="card tap row" onClick={() => navigate("/progress")}>
+        <Ring value={home.mastery / 100} size={64} stroke={7} color={levelColor(home.mastery)}>
+          <span className="bold">{home.mastery}%</span>
+        </Ring>
+        <div className="grow"><div className="bold">O'zlashtirish</div><div className="small muted">Mavzular bo'yicha natijalar va zaif mavzular</div></div>
+        <ChevronRight />
+      </button>
 
       <div className="card"><div className="bold" style={{ marginBottom: 10 }}>Shu hafta</div><WeekStrip /></div>
 

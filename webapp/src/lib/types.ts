@@ -11,7 +11,7 @@ export type Question = {
   chosen?: string;
 };
 
-export type TopicNode = { id: number; name: string; total: number; solved: number };
+export type TopicNode = { id: number; name: string; total: number; solved: number; percent: number };
 export type PeriodNode = { id: number; name: string; topics: TopicNode[] };
 
 export type Home = {
@@ -30,6 +30,8 @@ export type Home = {
   path: PeriodNode[];
   exam: { name: string; count: number; minutes: number } | null;
   history_today: { year: number | null; title: string; text: string }[];
+  mastery: number;
+  recommendation: Recommendation | null;
 };
 
 export type AnswerResult = {
@@ -42,4 +44,17 @@ export type AnswerResult = {
   today_done: number;
   goal: number;
   goal_reached: boolean;
+};
+
+/** Mavzu bo'yicha natija */
+export type TopicProgress = {
+  id: number; name: string; period: string | null; total: number; mastered: number; answered: number;
+  attempts: number; percent: number; accuracy: number | null;
+};
+export type Recommendation = TopicProgress & { kind: "weak" | "new" };
+export type Progress = {
+  overall: number; mastered: number; total: number;
+  periods: { id: number; name: string; percent: number; total: number; topics: TopicProgress[] }[];
+  weak: TopicProgress[];
+  recommendation: Recommendation | null;
 };

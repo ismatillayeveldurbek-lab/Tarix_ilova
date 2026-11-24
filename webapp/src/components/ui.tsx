@@ -103,3 +103,6 @@ export function Stars({ n }: { n: number }) {
     </span>
   );
 }
+
+/** Foizga qarab rang: qizil < 40 ≤ oltin < 80 ≤ yashil */
+export const levelColor = (p: number) => (p >= 80 ? "var(--green)" : p >= 40 ? "var(--gold)" : "var(--red)");

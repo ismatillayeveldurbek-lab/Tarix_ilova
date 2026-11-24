@@ -44,7 +44,16 @@ async def stats(_: AdminUser, session: Session) -> dict:
     accuracy = (await session.execute(
         select(func.count(), func.coalesce(func.sum(cast(Answer.is_correct, Integer)), 0))
     )).one()
+    # Foydalanuvchilar eng ko'p xato qiladigan mavzular (kamida 10 ta javob)
+    ok_sum = func.sum(cast(Answer.is_correct, Integer))
+    hard = (await session.execute(
+        select(Topic.name, func.count(), ok_sum)
+        .join(Question, Question.id == Answer.question_id).join(Topic, Topic.id == Question.topic_id)
+        .group_by(Topic.id, Topic.name).having(func.count() >= 10)
+        .order_by((ok_sum * 1.0 / func.count()).asc()).limit(5)
+    )).all()
     return {
+        "hard_topics": [{"name": n, "answers": c, "accuracy": round(100 * (k or 0) / c)} for n, c, k in hard],
         "users": await count(User),
         "active_week": await session.scalar(
             select(func.count(distinct(Answer.user_id))).where(Answer.answered_at >= week_ago)),

@@ -129,3 +129,52 @@ async def test_orphan_topics_in_path(session):
     user = await get_or_create_user(session, 3, "T")
     path = await learning_path(session, user)
     assert path[-1]["id"] == 0 and path[-1]["topics"][0]["name"] == "Umumiy mavzu"
+
+
+async def test_topic_progress_and_weak(session):
+    from app.models import Answer
+    from app.services.progress import overall_percent, recommendation, topic_progress, weak_topics
+
+    await load_sample(session)
+    user = await get_or_create_user(session, 50, "T")
+    qs = list(await session.scalars(select(Question).order_by(Question.id)))
+    by_topic: dict = {}
+    for q in qs:
+        by_topic.setdefault(q.topic_id, []).append(q)
+    temur = max(by_topic.values(), key=len)  # "Amir Temur va Temuriylar" — 5 ta savol
+    t0 = utcnow() - timedelta(hours=1)
+
+    def add(q, ok, minutes):
+        session.add(Answer(user_id=user.id, question_id=q.id, chosen_option="a", is_correct=ok,
+                           answered_at=t0 + timedelta(minutes=minutes)))
+    # 1-savol: avval xato, keyin to'g'ri -> o'zlashtirilgan
+    add(temur[0], False, 1); add(temur[0], True, 2)
+    # 2-savol: avval to'g'ri, keyin xato -> o'zlashtirilmagan
+    add(temur[1], True, 3); add(temur[1], False, 4)
+    # 3-savol: xato
+    add(temur[2], False, 5)
+    await session.flush()
+
+    items = await topic_progress(session, user.id)
+    t = next(i for i in items if i.id == temur[0].topic_id)
+    assert (t.total, t.answered, t.mastered, t.attempts, t.correct) == (5, 3, 1, 5, 2)
+    assert t.percent == 20 and t.accuracy == 40
+    assert [w.id for w in weak_topics(items)] == [t.id]
+    rec = recommendation(items)
+    assert rec["kind"] == "weak" and rec["id"] == t.id
+    assert overall_percent(items) == 5  # 1 / 20
+
+    # 60 kundan eski javoblar aniqlikka kirmaydi (lekin o'zlashtirishga kiradi)
+    for a in await session.scalars(select(Answer).where(Answer.user_id == user.id)):
+        a.answered_at = utcnow() - timedelta(days=90)
+    await session.flush()
+    t = next(i for i in await topic_progress(session, user.id) if i.id == temur[0].topic_id)
+    assert t.attempts == 0 and t.mastered == 1 and t.accuracy is None
+
+
+async def test_recommendation_new_topic(session):
+    from app.services.progress import recommendation, topic_progress
+    await load_sample(session)
+    user = await get_or_create_user(session, 51, "T")
+    rec = recommendation(await topic_progress(session, user.id))
+    assert rec["kind"] == "new" and rec["answered"] == 0

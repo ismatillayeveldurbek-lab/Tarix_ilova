@@ -16,6 +16,7 @@ from app.services.history import events_for
 from app.services.quiz import (
     REPORTS_PER_DAY, create_report, get_question, pick_question_ids, record_answer, reports_last_day,
 )
+from app.services.progress import group_by_period, overall_percent, recommendation, topic_progress, weak_topics
 from app.services.rating import user_rank, user_week_xp, weekly_leaderboard, xp_for
 from app.services.review import due_count, due_question_ids
 from app.services.stats import answer_totals, learning_path
@@ -62,6 +63,7 @@ async def week_activity(session, user: User) -> list[dict]:
 async def home(user: CurrentUser, session: Session) -> dict:
     total, correct = await answer_totals(session, user.id)
     path = await learning_path(session, user)
+    progress = await topic_progress(session, user.id)
     for p in path:
         p["name"] = p["name"]
         for t_ in p["topics"]:
@@ -85,6 +87,8 @@ async def home(user: CurrentUser, session: Session) -> dict:
             "name": config.name, "count": await exam_service.expected_questions(session, config),
             "minutes": config.duration_minutes,
         } if config else None,
+        "recommendation": recommendation(progress),
+        "mastery": overall_percent(progress),
         "history_today": [
             {"year": e.year, "title": e.title, "text": e.text} for e in events
         ],
@@ -106,6 +110,21 @@ async def update_me(body: MeUpdate, user: CurrentUser, session: Session) -> dict
         user.last_reminder_date = None
     await session.commit()
     return {"ok": True}
+
+
+# ---------- O'zlashtirish ----------
+
+@router.get("/progress")
+async def progress_view(user: CurrentUser, session: Session) -> dict:
+    items = await topic_progress(session, user.id)
+    return {
+        "overall": overall_percent(items),
+        "mastered": sum(i.mastered for i in items),
+        "total": sum(i.total for i in items),
+        "periods": group_by_period(items),
+        "weak": [i.as_dict() for i in weak_topics(items)],
+        "recommendation": recommendation(items),
+    }
 
 
 # ---------- Darslar (mashq) ----------

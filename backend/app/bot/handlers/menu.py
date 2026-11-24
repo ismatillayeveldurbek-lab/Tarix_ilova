@@ -5,13 +5,14 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.bot.keyboards import webapp_button_kb
+from app.bot.keyboards import list_kb, webapp_button_kb
 from app.bot.texts import t
 from app.bot.utils import esc, leave_input_state
 from app.db import local_today
 from app.models import User
 from app.services.exam import expected_questions, get_active_config
 from app.services.history import events_for, format_post
+from app.services.progress import overall_percent, recommendation, topic_progress, weak_topics
 from app.services.rating import user_rank, user_week_xp, weekly_leaderboard
 from app.services.review import due_count
 from app.services.stats import answer_totals
@@ -21,19 +22,31 @@ router = Router(name="menu")
 MEDALS = {1: "🥇", 2: "🥈", 3: "🥉"}
 
 
-@router.message(F.text.in_({t("btn_profile")}))
+@router.message(F.text == t("btn_profile"))
 async def profile(message: Message, user: User, session: AsyncSession, state: FSMContext) -> None:
     await leave_input_state(state)
     total, correct = await answer_totals(session, user.id)
-    await message.answer(t(
+    items = await topic_progress(session, user.id)
+    text = t(
         "profile", total=total, correct=correct,
         percent=round(100 * correct / total) if total else 0,
         streak=effective_streak(user), best=user.streak_best,
-        due=await due_count(session, user.id),
-    ))
+        due=await due_count(session, user.id), mastery=overall_percent(items),
+    )
+    weak = weak_topics(items)
+    kb = None
+    if weak:
+        text += t("weak_title")
+        kb = list_kb([(f"▶️ {w.name} — {w.accuracy}%", f"tp:{w.id}") for w in weak])
+    else:
+        rec = recommendation(items)
+        if rec:
+            text += t("new_topic_hint", name=esc(rec["name"]))
+            kb = list_kb([(f"▶️ {rec['name']}", f"tp:{rec['id']}")])
+    await message.answer(text, reply_markup=kb)
 
 
-@router.message(F.text.in_({t("btn_rating")}))
+@router.message(F.text == t("btn_rating"))
 async def rating(message: Message, user: User, session: AsyncSession, state: FSMContext) -> None:
     await leave_input_state(state)
     rows = await weekly_leaderboard(session, limit=10)
@@ -53,7 +66,7 @@ async def rating(message: Message, user: User, session: AsyncSession, state: FSM
     await message.answer("\n".join(lines))
 
 
-@router.message(F.text.in_({t("btn_exam")}))
+@router.message(F.text == t("btn_exam"))
 async def exam(message: Message, user: User, session: AsyncSession, state: FSMContext) -> None:
     await leave_input_state(state)
     config = await get_active_config(session)

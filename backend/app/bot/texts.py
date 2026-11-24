@@ -113,8 +113,11 @@ TEXTS: dict[str, str] = {
         "Jami javoblar: <b>{total}</b>\n"
         "To'g'ri javoblar: <b>{correct}</b> ({percent}%)\n"
         "🔥 Ketma-ket: <b>{streak}</b> kun (rekord: {best})\n"
-        "🔁 Takrorlash kutayotgan savollar: <b>{due}</b>"
+        "🔁 Takrorlash kutayotgan savollar: <b>{due}</b>\n"
+        "📈 Umumiy o'zlashtirish: <b>{mastery}%</b>"
     ),
+    "weak_title": "\n\n⚠️ <b>Zaif mavzular</b> — mashq qilish uchun bosing:",
+    "new_topic_hint": "\n\n💡 Tavsiya: <b>{name}</b> mavzusini boshlang.",
 }
 
 

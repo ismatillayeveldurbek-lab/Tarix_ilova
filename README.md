@@ -8,9 +8,9 @@ Interfeys o'zbek tilida.
 |---|---|---|---|
 | ![](docs/screenshots/home.png) | ![](docs/screenshots/lesson.png) | ![](docs/screenshots/exam.png) | ![](docs/screenshots/rating.png) |
 
-| Rasmli savol | Natija | Qorong'i mavzu |
-|---|---|---|
-| ![](docs/screenshots/image-question.png) | ![](docs/screenshots/result.png) | ![](docs/screenshots/dark.png) |
+| O'zlashtirish | Rasmli savol | Natija | Qorong'i mavzu |
+|---|---|---|---|
+| ![](docs/screenshots/progress.png) | ![](docs/screenshots/image-question.png) | ![](docs/screenshots/result.png) | ![](docs/screenshots/dark.png) |
 
 | Admin: import | Admin: savol tahriri | Admin: e'lon yuborish |
 |---|---|---|
@@ -23,13 +23,14 @@ Interfeys o'zbek tilida.
 - 🔥 **Kunlik 10 savol**: avval takrorlash vaqti kelgan savollar, keyin yangilari. Ketma-ket kunlar hisoblanadi, har kuni 19:00 da eslatma keladi.
 - 🔁 **Xatolar ustida ishlash** (oraliqli takrorlash): xato savol 1, 2, 4, 7, 15 va 30 kundan keyin qayta beriladi.
 - 🎯 **Sinov imtihoni**: taymer bilan o'tadi. Natijada taxminiy ball, daraja va har bir savol tahlili ko'rsatiladi.
+- 📈 **Mavzular bo'yicha o'zlashtirish foizi**: har bir mavzu va davr uchun alohida. Aniqligi 70% dan past mavzular "zaif" deb belgilanadi va mashq qilish tavsiya etiladi. Bu bosh sahifada, "O'zlashtirish" sahifasida va bot profilida ko'rinadi.
 - 🏆 **Haftalik reyting**: to'g'ri javob uchun 10 XP, noto'g'ri javob uchun 1 XP beriladi.
 - 📅 **Tarixda bugun**: har kuni 09:00 da kanalga va bot foydalanuvchilariga avtomatik post yuboriladi. Botda `/bugun` buyrug'i ham bor.
 - 🖼 **Rasmli savollar** (xarita, portret, hujjat). Rasm bosilsa, kattalashadi.
 - ⚠️ "Xato bor" tugmasi orqali savoldagi xato adminlarga darhol yetkaziladi. Bitta foydalanuvchi kuniga 20 tagacha xabar yubora oladi.
 
 **Admin uchun (veb admin panel):**
-- 📊 Statistika: foydalanuvchilar, faollik, aniqlik, davr va qiyinlik bo'yicha savollar soni.
+- 📊 Statistika: foydalanuvchilar, faollik, aniqlik, davr va qiyinlik bo'yicha savollar soni. **O'quvchilar eng ko'p xato qiladigan mavzular** ham ko'rsatiladi.
 - ❓ Savollar: qidirish, filtrlash, qo'shish, tahrirlash va o'chirish. Rasm yuklash mumkin.
 - 📥 **Excel/CSV import** savollar va "Tarixda bugun" uchun. Shablonlarni paneldan yuklab olasiz.
 - 💾 **Excel'ga eksport (zaxira nusxa)** import formatida: yuklab olasiz, tahrirlaysiz va qayta yuklaysiz.
@@ -194,5 +195,4 @@ Kompyuterda PostgreSQL bilan sinash uchun: `docker compose up --build`.
 ## Kelajak uchun tayyor
 - **Premium (Click/Payme):** `users.premium_until` maydoni bor. To'lov webhook'lari `api/routes/` ga yangi fayl sifatida qo'shiladi.
 - **Referal tizimi:** `users.referred_by` maydoni bor. `/start <kod>` deep-link orqali ishlaydi.
-- **Mavzular bo'yicha o'zlashtirish foizi:** `answers` jadvalidan hisoblanadi. Mini App'da mavzu tugunlari allaqachon progressni ko'rsatadi.
 - **AI yordamchi va o'yin rejimlari:** yangi `services/` moduli va yangi sahifa sifatida qo'shiladi.

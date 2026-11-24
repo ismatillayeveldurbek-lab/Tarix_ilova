@@ -271,3 +271,17 @@ async def test_broadcast(seeded):
         assert status["sent"] == 2 and not status["running"]
     texts = dict(sent)
     assert texts[400] == texts[999] == "Yangi savollar &lt;qo'shildi&gt;!"  # HTML xavfsiz
+
+
+async def test_progress_api(seeded):
+    async with client("tma " + init_data(500)) as c:
+        p = (await c.get("/api/progress")).json()
+        assert p["overall"] == 0 and p["total"] == 20 and p["weak"] == []
+        assert p["recommendation"]["kind"] == "new"
+        assert sum(len(g["topics"]) for g in p["periods"]) == 12  # namuna savollardagi mavzular
+        # bitta mavzuda 3 ta xato -> zaif mavzu
+        lesson = (await c.post("/api/lessons", json={"mode": "topic", "id": p["recommendation"]["id"]})).json()
+        for q in lesson["questions"]:
+            res = (await c.post("/api/answers", json={"lesson_id": lesson["lesson_id"], "question_id": q["id"], "option": "a"})).json()
+        home = (await c.get("/api/home")).json()
+        assert "mastery" in home and "recommendation" in home

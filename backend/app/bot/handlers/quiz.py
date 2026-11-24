@@ -93,13 +93,13 @@ async def send_image(message: Message, session: AsyncSession, url: str) -> None:
         log.warning("Savol rasmi yuborilmadi (%s): %s", url, e)
 
 
-@router.message(F.text.in_({t("btn_quiz")}))
+@router.message(F.text == t("btn_quiz"))
 async def open_quiz_menu(message: Message, user: User, state: FSMContext) -> None:
     await leave_input_state(state)
     await message.answer(t("choose_mode"), reply_markup=quiz_mode_kb())
 
 
-@router.message(F.text.in_({t("btn_daily")}))
+@router.message(F.text == t("btn_daily"))
 async def open_daily(message: Message, user: User, session: AsyncSession, state: FSMContext) -> None:
     await leave_input_state(state)
     await start_daily(message, state, user, session)
@@ -118,7 +118,7 @@ async def start_daily(message: Message, state: FSMContext, user: User, session: 
     await start_quiz(message, state, user, session, ids, source="daily")
 
 
-@router.message(F.text.in_({t("btn_review")}))
+@router.message(F.text == t("btn_review"))
 async def open_review(message: Message, user: User, session: AsyncSession, state: FSMContext) -> None:
     await leave_input_state(state)
     ids = await due_question_ids(session, user.id, settings.quiz_length)
