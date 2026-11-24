@@ -1,0 +1,19 @@
+# Maxfiy sozlamalar — hech qachon GitHub'ga yuklanmaydi
+.env
+*.env
+!.env.example
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# Mahalliy baza
+*.db
+*.sqlite3
+
+# Node (Mini App)
+node_modules/
+dist/
