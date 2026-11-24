@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Loading, Progress, toast } from "../../components/ui";
+import { levelColor, Loading, Progress, toast } from "../../components/ui";
 import { api } from "../../lib/api";
 import { navigate } from "../../lib/router";
 import { DIFFICULTY } from "./shared";
@@ -18,24 +18,24 @@ export function Dashboard() {
   if (!s) return <Loading />;
   const maxPeriod = Math.max(1, ...s.by_period.map((p) => p.count));
   const tiles: [string, number | string, string][] = [
-    ["Foydalanuvchilar", s.users, "var(--blue)"],
-    ["7 kunda faol", s.active_week, "var(--green)"],
-    ["Faol savollar", s.questions, "var(--purple)"],
-    ["Bugungi javoblar", s.answers_today, "var(--orange)"],
-    ["O'rtacha aniqlik", `${s.accuracy}%`, "var(--gold)"],
-    ["Yangi xato xabarlari", s.reports_new, "var(--red)"],
+    ["Foydalanuvchilar", s.users, "var(--text)"],
+    ["7 kunda faol", s.active_week, "var(--text)"],
+    ["Faol savollar", s.questions, "var(--text)"],
+    ["Bugungi javoblar", s.answers_today, "var(--text)"],
+    ["O'rtacha aniqlik", `${s.accuracy}%`, "var(--text)"],
+    ["Yangi xato xabarlari", s.reports_new, s.reports_new ? "var(--danger)" : "var(--text)"],
   ];
   return (
     <div className="stack">
       <h1>Statistika</h1>
       <div className="stat-grid">
         {tiles.map(([l, v, c]) => (
-          <div key={l} className="stat-card" style={{ "--c": c } as React.CSSProperties}><div className="v">{v}</div><div className="l">{l}</div></div>
+          <div key={l} className="stat-card" style={{ "--c": c } as React.CSSProperties}><div className="v" style={{ color: "var(--c)" }}>{v}</div><div className="l">{l}</div></div>
         ))}
       </div>
       <div className="card stack">
         <div className="row between">
-          <div className="bold">👥 Referal (taklif) tizimi</div>
+          <div className="bold">Referal (taklif) tizimi</div>
           <div className="row small"><span className="chip blue">Takliflar: {s.referrals.total}</span><span className="chip green">Faol: {s.referrals.active}</span></div>
         </div>
         {s.referrals.top.length === 0 ? <div className="small muted">Hali taklif yo'q</div> : (
@@ -48,7 +48,7 @@ export function Dashboard() {
         )}
       </div>
       {s.questions === 0 && (
-        <div className="card row" style={{ borderColor: "var(--green)", background: "var(--green-soft)" }}>
+        <div className="card row" style={{ borderColor: "var(--success)", background: "var(--success-soft)" }}>
           <div className="grow"><b>Bazada savol yo'q.</b> Excel yoki CSV fayldan savollarni yuklang.</div>
           <button className="btn sm" onClick={() => navigate("/admin/import")}>Import</button>
         </div>
@@ -68,8 +68,8 @@ export function Dashboard() {
           <div className="bars">
             {[1, 2, 3].map((d) => (
               <div key={d} className="bar-row">
-                <span>{"★".repeat(d)} {DIFFICULTY[d]}</span>
-                <Progress value={(s.by_difficulty[d] || 0) / Math.max(1, s.questions)} thin color={["", "var(--green)", "var(--gold)", "var(--red)"][d]} />
+                <span>{DIFFICULTY[d]}</span>
+                <Progress value={(s.by_difficulty[d] || 0) / Math.max(1, s.questions)} thin color={["", "var(--success)", "var(--accent)", "var(--danger)"][d]} />
                 <span className="bold">{s.by_difficulty[d] || 0}</span>
               </div>
             ))}
@@ -81,7 +81,7 @@ export function Dashboard() {
                 {s.hard_topics.map((h) => (
                   <div key={h.name} className="bar-row">
                     <span>{h.name}</span>
-                    <Progress value={h.accuracy / 100} thin color={h.accuracy < 50 ? "var(--red)" : "var(--gold)"} />
+                    <Progress value={h.accuracy / 100} thin color={levelColor(h.accuracy)} />
                     <span className="bold">{h.accuracy}%</span>
                   </div>
                 ))}

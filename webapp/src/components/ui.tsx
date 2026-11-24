@@ -10,7 +10,7 @@ export function Progress({ value, color, thin, onColor }: { value: number; color
 }
 
 /** Aylana progress (mavzu tugunlari va natijalar uchun) */
-export function Ring({ value, size = 96, stroke = 8, color = "var(--green)", children }: {
+export function Ring({ value, size = 96, stroke = 8, color = "var(--primary)", children }: {
   value: number; size?: number; stroke?: number; color?: string; children?: ReactNode;
 }) {
   const r = (size - stroke) / 2;
@@ -87,22 +87,25 @@ export function ToastHost() {
   return msg ? <div key={msg.id} className={`toast ${msg.kind}`}>{msg.text}</div> : null;
 }
 
-const AVATAR_COLORS = ["#2d9cdb", "#8e6cef", "#ff8a1f", "#3bb55f", "#eb5757", "#f6b200", "#14b8a6"];
-export function Avatar({ name, size = "", seed = 0 }: { name: string; size?: "" | "lg" | "xl"; seed?: number }) {
+export function Avatar({ name, size = "" }: { name: string; size?: "" | "lg" | "xl"; seed?: number }) {
   const letters = name.split(/\s+/).filter(Boolean).slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
-  const color = AVATAR_COLORS[(seed || [...name].reduce((s, ch) => s + ch.charCodeAt(0), 0)) % AVATAR_COLORS.length];
-  return <div className={`avatar ${size}`} style={{ "--c": color } as React.CSSProperties}>{letters}</div>;
+  return <div className={`avatar ${size}`}>{letters}</div>;
 }
 
-/** Qiyinlik: to'la yulduzlar oltin rangda, qolganlari xira */
+/** Qiyinlik: uchta kichik ustun (oson / o'rta / qiyin) */
 export function Stars({ n }: { n: number }) {
   const label = ["", "Oson", "O'rta", "Qiyin"][n] ?? "";
   return (
-    <span className="chip gold" title={label} aria-label={label}>
-      {"★".repeat(n)}<span style={{ opacity: 0.3 }}>{"★".repeat(Math.max(0, 3 - n))}</span>
+    <span className="chip" title={label} style={{ gap: 6 }}>
+      <span style={{ display: "inline-flex", gap: 2, alignItems: "flex-end" }} aria-hidden>
+        {[1, 2, 3].map((i) => (
+          <span key={i} style={{ width: 3, height: 4 + i * 3, borderRadius: 1, background: i <= n ? "var(--text-2)" : "var(--border-strong)" }} />
+        ))}
+      </span>
+      {label}
     </span>
   );
 }
 
 /** Foizga qarab rang: qizil < 40 ≤ oltin < 80 ≤ yashil */
-export const levelColor = (p: number) => (p >= 80 ? "var(--green)" : p >= 40 ? "var(--gold)" : "var(--red)");
+export const levelColor = (p: number) => (p >= 80 ? "var(--success)" : p >= 40 ? "var(--accent)" : "var(--danger)");

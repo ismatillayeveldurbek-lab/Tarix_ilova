@@ -57,9 +57,9 @@ export function HistoryPage() {
         {events.map((e) => {
           const isToday = e.month === today.getMonth() + 1 && e.day === today.getDate();
           return (
-            <div key={e.id} className="card row" style={isToday ? { borderColor: "var(--blue)" } : undefined}>
+            <div key={e.id} className="card row" style={isToday ? { borderColor: "var(--primary-text)" } : undefined}>
               <div className="center" style={{ minWidth: 54 }}>
-                <div style={{ fontSize: 24, fontWeight: 900, color: "var(--blue)" }}>{e.day}</div>
+                <div style={{ fontSize: 24, fontWeight: 600, color: "var(--primary-text)" }}>{e.day}</div>
                 <div className="tiny muted bold">{MONTHS[e.month - 1].slice(0, 3)}</div>
               </div>
               <div className="grow">

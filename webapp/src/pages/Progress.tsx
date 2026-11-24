@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
-import { ChevronRight } from "../components/Icons";
-import { Mascot } from "../components/Mascot";
+import { Check, ChevronRight } from "../components/Icons";
 import { CountUp } from "../components/CountUp";
 import { levelColor, Loading, Progress as Bar, Ring, toast } from "../components/ui";
 import { api } from "../lib/api";
@@ -36,30 +35,31 @@ export function ProgressPage() {
   return (
     <div className="page stack">
       <div className="card row" style={{ gap: 16 }}>
-        <Ring value={data.overall / 100} size={104} stroke={11} color={levelColor(data.overall)}>
-          <div className="center"><div style={{ fontSize: 26, fontWeight: 900 }}><CountUp value={data.overall} suffix="%" /></div></div>
+        <Ring value={data.overall / 100} size={96} stroke={7} color={levelColor(data.overall)}>
+          <div className="center"><div className="serif num" style={{ fontSize: 26, fontWeight: 600 }}><CountUp value={data.overall} suffix="%" /></div></div>
         </Ring>
         <div className="grow">
-          <h1 style={{ fontSize: 22 }}>O'zlashtirish</h1>
+          <div className="eyebrow">Natijalar</div>
+          <h1 style={{ fontSize: 23 }}>O'zlashtirish</h1>
           <div className="small muted">{data.mastered} / {data.total} savolga oxirgi javobingiz to'g'ri</div>
         </div>
       </div>
 
       {data.weak.length > 0 ? (
-        <div className="card stack" style={{ borderColor: "var(--red)", background: "var(--red-soft)", gap: 10 }}>
-          <div className="bold" style={{ color: "var(--red)" }}>⚠️ Zaif mavzular</div>
+        <div className="card stack callout" style={{ "--c": "var(--danger)", gap: 10 } as React.CSSProperties}>
+          <div className="eyebrow" style={{ color: "var(--danger)" }}>Zaif mavzular</div>
           <div className="small">Bu mavzularda aniqlik 70% dan past. Mashq qilib, mustahkamlang:</div>
           {data.weak.map((w) => (
-            <button key={w.id} className="btn red block" style={{ justifyContent: "space-between" }}
+            <button key={w.id} className="btn white block" style={{ justifyContent: "space-between" }}
               onClick={() => navigate(`/lesson?mode=topic&id=${w.id}`)}>
-              <span className="ellipsis" style={{ textTransform: "none", letterSpacing: 0 }}>{w.name}</span>
-              <span>{w.accuracy}%</span>
+              <span className="ellipsis">{w.name}</span>
+              <span className="num" style={{ color: "var(--danger)" }}>{w.accuracy}%</span>
             </button>
           ))}
         </div>
       ) : data.overall > 0 ? (
-        <div className="card row" style={{ borderColor: "var(--green)", background: "var(--green-soft)" }}>
-          <Mascot size={56} mood="wow" /><div className="bold">Zaif mavzu yo'q — zo'r natija!</div>
+        <div className="card row">
+          <span className="icon-box success"><Check size={20} /></span><div className="bold">Zaif mavzu yo'q — barcha mavzularda aniqlik 70% dan yuqori</div>
         </div>
       ) : null}
 
@@ -67,7 +67,7 @@ export function ProgressPage() {
         <div key={g.id} className="stack" style={{ gap: 8 }}>
           <div className="row between" style={{ marginTop: 8 }}>
             <div className="section-title" style={{ margin: 0 }}>{g.name}</div>
-            <span className="chip" style={{ color: levelColor(g.percent) }}>{g.percent}%</span>
+            <span className="num bold small" style={{ color: levelColor(g.percent) }}>{g.percent}%</span>
           </div>
           <div className="card list" style={{ padding: 4 }}>
             {g.topics.map((t) => <TopicRow key={t.id} t={t} />)}

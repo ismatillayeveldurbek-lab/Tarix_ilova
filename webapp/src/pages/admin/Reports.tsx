@@ -40,7 +40,7 @@ export function ReportsPage({ onCount }: { onCount: (n: number) => void }) {
         <Segmented value={status} onChange={setStatus}
           options={[{ value: "new", label: "Yangi" }, { value: "fixed", label: "Tuzatilgan" }, { value: "rejected", label: "Rad etilgan" }]} />
       </div>
-      {rows.length === 0 && <div className="card muted center">Xabar yo'q 🎉</div>}
+      {rows.length === 0 && <div className="card muted center">Yangi xabar yo'q</div>}
       {rows.map((r) => {
         const q = r.question;
         return (
@@ -49,16 +49,16 @@ export function ReportsPage({ onCount }: { onCount: (n: number) => void }) {
               <span>#{r.id} · {r.user} · {new Date(r.created_at).toLocaleString()}</span>
               <span>Savol #{q.id}{!q.is_active && " (o'chirilgan)"}</span>
             </div>
-            <div className="card" style={{ background: "var(--red-soft)", border: 0, boxShadow: "none", padding: 12 }}>💬 {r.comment}</div>
+            <div className="card" style={{ background: "var(--danger-soft)", border: 0, boxShadow: "none", padding: 12 }}>{r.comment}</div>
             <div className="bold">{q.text}</div>
             <div className="small">
               {(["a", "b", "c", "d"] as const).map((k) => (
-                <div key={k} style={k === q.correct ? { color: "var(--green-dark)", fontWeight: 800 } : undefined}>
+                <div key={k} style={k === q.correct ? { color: "var(--success)", fontWeight: 600 } : undefined}>
                   {k.toUpperCase()}) {q[k]} {k === q.correct && "✓"}
                 </div>
               ))}
             </div>
-            {q.explanation && <div className="small muted">💡 {q.explanation}</div>}
+            {q.explanation && <div className="small muted">Izoh: {q.explanation}</div>}
             <div className="row" style={{ flexWrap: "wrap" }}>
               <button className="btn sm blue" onClick={() => setEditing(q)}>Savolni tahrirlash</button>
               {status !== "fixed" && <button className="btn sm" onClick={() => resolve(r, "fixed")}>✓ Tuzatildi</button>}

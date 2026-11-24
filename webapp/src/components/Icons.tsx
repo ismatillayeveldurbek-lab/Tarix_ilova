@@ -2,37 +2,20 @@
 type P = { size?: number; className?: string };
 const S = ({ size = 24, className, children, fill = "none" }: P & { children: React.ReactNode; fill?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill={fill} className={className}
-    stroke="currentColor" strokeWidth={2.4} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden>
     {children}
   </svg>
 );
 
-export const Flame = ({ size = 24, className }: P) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
-    <path d="M12 2c1 3.5 5.5 6 5.5 11a5.5 5.5 0 0 1-11 0c0-2.6 1.4-4.2 2.6-5.4.3 1.6 1 2.6 2 3.1C11 8.2 10.6 5 12 2z" fill="#ff8a1f" />
-    <path d="M12 12.2c.7 1.6 2.6 2.6 2.6 4.6a2.6 2.6 0 0 1-5.2 0c0-1.5.9-2.5 1.8-3.2.1.6.4 1 .8 1.2-.2-1 0-1.8 0-2.6z" fill="#ffd34d" />
-  </svg>
-);
-
-export const Star = ({ size = 24, className }: P) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
-    <path d="M12 2.5l2.9 6 6.6.8-4.9 4.6 1.3 6.6L12 17.3l-5.9 3.2 1.3-6.6L2.5 9.3l6.6-.8z" fill="#f6b200" stroke="#c88d00" strokeWidth="1.4" strokeLinejoin="round" />
-  </svg>
-);
-
-export const Target = ({ size = 24, className }: P) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
-    <circle cx="12" cy="12" r="10" fill="#2d9cdb" />
-    <circle cx="12" cy="12" r="6.5" fill="#fff" />
-    <circle cx="12" cy="12" r="3.2" fill="#2d9cdb" />
-  </svg>
-);
-
-export const Crown = ({ size = 24, className }: P) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" className={className} aria-hidden>
-    <path d="M3 8l4.5 3.5L12 5l4.5 6.5L21 8l-2 11H5z" fill="#fff" stroke="#fff" strokeWidth="1.5" strokeLinejoin="round" />
-  </svg>
-);
+export const Flame = (p: P) => <S {...p}><path d="M12 3c.6 3 4.5 5 4.5 9.5a4.5 4.5 0 0 1-9 0c0-2.2 1.2-3.6 2.2-4.6.2 1.4.9 2.2 1.7 2.6C11 8 10.7 5.4 12 3z" /></S>;
+export const Star = (p: P) => <S {...p}><path d="M12 3.5l2.6 5.3 5.9.9-4.3 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.3-4.1 5.9-.9z" /></S>;
+export const Target = (p: P) => <S {...p}><circle cx="12" cy="12" r="8.5" /><circle cx="12" cy="12" r="4.5" /><circle cx="12" cy="12" r=".8" /></S>;
+export const Users = (p: P) => <S {...p}><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a5.5 5.5 0 0 1 3.5 6" /></S>;
+export const Share = (p: P) => <S {...p}><path d="M12 15V3M7.5 7.5L12 3l4.5 4.5M5 12v7a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-7" /></S>;
+export const Copy = (p: P) => <S {...p}><rect x="8" y="8" width="12" height="12" rx="2" /><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" /></S>;
+export const Gauge = (p: P) => <S {...p}><path d="M4 18a8 8 0 1 1 16 0M12 18l4-5" /></S>;
+export const Alert = (p: P) => <S {...p}><path d="M12 4l9 16H3zM12 10v4M12 17h.01" /></S>;
+export const Image = (p: P) => <S {...p}><rect x="3" y="5" width="18" height="14" rx="2" /><circle cx="9" cy="10" r="1.5" /><path d="M21 16l-5-5-8 8" /></S>;
 
 export const Home = (p: P) => <S {...p}><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z" /></S>;
 export const Trophy = (p: P) => <S {...p}><path d="M7 4h10v5a5 5 0 0 1-10 0zM7 6H4a3 3 0 0 0 3 4M17 6h3a3 3 0 0 1-3 4M12 14v4M8 21h8M9 18h6" /></S>;

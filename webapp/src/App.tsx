@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Clipboard, Home, Trophy, User } from "./components/Icons";
-import { Mascot } from "./components/Mascot";
+import { Logo } from "./components/Logo";
 import { ToastHost } from "./components/ui";
 import { AdminApp } from "./pages/admin/AdminApp";
 import { ExamPage } from "./pages/Exam";
@@ -53,7 +53,7 @@ function UserApp() {
   if (error && !home) {
     return (
       <div className="page empty" style={{ minHeight: "80vh", justifyContent: "center" }}>
-        <Mascot mood="sad" size={130} />
+        <Logo withName={false} />
         <h2>Ulanib bo'lmadi</h2>
         <p className="muted">{error}</p>
         <button className="btn" onClick={() => window.location.reload()}>Qayta urinish</button>

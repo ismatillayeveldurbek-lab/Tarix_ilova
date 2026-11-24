@@ -85,7 +85,7 @@ export function ExamConfigPage() {
                 <button className="icon-btn" disabled={c.rules.length === 1} onClick={() => setC({ ...c, rules: c.rules.filter((_, j) => j !== i) })}><Trash size={18} /></button>
               </div>
               {avail !== undefined && avail < r.count && (
-                <div className="tiny" style={{ color: "var(--red)", fontWeight: 800, marginTop: 4 }}>⚠️ Bazada faqat {avail} ta mos savol bor (kerak: {r.count})</div>
+                <div className="tiny" style={{ color: "var(--danger)", fontWeight: 600, marginTop: 4 }}>Bazada faqat {avail} ta mos savol bor (kerak: {r.count})</div>
               )}
             </div>
           );

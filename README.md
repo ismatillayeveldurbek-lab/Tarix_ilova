@@ -1,20 +1,20 @@
 # Tarix — milliy sertifikatga tayyorgarlik 📜
 
 Tarix fanidan milliy sertifikat imtihoniga tayyorlanuvchilar uchun **Telegram bot** va **Mini App**.
-Ilova o'yin uslubida: XP ballari, ketma-ket kunlar, mavzular yo'li va haftalik reyting bor.
+Dizayn akademik uslubda: to'q ko'k va to'q oltin ranglar, serif sarlavhalar. Ilovada XP ballari, ketma-ket kunlar, kurs dasturi va haftalik reyting bor.
 Interfeys o'zbek tilida.
 
-| Bosh sahifa | Dars | Imtihon | Reyting |
+| Bosh sahifa | Dars | Natija | Imtihon |
 |---|---|---|---|
-| ![](docs/screenshots/home.png) | ![](docs/screenshots/lesson.png) | ![](docs/screenshots/exam.png) | ![](docs/screenshots/rating.png) |
+| ![](docs/screenshots/home.png) | ![](docs/screenshots/lesson.png) | ![](docs/screenshots/result.png) | ![](docs/screenshots/exam.png) |
 
-| O'zlashtirish | Do'stlarni taklif qilish | Rasmli savol | Natija |
+| Reyting | O'zlashtirish | Do'stlarni taklif qilish | Qorong'i mavzu |
 |---|---|---|---|
-| ![](docs/screenshots/progress.png) | ![](docs/screenshots/invite.png) | ![](docs/screenshots/image-question.png) | ![](docs/screenshots/result.png) |
+| ![](docs/screenshots/rating.png) | ![](docs/screenshots/progress.png) | ![](docs/screenshots/invite.png) | ![](docs/screenshots/dark.png) |
 
-| Admin: import | Admin: savol tahriri | Admin: e'lon yuborish |
-|---|---|---|
-| ![](docs/screenshots/admin-import.png) | ![](docs/screenshots/admin-question.png) | ![](docs/screenshots/admin-broadcast.png) |
+| Admin: statistika | Admin: savollar |
+|---|---|
+| ![](docs/screenshots/admin.png) | ![](docs/screenshots/admin-questions.png) |
 
 ## Imkoniyatlar
 
@@ -189,7 +189,7 @@ Kompyuterda PostgreSQL bilan sinash uchun: `docker compose up --build`.
 └── webapp/                     # Mini App + admin panel (React + TypeScript)
     └── src/
         ├── pages/              # Home, Lesson, Exam, Rating, Profile, admin/*
-        ├── components/         # Mascot (ilova qahramoni), Icons, ui
+        ├── components/         # Logo, Icons, ui
         └── lib/                # api, telegram, router, store
 ```
 

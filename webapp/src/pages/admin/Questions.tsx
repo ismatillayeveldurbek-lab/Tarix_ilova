@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { ChevronLeft, ChevronRight, Download, Plus } from "../../components/Icons";
-import { Loading, toast } from "../../components/ui";
+import { Loading, Stars, toast } from "../../components/ui";
 import { api, download } from "../../lib/api";
 import { QuestionForm } from "./QuestionForm";
 import { DIFFICULTY, usePeriods, type AdminQuestion } from "./shared";
@@ -81,14 +81,14 @@ export function QuestionsPage() {
               <span className="q-id">#{x.id}</span>
               <div className="grow stack" style={{ gap: 4 }}>
                 <div className="bold">{x.text}</div>
-                <div className="small muted">✅ {x.correct.toUpperCase()}) {x[x.correct]}</div>
+                <div className="small muted">To'g'ri: {x.correct.toUpperCase()}) {x[x.correct]}</div>
                 <div className="row" style={{ flexWrap: "wrap", gap: 6 }}>
                   {x.period && <span className="chip blue">{x.period}</span>}
                   {x.topic && <span className="chip">{x.topic}</span>}
-                  <span className="chip gold">{"★".repeat(x.difficulty)}</span>
+                  <Stars n={x.difficulty} />
                   {!x.is_active && <span className="chip red">o'chirilgan</span>}
                   {!x.explanation && <span className="chip red">izoh yo'q</span>}
-                  {x.image_url && <span className="chip purple">🖼 rasm</span>}
+                  {x.image_url && <span className="chip purple">rasm</span>}
                 </div>
               </div>
             </button>

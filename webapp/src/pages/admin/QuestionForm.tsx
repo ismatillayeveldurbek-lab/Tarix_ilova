@@ -82,7 +82,7 @@ export function QuestionForm({ question, periods, onClose, onSaved }: {
         </div>
         <div className="field"><span>Qiyinlik</span>
           <Segmented<number> value={d.difficulty} onChange={(v) => set("difficulty", v)}
-            options={[1, 2, 3].map((n) => ({ value: n, label: `${"★".repeat(n)} ${DIFFICULTY[n]}` }))} />
+            options={[1, 2, 3].map((n) => ({ value: n, label: DIFFICULTY[n] }))} />
         </div>
         <div className="row">
           {question && <button className="btn red" onClick={remove} aria-label="O'chirish"><Trash size={20} /></button>}

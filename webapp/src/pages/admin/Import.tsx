@@ -38,18 +38,18 @@ function UploadBox({ kind, title, columns, notes }: {
         onDragOver={(e) => { e.preventDefault(); setOver(true); }}
         onDragLeave={() => setOver(false)}
         onDrop={(e) => { e.preventDefault(); setOver(false); const f = e.dataTransfer.files[0]; if (f) void upload(f); }}>
-        {busy ? <Spinner /> : <span style={{ color: "var(--green)" }}><Upload size={40} /></span>}
+        {busy ? <Spinner /> : <span style={{ color: "var(--success)" }}><Upload size={40} /></span>}
         <div className="bold">{busy ? "Yuklanmoqda..." : "Faylni shu yerga tashlang yoki bosing"}</div>
         <div className="small muted">.xlsx (Excel) yoki .csv · 10 MB gacha</div>
         <input ref={input} type="file" accept=".xlsx,.csv" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f); }} />
       </div>
       {report && (
         <div className="stack" style={{ gap: 8 }}>
-          <div className="bold">📄 {report.file}</div>
+          <div className="bold">{report.file}</div>
           <div className="row" style={{ flexWrap: "wrap" }}>
-            <span className="chip green">✅ Qo'shildi: {report.added}</span>
-            <span className="chip">⏭ Takroriy: {report.skipped_duplicates}</span>
-            <span className={`chip ${report.errors.length ? "red" : ""}`}>❗ Xato qatorlar: {report.errors.length}</span>
+            <span className="chip green">Qo'shildi: {report.added}</span>
+            <span className="chip">Takroriy: {report.skipped_duplicates}</span>
+            <span className={`chip ${report.errors.length ? "red" : ""}`}>Xato qatorlar: {report.errors.length}</span>
           </div>
           {report.errors.length > 0 && <ul className="err-list">{report.errors.map((e) => <li key={e}>{e}</li>)}</ul>}
         </div>
@@ -82,7 +82,7 @@ export function ImportPage() {
         <button className="btn sm white" onClick={() => download("/admin/export/history.xlsx", "voqealar.xlsx").catch((e) => toast(e.message, "error"))}><Download size={18} /> Voqealar</button>
       </div>
       <div className="grid-2">
-        <UploadBox kind="questions" title="📝 Test savollari"
+        <UploadBox kind="questions" title="Test savollari"
           columns={["savol", "a", "b", "c", "d", "togri", "izoh", "mavzu", "davr", "qiyinlik", "rasm"]}
           notes={[
             "togri — A, B, C yoki D",
@@ -90,7 +90,7 @@ export function ImportPage() {
             "rasm — ixtiyoriy, https:// havola (yoki keyin savolni tahrirlab rasm yuklang)",
             "Yangi davr va mavzular avtomatik yaratiladi",
           ]} />
-        <UploadBox kind="history" title="📅 Tarixda bugun"
+        <UploadBox kind="history" title="Tarixda bugun"
           columns={["oy", "kun", "yil", "sarlavha", "matn"]}
           notes={["oy — 1–12, kun — 1–31", "yil ixtiyoriy", "Har kuni belgilangan vaqtda kanal va botga yuboriladi"]} />
       </div>

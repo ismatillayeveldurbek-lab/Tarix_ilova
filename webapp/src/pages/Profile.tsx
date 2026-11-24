@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Bell, ChevronRight, Shield } from "../components/Icons";
+import { Bell, ChevronRight, Flame, Shield, Users } from "../components/Icons";
 import { WeekStrip } from "../components/WeekStrip";
 import { Avatar, levelColor, Ring, Switch, toast } from "../components/ui";
 import { api } from "../lib/api";
@@ -30,45 +30,48 @@ export function ProfilePage() {
 
   return (
     <div className="page stack">
-      <div className="center stack" style={{ alignItems: "center", gap: 6, paddingTop: 8 }}>
+      <div className="row" style={{ gap: 14, paddingTop: 4 }}>
         <Avatar name={u.name || "?"} size="xl" />
-        <h1 style={{ fontSize: 24 }}>{u.name}</h1>
-        {u.is_admin && <span className="chip purple">Admin</span>}
+        <div className="grow">
+          <h1 style={{ fontSize: 23 }}>{u.name}</h1>
+          <div className="row" style={{ gap: 6, marginTop: 4 }}>
+            {u.is_admin && <span className="chip blue">Admin</span>}
+            <span className="chip">{home.user.streak_best} kunlik rekord</span>
+          </div>
+        </div>
       </div>
 
-      <div className="section-title">Statistika</div>
-      <div className="grid-2" style={{ gridTemplateColumns: "1fr 1fr" }}>
-        <div className="stat-card" style={{ "--c": "var(--orange)" } as React.CSSProperties}><div className="v">🔥 {u.streak}</div><div className="l">Ketma-ket kunlar</div></div>
-        <div className="stat-card" style={{ "--c": "var(--gold)" } as React.CSSProperties}><div className="v">🏆 {u.streak_best}</div><div className="l">Rekord</div></div>
-        <div className="stat-card" style={{ "--c": "var(--blue)" } as React.CSSProperties}><div className="v">{home.totals.answers}</div><div className="l">Jami javoblar</div></div>
-        <div className="stat-card" style={{ "--c": "var(--green)" } as React.CSSProperties}><div className="v">{accuracy}%</div><div className="l">Aniqlik</div></div>
+      <div className="metrics">
+        <div className="metric"><span className="label"><Flame size={14} /> Ketma-ket</span><span className="value">{u.streak}<small>kun</small></span></div>
+        <div className="metric"><span className="label">Javoblar</span><span className="value">{home.totals.answers}</span></div>
+        <div className="metric"><span className="label">Aniqlik</span><span className="value">{accuracy}<small>%</small></span></div>
       </div>
 
       <button className="card tap row" onClick={() => navigate("/progress")}>
-        <Ring value={home.mastery / 100} size={64} stroke={7} color={levelColor(home.mastery)}>
-          <span className="bold">{home.mastery}%</span>
+        <Ring value={home.mastery / 100} size={56} stroke={5} color={levelColor(home.mastery)}>
+          <span className="small bold num">{home.mastery}%</span>
         </Ring>
         <div className="grow"><div className="bold">O'zlashtirish</div><div className="small muted">Mavzular bo'yicha natijalar va zaif mavzular</div></div>
-        <ChevronRight />
+        <ChevronRight size={18} />
       </button>
+
+      <div className="card"><div className="eyebrow" style={{ marginBottom: 12 }}>Shu hafta</div><WeekStrip /></div>
 
       <button className="card tap row" onClick={() => navigate("/invite")}>
-        <span className="rec-icon" style={{ background: "var(--blue-soft)" }}>👥</span>
-        <div className="grow"><div className="bold">Do'stlarni taklif qilish</div><div className="small muted">Har bir faol do'st uchun XP bonus</div></div>
-        <ChevronRight />
+        <span className="icon-box"><Users size={20} /></span>
+        <div className="grow"><div className="bold">Do'stlarni taklif qilish</div><div className="small muted">Har bir faol do'st uchun bonus XP</div></div>
+        <ChevronRight size={18} />
       </button>
 
-      <div className="card"><div className="bold" style={{ marginBottom: 10 }}>Shu hafta</div><WeekStrip /></div>
-
-      <div className="section-title">Sozlamalar</div>
+      <div className="section-title"><span>Sozlamalar</span></div>
       <div className="card" style={{ paddingTop: 4, paddingBottom: 4 }}>
         <div className="setting-row">
-          <Bell /><div className="grow"><div className="bold">Kunlik eslatma</div><div className="small muted">{`Kuniga ${home.today.goal} ta savol`}</div></div>
+          <span className="icon-box"><Bell size={20} /></span><div className="grow"><div className="bold">Kunlik eslatma</div><div className="small muted">{`Kuniga ${home.today.goal} ta savol`}</div></div>
           <Switch on={u.reminder_enabled} onChange={(v) => update({ reminder_enabled: v })} />
         </div>
         {u.reminder_enabled && (
           <div className="setting-row">
-            <span style={{ width: 24 }} /><div className="grow bold">Eslatma vaqti</div>
+            <span style={{ width: 40 }} /><div className="grow bold">Eslatma vaqti</div>
             <input type="time" className="input" style={{ width: 120 }} value={u.reminder_time} disabled={saving}
               onChange={(e) => e.target.value && update({ reminder_time: e.target.value })} />
           </div>
@@ -77,9 +80,9 @@ export function ProfilePage() {
 
       {u.is_admin && (
         <button className="card tap row" onClick={() => navigate("/admin")}>
-          <span style={{ color: "var(--purple)" }}><Shield /></span>
+          <span className="icon-box"><Shield size={20} /></span>
           <div className="grow"><div className="bold">Admin panel</div><div className="small muted">Savollar, import, imtihon formati</div></div>
-          <ChevronRight />
+          <ChevronRight size={18} />
         </button>
       )}
     </div>

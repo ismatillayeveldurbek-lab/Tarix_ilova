@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Bell, Calendar, Chart, Clipboard, Flag, Home, Layers, Search, Upload } from "../../components/Icons";
-import { Mascot } from "../../components/Mascot";
+import { Logo } from "../../components/Logo";
 import { Loading } from "../../components/ui";
 import { api, ApiError, setAdminToken } from "../../lib/api";
 import { navigate, useRoute } from "../../lib/router";
@@ -51,7 +51,7 @@ export function AdminApp() {
   if (state === "denied") {
     return (
       <div className="page empty" style={{ minHeight: "85vh", justifyContent: "center", maxWidth: 480, margin: "0 auto" }}>
-        <Mascot mood="think" size={130} />
+        <Logo />
         <h2>Admin panelga kirish</h2>
         <p className="muted">{message}</p>
         <div className="card" style={{ textAlign: "left" }}>
@@ -82,7 +82,7 @@ export function AdminApp() {
   return (
     <div className="admin-layout">
       <aside className="admin-side">
-        <div className="brand"><Mascot size={40} /> Tarix · Admin</div>
+        <div className="brand"><Logo /><span className="chip" style={{ marginLeft: "auto" }}>Admin</span></div>
         {MENU.map(({ path: p, label, icon: Icon }) => (
           <button key={p} className={path === p ? "active" : ""} onClick={() => navigate(p)}>
             <Icon size={20} />{label}

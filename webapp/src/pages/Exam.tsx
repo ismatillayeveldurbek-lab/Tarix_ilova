@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ChevronLeft, ChevronRight, Clipboard, Clock, Close } from "../components/Icons";
-import { Confetti } from "../components/Confetti";
 import { CountUp } from "../components/CountUp";
-import { Mascot } from "../components/Mascot";
 import { QuestionView } from "../components/QuestionView";
 import { Loading, Ring, Sheet, toast } from "../components/ui";
 import { api } from "../lib/api";
@@ -56,18 +54,20 @@ export function ExamPage() {
 function ExamIntro({ info, busy, onStart }: { info: Info; busy: boolean; onStart: () => void }) {
   const c = info.config;
   if (!c) {
-    return <div className="page"><div className="empty"><Mascot mood="think" /><p className="muted">Imtihon formati hali sozlanmagan.</p></div></div>;
+    return <div className="page"><div className="empty"><span className="empty-icon"><Clipboard size={24} /></span><p className="muted">Imtihon formati hali sozlanmagan.</p></div></div>;
   }
   return (
     <div className="page stack">
-      <div className="card colored purple" style={{ textAlign: "center", padding: 24 }}>
-        <div style={{ display: "grid", placeItems: "center", marginBottom: 8 }}><Clipboard size={44} /></div>
-        <h1 style={{ fontSize: 24 }}>{c.name}</h1>
-        <div className="row" style={{ justifyContent: "center", gap: 16, marginTop: 12, fontWeight: 800 }}>
-          <span>📝 {`${c.count} ta savol`}</span>
-          <span>⏱ {`${c.minutes} daqiqa`}</span>
-          <span>🏅 {`${c.max_score} ball`}</span>
+      <div className="page-head">
+        <div>
+          <div className="eyebrow">Sinov imtihoni</div>
+          <h1>{c.name}</h1>
         </div>
+      </div>
+      <div className="metrics">
+        <div className="metric"><span className="label">Savollar</span><span className="value">{c.count}</span></div>
+        <div className="metric"><span className="label">Vaqt</span><span className="value">{c.minutes}<small>daq.</small></span></div>
+        <div className="metric"><span className="label">Maksimal ball</span><span className="value">{c.max_score}</span></div>
       </div>
       <div className="card stack" style={{ gap: 6 }}>
         <div className="bold">Qoidalar</div>
@@ -80,7 +80,7 @@ function ExamIntro({ info, busy, onStart }: { info: Info; busy: boolean; onStart
           <div className="bold" style={{ marginBottom: 6 }}>Darajalar (taxminiy)</div>
           <table className="grades"><tbody>
             {c.grades.map((g) => (
-              <tr key={g.grade}><td><span className="chip purple">{g.grade}</span></td><td className="muted">{`${g.min_percent}% va undan yuqori`}</td></tr>
+              <tr key={g.grade}><td><span className="serif bold" style={{ fontSize: 16 }}>{g.grade}</span></td><td className="muted">{`${g.min_percent}% va undan yuqori`}</td></tr>
             ))}
           </tbody></table>
           <div className="tiny muted" style={{ marginTop: 8 }}>Format rasmiy spetsifikatsiya e'lon qilingach moslashtiriladi.</div>
@@ -100,7 +100,7 @@ function ExamIntro({ info, busy, onStart }: { info: Info; busy: boolean; onStart
           </div>
         </div>
       )}
-      <button className="btn purple block" disabled={busy} onClick={onStart}>
+      <button className="btn block" disabled={busy} onClick={onStart}>
         {info.open_exam_id ? "Davom ettirish" : "Imtihonni boshlash"}
       </button>
     </div>
@@ -183,7 +183,7 @@ function ExamRunner({ exam, onFinish }: { exam: Running; onFinish: (r: Result) =
         <span className={`timer ${left < 5 * 60000 ? "warn" : ""}`}><Clock size={20} />{fmt(left)}</span>
         <div className="grow" />
         <button className="btn sm white" onClick={() => setGrid(true)}>{answered}/{exam.questions.length}</button>
-        <button className="btn sm purple" onClick={askFinish}>Yakunlash</button>
+        <button className="btn sm" onClick={askFinish}>Yakunlash</button>
       </div>
       <div className="page no-nav">
         <div className="small muted bold" style={{ marginBottom: 8 }}>Savol {idx + 1} / {exam.questions.length}</div>
@@ -192,7 +192,7 @@ function ExamRunner({ exam, onFinish }: { exam: Running; onFinish: (r: Result) =
       <div className="footer-bar"><div className="inner row">
         <button className="btn white" disabled={idx === 0} onClick={() => setIdx(idx - 1)}><ChevronLeft /></button>
         {idx + 1 < exam.questions.length
-          ? <button className="btn purple grow" onClick={() => setIdx(idx + 1)}>Keyingi <ChevronRight size={20} /></button>
+          ? <button className="btn grow" onClick={() => setIdx(idx + 1)}>Keyingi <ChevronRight size={20} /></button>
           : <button className="btn grow" onClick={askFinish}>Yakunlash</button>}
       </div></div>
       {grid && (
@@ -205,7 +205,7 @@ function ExamRunner({ exam, onFinish }: { exam: Running; onFinish: (r: Result) =
                   onClick={() => { setIdx(i); setGrid(false); }}>{i + 1}</button>
               ))}
             </div>
-            <button className="btn purple block" onClick={askFinish}>Imtihonni yakunlash</button>
+            <button className="btn block" onClick={askFinish}>Imtihonni yakunlash</button>
           </div>
         </Sheet>
       )}
@@ -218,24 +218,26 @@ function ExamResult({ result, onDone }: { result: Result; onDone: () => void }) 
   const item = open !== null ? result.items[open] : null;
   return (
     <div className="page no-nav stack">
-      <Confetti run={result.percent >= 50} />
-      <div className="result-hero">
-        <div className="grade-badge pop">{result.grade}</div>
-        <h1 style={{ color: "var(--purple)" }}>Imtihon yakunlandi!</h1>
-        <p className="muted">Bu taxminiy natija — rasmiy shkala e'lon qilingach moslashtiriladi.</p>
-      </div>
-      <div className="row" style={{ justifyContent: "center" }}>
-        <Ring value={result.percent / 100} size={150} stroke={14} color="var(--purple)">
-          <div className="center">
-            <div style={{ fontSize: 30, fontWeight: 900 }}>{result.score % 1 ? result.score : <CountUp value={result.score} />}</div>
-            <div className="small muted">/ {result.max_score} ball</div>
+      <div className="result-hero rise">
+        <div className="eyebrow">Imtihon yakunlandi</div>
+        <div className="row" style={{ gap: 20, marginTop: 8 }}>
+          <Ring value={result.percent / 100} size={128} stroke={8}>
+            <div className="center">
+              <div className="serif num" style={{ fontSize: 30, fontWeight: 600 }}>{result.score % 1 ? result.score : <CountUp value={result.score} />}</div>
+              <div className="tiny muted">/ {result.max_score} ball</div>
+            </div>
+          </Ring>
+          <div className="stack" style={{ gap: 4, alignItems: "center" }}>
+            <div className="grade-badge">{result.grade}</div>
+            <div className="tiny muted">daraja</div>
           </div>
-        </Ring>
+        </div>
+        <p className="muted small" style={{ marginTop: 6 }}>Taxminiy natija — rasmiy shkala e'lon qilingach moslashtiriladi.</p>
       </div>
       <div className="tiles">
         <div className="tile green"><div className="label">To'g'ri</div><div className="value">{result.correct}</div></div>
         <div className="tile red"><div className="label">Xato</div><div className="value">{result.total - result.correct}</div></div>
-        <div className="tile purple"><div className="label">Foiz</div><div className="value">{Math.round(result.percent)}%</div></div>
+        <div className="tile"><div className="label">Foiz</div><div className="value">{Math.round(result.percent)}%</div></div>
       </div>
       <div className="card stack">
         <div className="bold">Savollar tahlili</div>
@@ -247,14 +249,14 @@ function ExamResult({ result, onDone }: { result: Result; onDone: () => void }) 
         <div className="tiny muted">Raqamni bosib, izohni ko'ring. Xato javoblar takrorlash bo'limiga qo'shildi.</div>
       </div>
       <div className="footer-bar"><div className="inner">
-        <button className="btn purple block" onClick={onDone}>Davom etish</button>
+        <button className="btn block" onClick={onDone}>Davom etish</button>
       </div></div>
       {item && (
         <Sheet onClose={() => setOpen(null)}>
           <div className="stack">
             <QuestionView q={item} selected={item.chosen || null} correct={item.correct_option} locked onSelect={() => {}} />
             {!item.chosen && <div className="chip red">Javob berilmagan</div>}
-            {item.explanation && <div className="card"><b>💡 Izoh</b><div>{item.explanation}</div></div>}
+            {item.explanation && <div className="card"><div className="eyebrow">Izoh</div><div style={{ marginTop: 4 }}>{item.explanation}</div></div>}
             <button className="btn block white" onClick={() => setOpen(null)}>Yopish</button>
           </div>
         </Sheet>

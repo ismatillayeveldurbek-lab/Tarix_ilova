@@ -25,10 +25,10 @@ export function ReportSheet({ questionId, onClose }: { questionId: number; onClo
   return (
     <Sheet onClose={onClose}>
       <div className="stack">
-        <div className="row" style={{ color: "var(--red)" }}><Flag /><h2 style={{ fontSize: 20 }}>Xato haqida xabar berish</h2></div>
+        <div className="row"><span className="icon-box danger"><Flag size={18} /></span><h2>Xato haqida xabar berish</h2></div>
         <div className="row" style={{ flexWrap: "wrap", gap: 6 }}>
           {quick.map((q) => (
-            <button key={q} type="button" className="chip" style={{ border: 0, padding: "7px 12px" }} onClick={() => setText(q)}>{q}</button>
+            <button key={q} type="button" className="chip" style={{ padding: "6px 12px", cursor: "pointer" }} onClick={() => setText(q)}>{q}</button>
           ))}
         </div>
         <textarea className="textarea" placeholder="Xatoni qisqacha yozing..." value={text} onChange={(e) => setText(e.target.value)} maxLength={2000} />
