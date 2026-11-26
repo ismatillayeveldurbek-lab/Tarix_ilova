@@ -21,7 +21,7 @@ def _terms(name: str) -> list[str]:
     clean = re.sub(r"[«»\"“”]", "", name).strip()
     words = [w.strip(".,;:()") for w in clean.split()]
     keys = [w for w in words if len(w) >= 4 and w[:1].isupper()]
-    return sorted({clean, *keys}, key=len, reverse=True)
+    return sorted({clean, *keys}, key=lambda x: (-len(x), x))  # uzunidan boshlab; tartib barqaror
 
 
 def mask(text: str, terms: list[str]) -> str:

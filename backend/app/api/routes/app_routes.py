@@ -38,8 +38,9 @@ def question_out(q: Question, chosen: str | None = None) -> dict:
         "id": q.id,
         "text": q.text,
         "options": [{"key": k, "text": v} for k, v in q.options.items()],
-        "period": q.period.name if q.period else None,
-        "topic": q.topic.name if q.topic else None,
+        # Vaqt so'raladigan savolda davr/mavzu javobni aytib qo'yadi (CLAUDE.md) — yuborilmaydi
+        "period": q.period.name if q.period and not q.asks_time else None,
+        "topic": q.topic.name if q.topic and not q.asks_time else None,
         "difficulty": q.difficulty,
         "image": q.image_url,
     }

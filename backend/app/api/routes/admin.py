@@ -25,6 +25,7 @@ from app.services.exam import get_active_config, rule_availability
 from app.services.facts import VISIBLE as VISIBLE_FACTS
 from app.services.facts_validation import clean_text
 from app.services.facts_import import import_facts, read_csv as read_facts_csv
+from app.services.question_gen import sync_questions
 from app.services.importer import import_file, import_history_file
 from app.services.media import MAX_IMAGE_BYTES, is_valid_image_url, save_image
 
@@ -93,6 +94,7 @@ def q_out(q: Question) -> dict:
         "correct": q.correct_option, "explanation": q.explanation, "difficulty": q.difficulty,
         "period_id": q.period_id, "topic_id": q.topic_id,
         "period": q.period.name if q.period else None, "topic": q.topic.name if q.topic else None,
+        "fact_id": q.fact_id, "auto": bool(q.gen_key), "locked": q.locked,
         "is_active": q.is_active, "image_url": q.image_url,
     }
 
@@ -174,6 +176,8 @@ async def update_question(qid: int, body: QuestionIn, _: AdminUser, session: Ses
     if q is None:
         raise HTTPException(404, "Savol topilmadi")
     apply_question(q, body)
+    if q.gen_key:
+        q.locked = True  # faktlardan qayta tuzishda admin tahriri ustidan yozilmaydi
     await session.commit()
     return q_out(await reload_question(session, qid))
 
@@ -675,5 +679,8 @@ async def import_facts_file(file: UploadFile, _: AdminUser, session: Session, dr
     except (ValueError, UnicodeDecodeError) as e:
         raise HTTPException(400, f"CSV o‘qilmadi: {e}") from None
     if not dry_run:
+        # Faktlar o'zgardi — test savollari ham qayta tuziladi (admin tahrirlaganlari saqlanadi)
+        questions = await sync_questions(session)
         await session.commit()
+        return {**report.as_dict(), "questions": questions.as_dict()}
     return report.as_dict()

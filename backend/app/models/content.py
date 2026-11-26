@@ -49,6 +49,15 @@ class Question(Base):
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow)
 
+    # Faktlar bazasidan avtomatik tuzilgan savollar (services/question_gen.py):
+    #   gen_key   — "K07J-0012:qachon" (fakt + savol turi); qo‘lda kiritilgan savolda None
+    #   asks_time — vaqt so‘raladi: javobdan oldin davr/mavzu ko‘rsatilmaydi (CLAUDE.md)
+    #   locked    — admin tahrirlagan: qayta tuzishda ustidan yozilmaydi
+    gen_key: Mapped[str | None] = mapped_column(String(64), unique=True, index=True)
+    fact_id: Mapped[str | None] = mapped_column(String(32), index=True)
+    asks_time: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
+    locked: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
+
     topic: Mapped[Topic | None] = relationship(lazy="joined")
     period: Mapped[Period | None] = relationship(lazy="joined")
 

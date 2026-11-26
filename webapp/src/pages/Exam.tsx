@@ -329,7 +329,7 @@ function ExamResult({ result, onDone }: { result: Result; onDone: () => void }) 
             {item.explanation && (
               <div className="rounded-2xl bg-surface-2/70 p-3.5">
                 <div className="text-[12px] font-bold uppercase tracking-[.1em] text-muted">Izoh</div>
-                <p className="mt-1 font-reading text-[15px] leading-relaxed text-ink-2">{item.explanation}</p>
+                <p className="mt-1 whitespace-pre-line font-reading text-[15px] leading-relaxed text-ink-2">{item.explanation}</p>
               </div>
             )}
             <button type="button" onClick={() => setOpen(null)}

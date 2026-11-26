@@ -16,5 +16,5 @@ COPY backend/ ./
 COPY data/ /app/data/
 COPY --from=webapp /webapp/dist /app/webapp/dist
 
-# Ishga tushganda: jadvallarni yangilash -> imtihon formati -> faktlar bazasi (ID bo'yicha yangilanadi) -> ilova
-CMD alembic upgrade head && python -m scripts.seed --faqat-format && python -m scripts.import_facts && python -m app.main
+# Ishga tushganda: jadvallar -> imtihon formati -> faktlar bazasi -> faktlardan test savollari -> ilova
+CMD alembic upgrade head && python -m scripts.seed --faqat-format && python -m scripts.import_facts && python -m scripts.generate_questions && python -m app.main

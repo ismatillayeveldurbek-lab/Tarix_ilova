@@ -173,7 +173,7 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
               </div>
             )}
             {result.explanation && (
-              <p className="mt-2.5 font-reading text-[15.5px] leading-relaxed text-ink-2">{result.explanation}</p>
+              <p className="mt-2.5 whitespace-pre-line font-reading text-[15.5px] leading-relaxed text-ink-2">{result.explanation}</p>
             )}
             {!ok && <p className="mt-2 text-[12.5px] text-muted">Bu savol takrorlash ro‘yxatiga qo‘shildi.</p>}
             <button type="button" onClick={next}

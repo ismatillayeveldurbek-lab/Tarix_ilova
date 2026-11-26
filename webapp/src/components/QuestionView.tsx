@@ -62,7 +62,7 @@ export function QuestionView({ q, selected, correct, locked, onSelect, meta = tr
         </div>
       )}
       {q.image && <QuestionImage src={q.image} />}
-      <p className="mt-4 font-reading text-[20px] leading-[1.45] text-ink">{q.text}</p>
+      <p className="mt-4 whitespace-pre-line font-reading text-[19px] leading-[1.5] text-ink first-line:font-semibold">{q.text}</p>
       <div className="stagger mt-5 space-y-2.5">
         {q.options.map((o) => {
           const st = stateOf(o.key);

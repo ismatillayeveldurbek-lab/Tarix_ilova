@@ -162,6 +162,25 @@ Faktlar bazasidan avtomatik kartochkalar tuziladi: **karta → "Javobni ko‘ris
 - **XP:** har to‘g‘ri javob 3 XP; bugungi 1–2-raund to‘liq, 3-raund yarim, 4-raunddan XP yo‘q; kuniga ko‘pi bilan 100 XP. XP haftalik reytingga qo‘shiladi.
 - **Xato qilingan voqealar** kunlik takrorlashga tushadi.
 
+## Faktlardan test savollari
+
+Ilova `data/baza.csv` dagi faktlardan **~3300 ta 4 variantli test savoli** tuzadi:
+
+| Savol turi | Soni | Misol |
+|---|---|---|
+| Sana | ~1240 | "Bu qaysi sanaga to‘g‘ri keladi? Valmi jangi" → 1783 / 1787 / **1792** / 1801 |
+| Atama | ~900 | ta’rif → atama (atama ta’rifda yashirilgan) |
+| Shaxs | ~650 | "Kim men?" + 3 ta ishora (ism yashirilgan) |
+| Asar muallifi, joy, urush g‘olibi, asar | ~550 | o‘sha davr va hududdagi variantlar |
+
+- Chalg‘ituvchi variantlar o‘sha tur, davr va hududdan olinadi. Sanalar bir xil shaklda (yil yonida yil, asr yonida asr) va oraliqlari kesishmaydi.
+- Javob savol matnida ko‘rinsa, savol tuzilmaydi (testda tekshiriladi).
+- Vaqt so‘raladigan savolda davr va mavzu javobdan oldin yuborilmaydi.
+- Izohda doim darslik manbasi bor: "Manba: 7-sinf Jahon tarixi, 14-mavzu, 85-bet".
+- Mavzular darslik paragraflaridan olinadi (Kurs dasturi: 4 davr, ~350 mavzu).
+- Savollar serverda har ishga tushganda yangilanadi: `python -m scripts.generate_questions`. Admin paneldan faktlar yuklanganda ham avtomatik qayta tuziladi.
+- Admin paneldan tahrirlangan savol qayta tuzishda **o‘zgarmaydi**. Fakt yashirilsa, uning savoli ham o‘chadi.
+
 ## XP, kunlik seriya va limitlar
 
 | Manba | XP | Kunlik chegara |

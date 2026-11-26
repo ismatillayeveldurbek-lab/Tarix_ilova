@@ -31,7 +31,7 @@ log = logging.getLogger(__name__)
 # ---------- Ko‘rinish ----------
 
 def format_question(q: Question, n: int, total: int) -> str:
-    meta = " · ".join(x for x in (
+    meta = "" if q.asks_time else " · ".join(x for x in (  # vaqt savolida davr/mavzu ko'rsatilmaydi
         q.period.name if q.period else "", q.topic.name if q.topic else ""
     ) if x)
     lines = [t("question_header", n=n, total=total) + "  " + "⭐" * q.difficulty]
