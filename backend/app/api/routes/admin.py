@@ -141,8 +141,17 @@ def apply_question(q: Question, body: QuestionIn) -> None:
 async def list_questions(
     _: AdminUser, session: Session, q: str = "", period_id: int | None = None, topic_id: int | None = None,
     difficulty: int | None = None, active: bool | None = None, page: int = 1, size: int = 20,
+    source: str = "", sort: str = "",
 ) -> dict:
+    """source: auto (faktlardan) | edited (admin tahrirlagan avtomatik) | manual (qo‘lda kiritilgan).
+    sort=hard: o‘quvchilar eng ko‘p adashgan savollar (kamida 3 javob) — xato tuzilgan savolni topish uchun."""
     query = select(Question)
+    if source == "auto":
+        query = query.where(Question.gen_key.is_not(None), Question.locked.is_(False))
+    elif source == "edited":
+        query = query.where(Question.gen_key.is_not(None), Question.locked.is_(True))
+    elif source == "manual":
+        query = query.where(Question.gen_key.is_(None))
     if q:
         like = f"%{q}%"
         query = query.where(or_(Question.text.ilike(like), Question.explanation.ilike(like),
@@ -155,9 +164,23 @@ async def list_questions(
         query = query.where(Question.difficulty == difficulty)
     if active is not None:
         query = query.where(Question.is_active.is_(active))
-    total = await session.scalar(select(func.count()).select_from(query.subquery()))
     size = max(1, min(size, 100))
-    rows = await session.scalars(query.order_by(Question.id.desc()).offset((max(page, 1) - 1) * size).limit(size))
+    offset = (max(page, 1) - 1) * size
+    if sort == "hard":
+        n = func.count(Answer.id)
+        wrong = func.sum(1 - cast(Answer.is_correct, Integer))
+        st = (select(Answer.question_id.label("qid"), n.label("n"), wrong.label("wrong"))
+              .group_by(Answer.question_id).having(n >= 3).subquery())
+        query = query.join(st, st.c.qid == Question.id)
+        total = await session.scalar(select(func.count()).select_from(query.subquery()))
+        rows = (await session.execute(
+            query.add_columns(st.c.n, st.c.wrong)
+            .order_by((st.c.wrong * 1.0 / st.c.n).desc(), st.c.n.desc(), Question.id).offset(offset).limit(size)
+        )).all()
+        items = [{**q_out(x), "answers": cnt, "accuracy": round(100 * (cnt - (w or 0)) / cnt)} for x, cnt, w in rows]
+        return {"total": total, "page": page, "size": size, "items": items}
+    total = await session.scalar(select(func.count()).select_from(query.subquery()))
+    rows = await session.scalars(query.order_by(Question.id.desc()).offset(offset).limit(size))
     return {"total": total, "page": page, "size": size, "items": [q_out(x) for x in rows]}
 
 

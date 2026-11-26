@@ -109,3 +109,35 @@ async def test_real_base_quality(session):
     assert not [q.key for q in qs if question_leaks(q)]
     assert all(len({o.lower() for o in q.options}) == 4 for q in qs)
     assert all(q.asks_time == (q.kind == "qachon") for q in qs)
+
+
+
+async def test_admin_filters_and_hard_sort(session):
+    """Admin: avtomatik / tahrirlangan / qo'lda filtri va eng ko'p adashilgan savollar."""
+    from app.models import Answer, User
+    from app.security import make_admin_token
+    from tests.test_api import client
+
+    await _load(session, _years())
+    await sync_questions(session)
+    session.add(Question(text="Qo‘lda savol", option_a="1", option_b="2", option_c="3", option_d="4", correct_option="a"))
+    u = User(telegram_id=5005, full_name="O‘quvchi")
+    session.add_all([u, User(telegram_id=999, full_name="Admin", is_admin=True)])
+    await session.flush()
+    hard = await session.scalar(select(Question).where(Question.gen_key == "S-03:qachon"))
+    easy = await session.scalar(select(Question).where(Question.gen_key == "S-04:qachon"))
+    hard.locked = True
+    for i in range(4):
+        session.add(Answer(user_id=u.id, question_id=hard.id, chosen_option="a", is_correct=i == 0))
+        session.add(Answer(user_id=u.id, question_id=easy.id, chosen_option="a", is_correct=True))
+    await session.commit()
+
+    async with client("Bearer " + make_admin_token(999)) as c:
+        get = lambda **p: c.get("/api/admin/questions", params=p)  # noqa: E731
+        r0 = (await get(source="manual")).json()
+        assert r0.get("total") == 1, r0
+        assert (await get(source="edited")).json()["total"] == 1
+        assert (await get(source="auto")).json()["total"] == 7
+        r = (await get(sort="hard")).json()
+        assert [x["id"] for x in r["items"]] == [hard.id, easy.id]
+        assert r["items"][0]["accuracy"] == 25 and r["items"][0]["answers"] == 4 and r["items"][0]["locked"]

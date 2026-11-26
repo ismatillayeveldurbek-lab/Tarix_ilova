@@ -51,6 +51,15 @@ export function QuestionForm({ question, periods, onClose, onSaved }: {
           <h2 style={{ fontSize: 22 }}>{question ? `Savol #${question.id}` : "Yangi savol"}</h2>
           <div className="row small bold">Faol <Switch on={d.is_active} onChange={(v) => set("is_active", v)} /></div>
         </div>
+        {question?.auto && (
+          <div className="card small" style={{ background: "var(--primary-soft)", borderColor: "transparent" }}>
+            Bu savol faktlar bazasidan avtomatik tuzilgan{question.fact_id ? ` (${question.fact_id})` : ""}.{" "}
+            {question.locked
+              ? "Siz uni tahrirlagansiz — baza qayta yuklanganda o‘zgartirilmaydi."
+              : "Saqlasangiz, tahriringiz qoladi: baza qayta yuklanganda bu savol endi o‘zgartirilmaydi."}
+            {" "}Xato faktning o‘zida bo‘lsa, uni baza.csv’da tuzatgan ma’qul.
+          </div>
+        )}
         <label className="field"><span>Savol matni</span>
           <textarea className="textarea" value={d.text} onChange={(e) => set("text", e.target.value)} />
         </label>

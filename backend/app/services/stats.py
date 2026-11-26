@@ -19,7 +19,8 @@ async def learning_path(session: AsyncSession, user: User) -> list[dict]:
     groups = group_by_period(await topic_progress(session, user.id))
     return [
         {"id": g["id"], "name": g["name"], "topics": [
-            {"id": t["id"], "name": t["name"], "total": t["total"], "solved": t["mastered"], "percent": t["percent"]}
+            {"id": t["id"], "name": t["name"], "total": t["total"], "solved": t["mastered"], "percent": t["percent"],
+             "book": t["book"]}
             for t in g["topics"]
         ]}
         for g in groups

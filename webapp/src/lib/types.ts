@@ -11,7 +11,7 @@ export type Question = {
   chosen?: string;
 };
 
-export type TopicNode = { id: number; name: string; total: number; solved: number; percent: number };
+export type TopicNode = { id: number; name: string; total: number; solved: number; percent: number; book?: string | null };
 export type PeriodNode = { id: number; name: string; topics: TopicNode[] };
 
 export type Home = {

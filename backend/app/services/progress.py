@@ -12,7 +12,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import utcnow
-from app.models import Answer, Period, Question, Topic
+from app.models import Answer, Book, Fact, Period, Question, Topic
 
 ACCURACY_WINDOW = timedelta(days=60)
 MIN_ATTEMPTS = 3
@@ -30,6 +30,8 @@ class TopicProgress:
     answered: int = 0     # kamida bir marta javob berilgan savollar
     attempts: int = 0     # oxirgi 60 kundagi javoblar soni
     correct: int = 0      # ulardan to‘g‘ri
+    book: str | None = None   # darslik ("7-sinf Jahon tarixi") — faktlardan tuzilgan mavzularda
+    book_key: tuple = ()
 
     @property
     def percent(self) -> int:
@@ -43,7 +45,7 @@ class TopicProgress:
         return {
             "id": self.id, "name": self.name, "period": self.period_name, "total": self.total,
             "mastered": self.mastered, "answered": self.answered, "attempts": self.attempts,
-            "percent": self.percent, "accuracy": self.accuracy,
+            "percent": self.percent, "accuracy": self.accuracy, "book": self.book,
         }
 
 
@@ -61,6 +63,7 @@ async def topic_progress(session: AsyncSession, user_id: int) -> list[TopicProgr
         t.id: TopicProgress(t.id, t.name, t.period_id, pname, totals[t.id])
         for t, pname, _ in rows if totals.get(t.id)
     }
+    await _attach_books(session, items)
 
     answers = await session.execute(
         select(Answer.question_id, Question.topic_id, Answer.is_correct, Answer.answered_at)
@@ -82,6 +85,32 @@ async def topic_progress(session: AsyncSession, user_id: int) -> list[TopicProgr
         items[topic_id].answered += 1
         items[topic_id].mastered += int(ok)
     return list(items.values())
+
+
+async def _attach_books(session: AsyncSession, items: dict[int, TopicProgress]) -> None:
+    """Mavzu qaysi darslikdan: savollari tuzilgan faktlarning darsligi. Davr ichida mavzular
+    darslik bo‘yicha guruhlanadi (sinf, so‘ng O‘zbekiston/Jahon tarixi), qo‘lda kiritilganlar — boshida."""
+    rows = (await session.execute(
+        select(Question.topic_id, Book.sinf, Book.fan, func.count())
+        .join(Fact, Fact.id == Question.fact_id).join(Book, Book.id == Fact.book_id)
+        .where(Question.is_active.is_(True), Question.topic_id.is_not(None))
+        .group_by(Question.topic_id, Book.sinf, Book.fan)
+    )).all()
+    best: dict[int, tuple[int, int, str]] = {}
+    for topic_id, sinf, fan, n in rows:
+        if topic_id in items and n > best.get(topic_id, (0, 0, ""))[0]:
+            best[topic_id] = (n, sinf, fan)
+    for topic_id, (_, sinf, fan) in best.items():
+        items[topic_id].book = f"{sinf}-sinf {fan}"
+        items[topic_id].book_key = (sinf, fan != "O‘zbekiston tarixi")
+    if best:
+        order = {tid: n for n, tid in enumerate(items)}
+        period_rank: dict[int | None, int] = {}
+        for i in items.values():
+            period_rank.setdefault(i.period_id, len(period_rank))  # davrlar asl tartibda qoladi
+        ordered = sorted(items.values(), key=lambda i: (period_rank[i.period_id], i.book_key, order[i.id]))
+        items.clear()
+        items.update({i.id: i for i in ordered})
 
 
 def weak_topics(items: list[TopicProgress], limit: int = 3) -> list[TopicProgress]:

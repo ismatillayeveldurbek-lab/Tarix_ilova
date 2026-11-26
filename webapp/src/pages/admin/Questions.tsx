@@ -15,6 +15,8 @@ export function QuestionsPage() {
   const [topicId, setTopicId] = useState("");
   const [difficulty, setDifficulty] = useState("");
   const [active, setActive] = useState("");
+  const [source, setSource] = useState("");
+  const [sort, setSort] = useState("");
   const [page, setPage] = useState(1);
   const [editing, setEditing] = useState<AdminQuestion | null | "new">(null);
 
@@ -25,12 +27,14 @@ export function QuestionsPage() {
     if (topicId) p.set("topic_id", topicId);
     if (difficulty) p.set("difficulty", difficulty);
     if (active) p.set("active", active);
+    if (source) p.set("source", source);
+    if (sort) p.set("sort", sort);
     try {
       setData(await api<Page>(`/admin/questions?${p}`));
     } catch (e) {
       toast((e as Error).message, "error");
     }
-  }, [q, periodId, topicId, difficulty, active, page]);
+  }, [q, periodId, topicId, difficulty, active, source, sort, page]);
 
   useEffect(() => {
     const id = setTimeout(load, 250); // qidiruvda har harfda emas, biroz kutib so‘raymiz
@@ -72,7 +76,23 @@ export function QuestionsPage() {
           <option value="true">Faol</option>
           <option value="false">O‘chirilgan</option>
         </select>
+        <select className="select" value={source} onChange={(e) => resetPage(setSource)(e.target.value)}>
+          <option value="">Barcha manbalar</option>
+          <option value="auto">Faktlardan (avtomatik)</option>
+          <option value="edited">Avtomatik, tahrirlangan</option>
+          <option value="manual">Qo‘lda kiritilgan</option>
+        </select>
+        <select className="select" value={sort} onChange={(e) => resetPage(setSort)(e.target.value)}>
+          <option value="">Yangilari birinchi</option>
+          <option value="hard">Eng ko‘p adashilgan</option>
+        </select>
       </div>
+      {sort === "hard" && (
+        <div className="small muted">
+          Kamida 3 marta javob berilgan savollar, aniqligi pastdan yuqoriga. Juda past aniqlik ko‘pincha savol yoki
+          variantlarda xato borligini bildiradi — tekshirib, kerak bo‘lsa tahrirlang.
+        </div>
+      )}
       {!data ? <Loading /> : (
         <div className="stack" style={{ gap: 8 }}>
           {data.items.length === 0 && <div className="card muted center">Hech narsa topilmadi</div>}
@@ -89,6 +109,12 @@ export function QuestionsPage() {
                   {!x.is_active && <span className="chip red">o‘chirilgan</span>}
                   {!x.explanation && <span className="chip red">izoh yo‘q</span>}
                   {x.image_url && <span className="chip purple">rasm</span>}
+                  {x.auto && <span className="chip">{x.locked ? "avtomatik · tahrirlangan" : "faktdan"}{x.fact_id ? ` ${x.fact_id}` : ""}</span>}
+                  {x.accuracy !== undefined && (
+                    <span className={`chip ${x.accuracy < 40 ? "red" : x.accuracy < 70 ? "" : "green"}`}>
+                      aniqlik {x.accuracy}% · {x.answers} javob
+                    </span>
+                  )}
                 </div>
               </div>
             </button>

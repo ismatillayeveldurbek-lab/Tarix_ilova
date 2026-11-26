@@ -6,7 +6,7 @@ import {
 import { navigate } from "../lib/router";
 import { useStore } from "../lib/store";
 import { haptic } from "../lib/telegram";
-import type { CardsSummary, FactPath, PeriodNode } from "../lib/types";
+import type { CardsSummary, FactPath, PeriodNode, TopicNode } from "../lib/types";
 import { useApi } from "../lib/useApi";
 
 const go = (to: string) => { haptic.tap(); navigate(to); };
@@ -20,6 +20,52 @@ const BAR_TONE: Record<string, string> = {
   sana: "bg-sana", shaxs: "bg-shaxs", atama: "bg-atama", joy: "bg-joy", urush: "bg-urush", asar: "bg-asar",
 };
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
+
+/** Mavzularni darslik bo‘yicha guruhlaydi (server tartibi saqlanadi); darsliksizlar — alohida */
+function groupByBook(topics: TopicNode[]): [string, TopicNode[]][] {
+  const groups = new Map<string, TopicNode[]>();
+  for (const t of topics) {
+    const k = t.book ?? "";
+    groups.set(k, [...(groups.get(k) ?? []), t]);
+  }
+  return [...groups.entries()];
+}
+
+function TopicRow({ t, n }: { t: TopicNode; n: number }) {
+  return (
+    <ListRow title={t.name} subtitle={`${t.solved}/${t.total} savol`}
+      icon={<span className={cx("grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 text-[12px] font-bold",
+        t.percent >= 100 ? "border-success bg-success text-white" : t.solved ? "border-peach text-peach" : "border-line-strong text-faint")}>
+        {t.percent >= 100 ? "✓" : n}</span>}
+      right={<span className="text-[13px] font-semibold text-muted">{t.percent}%</span>}
+      onClick={() => go(`/lesson?mode=topic&id=${t.id}`)} />
+  );
+}
+
+/** Davr ichidagi darslik: ochiladigan guruh (davrda 100+ mavzu bo‘lsa ham ro‘yxat qisqa) */
+function BookGroup({ title, topics }: { title: string; topics: TopicNode[] }) {
+  const [open, setOpen] = useState(false);
+  const solved = topics.reduce((s, t) => s + t.solved, 0);
+  const total = topics.reduce((s, t) => s + t.total, 0);
+  return (
+    <div>
+      <button type="button" onClick={() => { haptic.select(); setOpen(!open); }}
+        className="flex w-full items-center gap-3 bg-surface-2/50 px-4 py-3 text-left transition hover:bg-surface-2">
+        <Book size={17} className="shrink-0 text-peri" />
+        <span className="min-w-0 flex-1">
+          <span className="block truncate text-[14.5px] font-bold text-ink">{title}</span>
+          <span className="text-[12.5px] text-muted">{topics.length} mavzu · {solved}/{total} savol</span>
+        </span>
+        <ChevronRight size={16} className={cx("text-faint transition-transform duration-300", open && "rotate-90")} />
+      </button>
+      {open && (
+        <div className="stagger divide-y divide-line">
+          {topics.map((t, i) => <TopicRow key={t.id} t={t} n={i + 1} />)}
+        </div>
+      )}
+    </div>
+  );
+}
 
 /** Kurs dasturi: davr (ochiladigan) va uning mavzulari bo‘yicha testlar */
 function Unit({ period, index }: { period: PeriodNode; index: number }) {
@@ -44,14 +90,9 @@ function Unit({ period, index }: { period: PeriodNode; index: number }) {
           <ListRow title="Butun davr bo‘yicha test" subtitle={`${total} savol`}
             icon={<IconTile tone="peri" size={36}><Layers size={17} /></IconTile>}
             onClick={() => go(period.id ? `/lesson?mode=period&id=${period.id}` : "/lesson?mode=mixed")} />
-          {period.topics.map((t, i) => (
-            <ListRow key={t.id} title={t.name} subtitle={`${t.solved}/${t.total} savol`}
-              icon={<span className={cx("grid h-9 w-9 shrink-0 place-items-center rounded-full border-2 text-[12px] font-bold",
-                t.percent >= 100 ? "border-success bg-success text-white" : t.solved ? "border-peach text-peach" : "border-line-strong text-faint")}>
-                {t.percent >= 100 ? "✓" : i + 1}</span>}
-              right={<span className="text-[13px] font-semibold text-muted">{t.percent}%</span>}
-              onClick={() => go(`/lesson?mode=topic&id=${t.id}`)} />
-          ))}
+          {groupByBook(period.topics).map(([book, topics]) => book
+            ? <BookGroup key={book} title={book} topics={topics} />
+            : topics.map((t, i) => <TopicRow key={t.id} t={t} n={i + 1} />))}
         </div>
       )}
     </Card>
