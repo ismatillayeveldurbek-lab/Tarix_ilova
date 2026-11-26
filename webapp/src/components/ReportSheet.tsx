@@ -1,0 +1,39 @@
+import { useState } from "react";
+import { api } from "../lib/api";
+import { Flag } from "./Icons";
+import { Sheet, toast } from "./ui";
+
+/** "Savolda xato bor" oynasi */
+export function ReportSheet({ questionId, onClose }: { questionId: number; onClose: () => void }) {
+  const [text, setText] = useState("");
+  const [busy, setBusy] = useState(false);
+  const quick = ["To‘g‘ri javob noto‘g‘ri belgilangan", "Savol matnida xato bor", "Izoh noto‘g‘ri", "Variantlarda xato bor"];
+
+  async function send() {
+    setBusy(true);
+    try {
+      await api("/reports", { body: { question_id: questionId, comment: text.trim() } });
+      toast("Rahmat! Xabaringiz adminlarga yuborildi", "success");
+      onClose();
+    } catch (e) {
+      toast((e as Error).message, "error");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Sheet onClose={onClose}>
+      <div className="stack">
+        <div className="row"><span className="icon-box danger"><Flag size={18} /></span><h2>Xato haqida xabar berish</h2></div>
+        <div className="row" style={{ flexWrap: "wrap", gap: 6 }}>
+          {quick.map((q) => (
+            <button key={q} type="button" className="chip" style={{ padding: "6px 12px", cursor: "pointer" }} onClick={() => setText(q)}>{q}</button>
+          ))}
+        </div>
+        <textarea className="textarea" placeholder="Xatoni qisqacha yozing..." value={text} onChange={(e) => setText(e.target.value)} maxLength={2000} />
+        <button className="btn red block" disabled={!text.trim() || busy} onClick={send}>Yuborish</button>
+      </div>
+    </Sheet>
+  );
+}
