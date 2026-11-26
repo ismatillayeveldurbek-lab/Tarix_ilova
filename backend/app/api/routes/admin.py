@@ -17,10 +17,13 @@ from app.api.deps import AdminUser, Session
 from app.bot.broadcast import broadcast
 from app.db import utcnow
 from app.models import (
-    Answer, ExamAnswer, ExamConfig, HistoryEvent, Period, Question, QuestionReport, Referral, ReviewItem, Topic, User,
+    Answer, Book, ExamAnswer, ExamConfig, Fact, HistoryEvent, Period, Question, QuestionReport, Referral, ReviewItem,
+    Topic, User,
 )
 from app.services.daily import local_midnight_utc
 from app.services.exam import get_active_config, rule_availability
+from app.services.facts import VISIBLE as VISIBLE_FACTS
+from app.services.facts_import import import_facts, read_csv as read_facts_csv
 from app.services.importer import import_file, import_history_file
 from app.services.media import MAX_IMAGE_BYTES, is_valid_image_url, save_image
 
@@ -580,3 +583,95 @@ async def save_exam_config(body: ExamConfigIn, _: AdminUser, session: Session) -
     c.grades = sorted((g.model_dump() for g in body.grades), key=lambda g: -g["min_percent"])
     await session.commit()
     return await _config_out(session, c)
+
+
+# ---------- Faktlar bazasi ----------
+
+def fact_out(f: Fact) -> dict:
+    return {
+        "id": f.id, "tur": f.tur, "nom": f.nom, "matn": f.matn, "sana_matn": f.sana_matn,
+        "yil_boshi": f.yil_boshi, "yil_oxiri": f.yil_oxiri, "asr": f.asr, "davr": f.davr, "hudud": f.hudud,
+        "sinf": f.sinf, "book_id": f.book_id, "source": f.source, "mavzu_nomi": f.mavzu_nomi,
+        "iqtibos": f.iqtibos, "shaxs_faoliyati": f.shaxs_faoliyati, "shaxs_ishoralar": f.shaxs_ishoralar,
+        "urush_tomonlari": f.urush_tomonlari, "golib": f.golib, "natija": f.natija,
+        "joy_turi": f.joy_turi, "joy_hozirgi": f.joy_hozirgi, "asar_muallifi": f.asar_muallifi,
+        "ishonch": f.ishonch, "izoh": f.izoh, "flags": f.flags,
+        "hidden_import": f.hidden_import, "hidden_admin": f.hidden_admin, "visible": f.visible,
+    }
+
+
+@router.get("/facts/summary")
+async def facts_summary(_: AdminUser, session: Session) -> dict:
+    by_type = dict((await session.execute(select(Fact.tur, func.count()).group_by(Fact.tur))).all())
+    by_davr = dict((await session.execute(select(Fact.davr, func.count()).group_by(Fact.davr))).all())
+    flags: dict[str, int] = {}
+    for fl in await session.scalars(select(Fact.flags)):
+        for f in fl or []:
+            flags[f] = flags.get(f, 0) + 1
+    books = [
+        {"id": b.id, "title": b.title, "sinf": b.sinf, "fan": b.fan, "count": c}
+        for b, c in (await session.execute(
+            select(Book, func.count(Fact.id)).join(Fact, Fact.book_id == Book.id)
+            .group_by(Book.id).order_by(Book.sinf, Book.fan)
+        )).all()
+    ]
+    return {
+        "total": sum(by_type.values()),
+        "visible": await session.scalar(select(func.count()).select_from(Fact).where(VISIBLE_FACTS)),
+        "hidden_admin": await session.scalar(select(func.count()).select_from(Fact).where(Fact.hidden_admin.is_(True))),
+        "by_type": by_type, "by_davr": by_davr, "flags": flags, "books": books,
+    }
+
+
+@router.get("/facts")
+async def list_facts(
+    _: AdminUser, session: Session, q: str = "", tur: str = "", davr: str = "", hudud: str = "",
+    book_id: str = "", flag: str = "", hidden: bool | None = None, page: int = 1, size: int = 30,
+) -> dict:
+    query = select(Fact)
+    if q:
+        like = f"%{q}%"
+        query = query.where(or_(Fact.nom.ilike(like), Fact.matn.ilike(like), Fact.id.ilike(like)))
+    for col, val in ((Fact.tur, tur), (Fact.davr, davr), (Fact.hudud, hudud), (Fact.book_id, book_id)):
+        if val:
+            query = query.where(col == val)
+    if hidden is True:
+        query = query.where(~VISIBLE_FACTS)
+    elif hidden is False:
+        query = query.where(VISIBLE_FACTS)
+    rows = list(await session.scalars(query.order_by(Fact.id)))
+    if flag:  # JSON ro'yxat bo'yicha filtr — bazadan mustaqil bo'lishi uchun Python'da
+        rows = [f for f in rows if flag in (f.flags or [])]
+    size = max(1, min(size, 100))
+    start = (max(page, 1) - 1) * size
+    return {"total": len(rows), "page": page, "size": size, "items": [fact_out(f) for f in rows[start:start + size]]}
+
+
+class FactVisibilityIn(BaseModel):
+    hidden_admin: bool
+
+
+@router.patch("/facts/{fact_id}")
+async def set_fact_visibility(fact_id: str, body: FactVisibilityIn, _: AdminUser, session: Session) -> dict:
+    fact = await session.get(Fact, fact_id)
+    if fact is None:
+        raise HTTPException(404, "Fakt topilmadi")
+    fact.hidden_admin = body.hidden_admin
+    await session.commit()
+    return fact_out(fact)
+
+
+@router.post("/import/facts")
+async def import_facts_file(file: UploadFile, _: AdminUser, session: Session, dry_run: bool = False) -> dict:
+    if not (file.filename or "").lower().endswith(".csv"):
+        raise HTTPException(400, "Faktlar bazasi .csv (UTF-8) formatida bo'lishi kerak")
+    content = await file.read(20 * 1024 * 1024 + 1)
+    if len(content) > 20 * 1024 * 1024:
+        raise HTTPException(413, "Fayl 20 MB dan katta")
+    try:
+        report = await import_facts(session, read_facts_csv(content), dry_run=dry_run)
+    except (ValueError, UnicodeDecodeError) as e:
+        raise HTTPException(400, f"CSV o'qilmadi: {e}") from None
+    if not dry_run:
+        await session.commit()
+    return report.as_dict()

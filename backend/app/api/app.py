@@ -3,7 +3,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 
-from app.api.routes import admin, app_routes
+from app.api.routes import admin, app_routes, v1
 from app.config import BASE_DIR
 from app.db import SessionLocal
 from app.models import Media
@@ -15,6 +15,7 @@ def create_app(lifespan=None) -> FastAPI:
     api = FastAPI(title="Tarix ilova API", lifespan=lifespan)
     api.include_router(app_routes.router)
     api.include_router(admin.router)
+    api.include_router(v1.router)
 
     @api.get("/api/media/{media_id}", include_in_schema=False)
     async def media(media_id: int) -> Response:

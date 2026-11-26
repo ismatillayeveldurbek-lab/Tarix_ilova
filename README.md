@@ -117,6 +117,18 @@ cd backend && pytest      # bot oqimi, API, imtihon, import, takrorlash...
 
 ---
 
+## Faktlar bazasi
+
+Ilovaning poydevori — `data/baza.csv`: 11 ta darslikdan (6–11-sinf) olingan 3 987 ta fakt (sana, shaxs, atama, joy, urush, asar). Har faktda darslik, paragraf va bet bor. Kartochkalar, testlar va o'yinlar shu faktlardan tuziladi (qarang: `CLAUDE.md`, `docs/mezon-tahlili.md`).
+
+```bash
+cd backend
+python -m scripts.import_facts --dry-run   # faqat tekshiradi, bazaga yozmaydi
+python -m scripts.import_facts             # ../data/baza.csv ni import qiladi
+```
+
+Import xavfsiz: faktlar ID bo'yicha yangilanadi. `ishonch=past` qatorlar o'quvchiga ko'rsatilmaydi. Har qator `CLAUDE.md` dagi qoidalar bo'yicha tekshiriladi (manba bor-yo'qligi, yil va asr mosligi, qo'sh qo'shtirnoq, o‘/g‘ belgisi va hokazo). Admin panelda **Faktlar bazasi** bo'limi bor: qidiruv, filtrlar, faktni yashirish va CSV'ni panel orqali yangilash. Serverda ilova har ishga tushganda baza avtomatik yangilanadi.
+
 ## 2. Savollarni joylash
 
 1. Telegramda botga **/panel** yozing (sizning ID raqamingiz `ADMIN_IDS` da bo'lishi kerak).

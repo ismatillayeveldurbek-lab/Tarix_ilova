@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Bell, Calendar, Chart, Clipboard, Flag, Home, Layers, Search, Upload } from "../../components/Icons";
+import { Bell, Book, Calendar, Chart, Clipboard, Flag, Home, Layers, Search, Upload } from "../../components/Icons";
 import { Logo } from "../../components/Logo";
 import { Loading } from "../../components/ui";
 import { api, ApiError, setAdminToken } from "../../lib/api";
@@ -7,6 +7,7 @@ import { navigate, useRoute } from "../../lib/router";
 import { getInitData } from "../../lib/telegram";
 import { BroadcastPage } from "./Broadcast";
 import { Dashboard } from "./Dashboard";
+import { FactsPage } from "./Facts";
 import { ExamConfigPage } from "./ExamConfig";
 import { HistoryPage } from "./History";
 import { ImportPage } from "./Import";
@@ -16,7 +17,8 @@ import { StructurePage } from "./Structure";
 
 const MENU = [
   { path: "/admin", label: "Statistika", icon: Chart },
-  { path: "/admin/questions", label: "Savollar", icon: Search },
+  { path: "/admin/facts", label: "Faktlar bazasi", icon: Book },
+  { path: "/admin/questions", label: "Test savollari", icon: Search },
   { path: "/admin/import", label: "Import (Excel/CSV)", icon: Upload },
   { path: "/admin/structure", label: "Davr va mavzular", icon: Layers },
   { path: "/admin/history", label: "Tarixda bugun", icon: Calendar },
@@ -68,6 +70,7 @@ export function AdminApp() {
 
   const page = (() => {
     switch (path) {
+      case "/admin/facts": return <FactsPage />;
       case "/admin/questions": return <QuestionsPage />;
       case "/admin/import": return <ImportPage />;
       case "/admin/structure": return <StructurePage />;

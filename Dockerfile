@@ -14,7 +14,8 @@ WORKDIR /app/backend
 COPY backend/requirements.txt ./
 RUN pip install --no-cache-dir -r requirements.txt
 COPY backend/ ./
+COPY data/ /app/data/
 COPY --from=webapp /webapp/dist /app/webapp/dist
 
-# Ishga tushganda: jadvallarni yangilash -> imtihon formatini yaratish -> ilovani ishga tushirish
-CMD alembic upgrade head && python -m scripts.seed --faqat-format && python -m app.main
+# Ishga tushganda: jadvallarni yangilash -> imtihon formati -> faktlar bazasi (ID bo'yicha yangilanadi) -> ilova
+CMD alembic upgrade head && python -m scripts.seed --faqat-format && python -m scripts.import_facts && python -m app.main
