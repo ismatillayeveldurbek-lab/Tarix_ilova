@@ -1,12 +1,14 @@
 """Savollarni Excel (.xlsx) yoki CSV fayldan import qilish.
 
 Fayl birinchi qatorida ustun nomlari bo‘lishi kerak:
-    savol | a | b | c | d | togri | izoh | mavzu | davr | qiyinlik | rasm
+    savol | a | b | c | d | togri | izoh | mavzu | davr | qiyinlik | rasm | manba | vaqt_savoli
 
 - togri: A, B, C yoki D
 - qiyinlik: 1/2/3 yoki oson/o‘rta/qiyin (bo‘sh bo‘lsa — 1)
 - mavzu va davr bazada bo‘lmasa, avtomatik yaratiladi
 - rasm (ixtiyoriy): rasmning https:// havolasi
+- manba (ixtiyoriy): "7-sinf Jahon tarixi, 5-§, 40-bet" — izoh oxiriga "Manba: ..." bo‘lib qo‘shiladi
+- vaqt_savoli (ixtiyoriy): ha/yo‘q — sana so‘raladigan savolda javobdan oldin davr va mavzu ko‘rsatilmaydi
 - matni bir xil savol ikkinchi marta qo‘shilmaydi
 """
 import csv
@@ -32,7 +34,10 @@ HEADER_ALIASES = {
     "davr": "period", "period": "period",
     "qiyinlik": "difficulty", "difficulty": "difficulty", "daraja": "difficulty",
     "rasm": "image", "image": "image", "rasm url": "image", "rasm havolasi": "image",
+    "manba": "source", "source": "source",
+    "vaqt_savoli": "asks_time", "vaqt savoli": "asks_time",
 }
+YES = {"ha", "yes", "1", "true", "+"}
 REQUIRED = ("text", "a", "b", "c", "d", "correct")
 DIFFICULTY_WORDS = {"oson": 1, "orta": 2, "qiyin": 3}
 
@@ -176,10 +181,15 @@ async def import_rows(session: AsyncSession, rows: list[dict[str, str]]) -> Impo
 
         period = await _get_period(session, row.get("period", ""), periods)
         topic = await _get_topic(session, row.get("topic", ""), period, topics)
+        explanation = clean_text(row.get("explanation", ""))
+        source = clean_text(row.get("source", ""))
+        if source and "Manba:" not in explanation:
+            explanation = f"{explanation}\n\nManba: {source}".strip()
         session.add(Question(
             text=clean_text(row["text"]), option_a=clean_text(row["a"]), option_b=clean_text(row["b"]),
             option_c=clean_text(row["c"]), option_d=clean_text(row["d"]), correct_option=correct,
-            explanation=clean_text(row.get("explanation", "")), difficulty=difficulty, image_url=image or None,
+            explanation=explanation, difficulty=difficulty, image_url=image or None,
+            asks_time=_key(row.get("asks_time", "")) in YES,
             topic_id=topic.id if topic else None, period_id=period.id if period else None,
         ))
         existing.add(row["text"])

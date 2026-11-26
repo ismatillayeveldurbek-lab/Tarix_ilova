@@ -141,3 +141,22 @@ async def test_admin_filters_and_hard_sort(session):
         r = (await get(sort="hard")).json()
         assert [x["id"] for x in r["items"]] == [hard.id, easy.id]
         assert r["items"][0]["accuracy"] == 25 and r["items"][0]["answers"] == 4 and r["items"][0]["locked"]
+
+
+async def test_import_topic_tests_with_source_and_time_flag(session):
+    """Mavzu testlari CSV'si (docs/promptlar/07-mavzu-testlari.md formati)."""
+    from app.services.importer import import_file
+    csv_text = (
+        "savol,a,b,c,d,togri,izoh,manba,mavzu,davr,qiyinlik,vaqt_savoli\n"
+        "\"Amir Temur qachon taxtga o‘tirgan?\",\"1360-yil\",\"1370-yil\",\"1380-yil\",\"1405-yil\",B,"
+        "\"1370-yilda Balxda qurultoy bo‘lgan.\",\"7-sinf O‘zbekiston tarixi, 12-§, 85-bet\",\"Amir Temur davlati\",\"O‘rta asrlar\",2,ha\n"
+        "\"Temur tuzuklari kimga nisbat beriladi?\",\"Amir Temur\",\"Bobur\",\"Ulug‘bek\",\"Navoiy\",A,"
+        "\"Tuzuklar Amir Temurga nisbat beriladi.\",\"7-sinf O‘zbekiston tarixi, 12-§, 88-bet\",\"Amir Temur davlati\",\"O‘rta asrlar\",1,yo‘q\n"
+    ).encode()
+    rep = await import_file(session, "testlar.csv", csv_text)
+    await session.commit()
+    assert rep.added == 2 and not rep.errors
+    when, who = list(await session.scalars(select(Question).order_by(Question.id)))
+    assert when.asks_time and not who.asks_time
+    assert when.explanation.endswith("Manba: 7-sinf O‘zbekiston tarixi, 12-§, 85-bet")
+    assert when.topic.name == "Amir Temur davlati" and when.period.name == "O‘rta asrlar"
