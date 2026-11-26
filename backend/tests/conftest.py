@@ -1,9 +1,10 @@
 import os
 import tempfile
 
-# Testlar haqiqiy bazaga tegmasin: vaqtinchalik SQLite fayl
+# Testlar haqiqiy bazaga tegmasin: vaqtinchalik SQLite fayl.
+# PostgreSQL'da sinash uchun: TEST_DATABASE_URL=postgresql://... pytest (baza tozalanadi!)
 _tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
-os.environ["DATABASE_URL"] = f"sqlite+aiosqlite:///{_tmp.name}"
+os.environ["DATABASE_URL"] = os.environ.get("TEST_DATABASE_URL") or f"sqlite+aiosqlite:///{_tmp.name}"
 os.environ["ADMIN_IDS"] = "999"
 os.environ["BOT_TOKEN"] = "42:TEST"
 

@@ -17,6 +17,7 @@ from app.services.history import events_for
 from app.services.quiz import (
     REPORTS_PER_DAY, create_report, get_question, pick_question_ids, record_answer, reports_last_day,
 )
+from app.services import reminder_times
 from app.services.progress import group_by_period, overall_percent, recommendation, topic_progress, weak_topics
 from app.services.referrals import ensure_ref_code, referral_link, referral_stats
 from app.services.rating import user_rank, user_week_xp, weekly_leaderboard, xp_for
@@ -110,6 +111,7 @@ async def update_me(body: MeUpdate, user: CurrentUser, session: Session) -> dict
         h, m = map(int, body.reminder_time.split(":"))
         user.reminder_time = time(h, m)
         user.last_reminder_date = None
+    reminder_times.note(user.reminder_time)
     await session.commit()
     return {"ok": True}
 

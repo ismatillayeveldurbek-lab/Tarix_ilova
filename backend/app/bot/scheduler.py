@@ -1,7 +1,8 @@
 """Rejalashtirilgan vazifalar (APScheduler):
 
 * har daqiqa — kunlik eslatma vaqti kelgan foydalanuvchilarga eslatma
-  (agar bugungi maqsad hali bajarilmagan bo‘lsa);
+  (agar bugungi maqsad hali bajarilmagan bo‘lsa). Baza faqat kimdir tanlagan
+  daqiqalarda so‘raladi (services/reminder_times.py);
 * har kuni HISTORY_POST_TIME da — "Tarixda bugun" posti kanalga va foydalanuvchilarga.
 """
 import asyncio
@@ -18,6 +19,7 @@ from app.bot.texts import t
 from app.config import settings
 from app.db import SessionLocal, local_today, utcnow
 from app.models import LessonSession, User
+from app.services import reminder_times
 from app.services.xp import actions_today
 from app.services.history import events_for, format_post
 from app.services.streak import effective_streak
@@ -29,6 +31,8 @@ async def send_reminders(bot: Bot, now: datetime | None = None) -> int:
     now = now or datetime.now(settings.tz)
     today = now.date()
     current = now.time().replace(second=0, microsecond=0)
+    if not reminder_times.may_be_due(current):
+        return 0  # bu daqiqada hech kimning eslatmasi yo‘q — bazani bezovta qilmaymiz
     sent = 0
     async with SessionLocal() as session:
         users = list(await session.scalars(
@@ -94,6 +98,11 @@ async def cleanup_old_lessons(days: int = 7) -> int:
         return result.rowcount or 0
 
 
+async def refresh_reminder_times() -> None:
+    async with SessionLocal() as session:
+        await reminder_times.load(session)
+
+
 def create_scheduler(bot: Bot) -> AsyncIOScheduler:
     scheduler = AsyncIOScheduler(timezone=settings.tz)
     scheduler.add_job(send_reminders, "cron", minute="*", args=[bot], id="reminders",
@@ -101,6 +110,8 @@ def create_scheduler(bot: Bot) -> AsyncIOScheduler:
     hour, minute = (int(x) for x in settings.history_post_time.split(":"))
     scheduler.add_job(post_history_today, "cron", hour=hour, minute=minute, args=[bot],
                       id="history_today", max_instances=1, coalesce=True)
+    scheduler.add_job(refresh_reminder_times, "interval", hours=6, next_run_time=datetime.now(settings.tz),
+                      id="reminder_times", max_instances=1, coalesce=True)
     scheduler.add_job(cleanup_old_lessons, "cron", hour=4, minute=17, id="cleanup", max_instances=1)
     return scheduler
 

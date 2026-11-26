@@ -188,3 +188,40 @@ async def test_import_normalizes_apostrophes(session):
     # xuddi shu savol ‘ belgisi bilan — takroriy deb topiladi
     again = await import_file(session, "q.csv", csv_text.replace("Qo'qon", "Qo‘qon").encode())
     assert again.skipped_duplicates == 1
+
+
+def test_normalize_db_url():
+    from app.config import normalize_db_url
+    neon = "postgresql://u:p@ep-x-pooler.eu-central-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+    assert normalize_db_url(neon) == (
+        "postgresql+asyncpg://u:p@ep-x-pooler.eu-central-1.aws.neon.tech/neondb?ssl=require&prepared_statement_cache_size=0")
+    assert normalize_db_url("postgres://u:p@h:5432/db") == "postgresql+asyncpg://u:p@h:5432/db"
+    assert normalize_db_url("sqlite+aiosqlite:///x.db") == "sqlite+aiosqlite:///x.db"
+
+
+def test_render_url_fallback(monkeypatch):
+    from app.config import Settings
+    monkeypatch.setenv("RENDER_EXTERNAL_URL", "https://tarix.onrender.com")
+    monkeypatch.delenv("WEBAPP_URL", raising=False)
+    assert Settings(_env_file=None).webapp_url == "https://tarix.onrender.com"
+    monkeypatch.setenv("WEBAPP_URL", "https://boshqa.uz")
+    assert Settings(_env_file=None).webapp_url == "https://boshqa.uz"
+
+
+async def test_reminder_times_cache(session):
+    """Eslatma vazifasi faqat kimdir tanlagan daqiqada bazaga murojaat qiladi."""
+    from datetime import time
+
+    from app.models import User
+    from app.services import reminder_times
+    session.add(User(telegram_id=5001, full_name="A", reminder_time=time(20, 15)))
+    await session.commit()
+    try:
+        times = await reminder_times.load(session)
+        assert time(20, 15) in times and time(19, 0) in times
+        assert reminder_times.may_be_due(time(20, 15)) and not reminder_times.may_be_due(time(3, 7))
+        reminder_times.note(time(3, 7))
+        assert reminder_times.may_be_due(time(3, 7))
+    finally:
+        reminder_times.reset()
+    assert reminder_times.may_be_due(time(3, 8))  # yuklanmagan bo'lsa — har daqiqa tekshiriladi

@@ -9,7 +9,7 @@ Hamma hisob serverda; klient faqat ko'rsatadi.
 """
 from datetime import datetime, timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import case, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import utcnow
@@ -96,20 +96,21 @@ async def summary(session: AsyncSession, user: User, now: datetime | None = None
     now = now or utcnow()
     totals = dict((await session.execute(select(Fact.tur, func.count()).where(VISIBLE).group_by(Fact.tur))).all())
     rows = (await session.execute(
-        select(Fact.tur, UserFactState.holat, (UserFactState.next_review_at <= now), func.count())
+        # PostgreSQL ifodani GROUP BY'da qabul qilmaydi — "takrorga" sonini yig‘indi bilan olamiz
+        select(Fact.tur, UserFactState.holat, func.count(),
+               func.sum(case((UserFactState.next_review_at <= now, 1), else_=0)))
         .join(UserFactState, UserFactState.fact_id == Fact.id)
         .where(UserFactState.user_id == user.id, VISIBLE)
-        .group_by(Fact.tur, UserFactState.holat, (UserFactState.next_review_at <= now))
+        .group_by(Fact.tur, UserFactState.holat)
     )).all()
     out = {t: {"total": n, "mastered": 0, "learning": 0, "due": 0} for t, n in totals.items()}
-    for tur, holat, is_due, n in rows:
+    for tur, holat, n, due in rows:
         o = out.setdefault(tur, {"total": 0, "mastered": 0, "learning": 0, "due": 0})
         if holat == STATE_MASTERED:
             o["mastered"] += n
         else:
             o["learning"] += n
-        if is_due:
-            o["due"] += n
+        o["due"] += int(due or 0)
     due_total = sum(o["due"] for o in out.values())
     return {"sections": out, "due": due_total, "new_left": await new_cards_left(session, user),
             "new_per_day": NEW_PER_DAY}

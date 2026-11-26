@@ -4,7 +4,6 @@ WORKDIR /webapp
 COPY webapp/package.json webapp/package-lock.json ./
 RUN npm ci --no-audit --no-fund
 COPY webapp/ ./
-COPY backend/tests/translit_cases.json /backend/tests/translit_cases.json
 RUN npm run build
 
 # ---- 2-bosqich: Python server (bot + API + admin panel) ----

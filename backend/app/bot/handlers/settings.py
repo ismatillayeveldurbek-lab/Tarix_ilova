@@ -7,6 +7,7 @@ from app.bot.keyboards import settings_kb
 from app.bot.texts import t
 from app.bot.utils import leave_input_state
 from app.models import User
+from app.services import reminder_times
 
 router = Router(name="settings")
 
@@ -25,5 +26,6 @@ async def open_settings(message: Message, user: User, state: FSMContext) -> None
 @router.callback_query(F.data == "set:reminder")
 async def toggle_reminder(cb: CallbackQuery, user: User) -> None:
     user.reminder_enabled = not user.reminder_enabled
+    reminder_times.note(user.reminder_time)
     await cb.message.edit_text(settings_text(user), reply_markup=settings_kb())
     await cb.answer()

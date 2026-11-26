@@ -28,7 +28,7 @@ def create_app(lifespan=None) -> FastAPI:
             "X-Content-Type-Options": "nosniff",
         })
 
-    @api.get("/api/health")
+    @api.api_route("/api/health", methods=["GET", "HEAD"])
     async def health() -> dict:
         return {"ok": True}
 

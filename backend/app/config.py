@@ -7,10 +7,35 @@ from functools import cached_property
 from pathlib import Path
 from zoneinfo import ZoneInfo
 
-from pydantic import field_validator
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
+
+from pydantic import field_validator, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BASE_DIR = Path(__file__).resolve().parent.parent  # backend/ papkasi
+
+
+def normalize_db_url(v: str) -> str:
+    """postgres://u:p@host/db?sslmode=require&channel_binding=require
+    -> postgresql+asyncpg://u:p@host/db?ssl=require
+
+    asyncpg `sslmode` va `channel_binding` parametrlarini tushunmaydi. Neon'ning
+    "-pooler" manzilida tayyorlangan so‘rovlar keshi o‘chiriladi (PgBouncer bilan mos).
+    """
+    for prefix in ("postgres://", "postgresql://"):
+        if v.startswith(prefix):
+            v = "postgresql+asyncpg://" + v[len(prefix):]
+    if not v.startswith("postgresql+asyncpg://"):
+        return v
+    parts = urlsplit(v)
+    query = dict(parse_qsl(parts.query))
+    query.pop("channel_binding", None)
+    sslmode = query.pop("sslmode", None)
+    if sslmode and sslmode != "disable":
+        query.setdefault("ssl", "require")
+    if "-pooler" in (parts.hostname or ""):
+        query.setdefault("prepared_statement_cache_size", "0")
+    return urlunsplit(parts._replace(query=urlencode(query)))
 
 
 class Settings(BaseSettings):
@@ -29,6 +54,7 @@ class Settings(BaseSettings):
     history_post_time: str = "09:00"  # "Tarixda bugun" posti vaqti
     webapp_url: str = ""         # Mini App manzili (https://...), masalan Railway domeni
     port: int = 8000
+    render_external_url: str = ""  # Render o‘zi qo‘yadi (https://nom.onrender.com)
     bot_username: str = ""        # havolalar uchun; bo‘sh bo‘lsa bot o‘zi aniqlaydi
 
     # Referal tizimi
@@ -42,11 +68,15 @@ class Settings(BaseSettings):
     @field_validator("database_url")
     @classmethod
     def _async_driver(cls, v: str) -> str:
-        """Railway/Render "postgres://..." beradi — asinxron drayverni qo‘shamiz."""
-        for prefix in ("postgres://", "postgresql://"):
-            if v.startswith(prefix):
-                return "postgresql+asyncpg://" + v[len(prefix):]
-        return v
+        """Neon/Render/Railway "postgres://...?sslmode=require" beradi — asyncpg'ga moslaymiz."""
+        return normalize_db_url(v)
+
+    @model_validator(mode="after")
+    def _render_url(self) -> "Settings":
+        """Render o‘z domenini RENDER_EXTERNAL_URL da beradi: WEBAPP_URL bo‘sh bo‘lsa shuni olamiz."""
+        if not self.webapp_url and self.render_external_url:
+            self.webapp_url = self.render_external_url
+        return self
 
     @cached_property
     def admin_id_list(self) -> set[int]:

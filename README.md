@@ -202,29 +202,19 @@ Botga `.xlsx` yoki `.csv` faylni to'g'ridan-to'g'ri yuborsangiz ham import ishla
 
 ---
 
-## 3. Serverga joylash (Railway misolida)
+## 3. Serverga joylash (Render, tekin)
 
-Mini App ishlashi uchun ilova internetda **HTTPS** manzilga ega bo'lishi kerak.
+To‘liq qadam-baqadam qo‘llanma: **[docs/render-joylash.md](docs/render-joylash.md)**.
 
-1. https://railway.app da ro'yxatdan o'ting va **New Project → Deploy from GitHub repo** orqali shu repozitoriyni tanlang. Railway `Dockerfile` ni o'zi topadi.
-2. Loyihaga **PostgreSQL** qo'shing: **New → Database → PostgreSQL**.
-3. Ilova xizmatining **Variables** bo'limiga quyidagilarni kiriting:
-   ```
-   BOT_TOKEN=...
-   ADMIN_IDS=...
-   DATABASE_URL=${{Postgres.DATABASE_URL}}
-   CHANNEL_ID=@kanalingiz          # "Tarixda bugun" uchun. Bot kanalda admin bo'lishi kerak
-   WEBAPP_URL=https://<railway bergan domen>
-   PORT=8000
-   ```
-4. **Settings → Networking → Generate Domain** orqali domen oling, so'ng uni `WEBAPP_URL` ga yozing.
-5. Ilova qayta ishga tushganda bot avtomatik ravishda quyidagilarni qo'shadi:
-   - chat pastidagi **"📱 Ilova"** tugmasi;
-   - menyudagi **"📱 Ilovani ochish"** tugmasi.
+Qisqacha:
+- ma’lumotlar bazasi — **Neon** (tekin PostgreSQL);
+- ilova — **Render**, `render.yaml` bo‘yicha (**New → Blueprint**);
+- tekin server uxlab qolmasligi uchun — **UptimeRobot**, `/api/health` ni 5 daqiqada bir tekshiradi.
 
-Ilova har safar ishga tushganda jadvallarni o'zi yangilaydi (`alembic upgrade head`), namuna savollarni esa **yuklamaydi**.
-Boshqa xosting (Render, VPS) uchun ham shu `Dockerfile` ishlaydi.
-Kompyuterda PostgreSQL bilan sinash uchun: `docker compose up --build`.
+`BOT_TOKEN`, `DATABASE_URL`, `ADMIN_IDS` faqat Render sozlamalariga yoziladi. `WEBAPP_URL` Render domenidan avtomatik olinadi.
+Ilova har ishga tushganda jadvallarni yangilaydi (`alembic upgrade head`) va faktlar bazasini `data/baza.csv` dan yuklaydi. Namuna savollar yuklanmaydi.
+Boshqa xosting (Railway, VPS) uchun ham shu `Dockerfile` ishlaydi. Kompyuterda PostgreSQL bilan sinash uchun: `docker compose up --build`.
+Testlarni PostgreSQL'da yurgizish: `TEST_DATABASE_URL=postgresql://... pytest` (ko‘rsatilgan baza tozalanadi).
 
 ---
 
