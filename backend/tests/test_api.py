@@ -36,7 +36,7 @@ def client(auth: str | None = None) -> httpx.AsyncClient:
 def test_init_data_validation():
     good = init_data(1)
     assert validate_init_data(good)["id"] == 1
-    assert validate_init_data(good.replace("Ali", "Vali")) is None  # o'zgartirilgan
+    assert validate_init_data(good.replace("Ali", "Vali")) is None  # o‘zgartirilgan
     assert validate_init_data(init_data(1, auth_date=int(time.time()) - 3 * 86400)) is None  # eskirgan
     assert validate_init_data("garbage") is None
 
@@ -65,10 +65,10 @@ async def test_lesson_flow(seeded):
         res = (await c.post("/api/answers", json={"lesson_id": lid, "question_id": q["id"], "option": "a"})).json()
         assert res["today_done"] == 1 and res["streak"] == 1 and res["xp"] in (1, 10)
 
-        # bitta savolga ikkinchi marta javob — XP'ni soxta oshirib bo'lmaydi
+        # bitta savolga ikkinchi marta javob — XP’ni soxta oshirib bo‘lmaydi
         again = await c.post("/api/answers", json={"lesson_id": lid, "question_id": q["id"], "option": "a"})
         assert again.status_code == 409
-        # darsda yo'q savol
+        # darsda yo‘q savol
         other = next(i for i in range(1, 30) if i not in [x["id"] for x in lesson["questions"]])
         bad = await c.post("/api/answers", json={"lesson_id": lid, "question_id": other, "option": "a"})
         assert bad.status_code == 400
@@ -90,7 +90,7 @@ async def test_exam_flow(seeded):
 
         exam = (await c.post("/api/exam/start")).json()
         assert 0 < len(exam["questions"]) <= 20
-        # qayta boshlash — o'sha imtihon qaytadi (davom ettirish)
+        # qayta boshlash — o‘sha imtihon qaytadi (davom ettirish)
         assert (await c.post("/api/exam/start")).json()["id"] == exam["id"]
 
         first = exam["questions"][0]
@@ -155,7 +155,7 @@ async def test_admin_permissions_and_crud(seeded):
         })).json()
         assert saved["duration_minutes"] == 90 and saved["availability"] == [21]
 
-        # davr: savoli bor davrni o'chirib bo'lmaydi
+        # davr: savoli bor davrni o‘chirib bo‘lmaydi
         assert (await c.delete(f"/api/admin/periods/{pid}")).status_code == 400
 
     async with client("Bearer 999.1.bad") as c:
@@ -190,7 +190,7 @@ async def test_question_images(seeded):
         assert url.startswith("/api/media/")
 
         q = (await c.post("/api/admin/questions", json={
-            "text": "Xaritada qaysi davlat ko'rsatilgan?", "a": "1", "b": "2", "c": "3", "d": "4",
+            "text": "Xaritada qaysi davlat ko‘rsatilgan?", "a": "1", "b": "2", "c": "3", "d": "4",
             "correct": "a", "image_url": url})).json()
         assert q["image_url"] == url
         js = await c.post("/api/admin/questions", json={
@@ -202,7 +202,7 @@ async def test_question_images(seeded):
         rep = (await c.post("/api/admin/import/questions", files={"file": ("q.csv", csv_bytes)})).json()
         assert rep["added"] == 1 and len(rep["errors"]) == 1
 
-    async with client() as c:  # rasm token'siz ochiladi (Telegram ham yuklay olishi uchun)
+    async with client() as c:  # rasm token’siz ochiladi (Telegram ham yuklay olishi uchun)
         r = await c.get(url)
         assert r.status_code == 200 and r.content == PNG and r.headers["content-type"] == "image/png"
         assert (await c.get("/api/media/99999")).status_code == 404
@@ -224,7 +224,7 @@ async def test_export_roundtrip(seeded):
         rows = list(ws.iter_rows(values_only=True))
         assert rows[0][:10] == ("savol", "a", "b", "c", "d", "togri", "izoh", "mavzu", "davr", "qiyinlik")
         assert len(rows) == 21
-        # eksport qilingan faylni qayta import qilish — hammasi takroriy deb o'tkaziladi
+        # eksport qilingan faylni qayta import qilish — hammasi takroriy deb o‘tkaziladi
         rep = (await c.post("/api/admin/import/questions", files={"file": ("q.xlsx", r.content)})).json()
         assert rep["added"] == 0 and rep["skipped_duplicates"] == 20 and not rep["errors"]
         h = await c.get("/api/admin/export/history.xlsx")
@@ -248,17 +248,17 @@ async def test_broadcast(seeded):
     app = create_app()
     headers = {"Authorization": "Bearer " + make_admin_token(999)}
     async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://t", headers=headers) as c:
-        # bot yo'q — 503
+        # bot yo‘q — 503
         assert (await c.post("/api/admin/broadcast", json={"text": "Salom"})).status_code == 503
         app.state.bot = FakeBot()
         info = (await c.get("/api/admin/broadcast")).json()
         assert info["recipients"] == 2 and info["bot_ready"]
-        assert (await c.post("/api/admin/broadcast", json={"text": "Yangi savollar <qo'shildi>!"})).json()["queued"] == 2
+        assert (await c.post("/api/admin/broadcast", json={"text": "Yangi savollar <qo‘shildi>!"})).json()["queued"] == 2
         await app.state.broadcast_task
         status = (await c.get("/api/admin/broadcast")).json()["status"]
         assert status["sent"] == 2 and not status["running"]
     texts = dict(sent)
-    assert texts[400] == texts[999] == "Yangi savollar &lt;qo'shildi&gt;!"  # HTML xavfsiz
+    assert texts[400] == texts[999] == "Yangi savollar &lt;qo‘shildi&gt;!"  # HTML xavfsiz
 
 
 async def test_progress_api(seeded):

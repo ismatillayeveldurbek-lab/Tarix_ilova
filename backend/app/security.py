@@ -1,8 +1,8 @@
-"""Xavfsizlik: Telegram Mini App ma'lumotini tekshirish va admin panel uchun token.
+"""Xavfsizlik: Telegram Mini App ma’lumotini tekshirish va admin panel uchun token.
 
 1) Mini App ochilganda Telegram `initData` satrini beradi. U bot tokeni bilan imzolangan,
-   shuning uchun uni soxtalashtirib bo'lmaydi. Server imzoni tekshiradi.
-2) Admin panelni brauzerda ochish uchun bot /panel buyrug'ida vaqtinchalik token beradi.
+   shuning uchun uni soxtalashtirib bo‘lmaydi. Server imzoni tekshiradi.
+2) Admin panelni brauzerda ochish uchun bot /panel buyrug‘ida vaqtinchalik token beradi.
 """
 import hashlib
 import hmac
@@ -16,7 +16,7 @@ ADMIN_TOKEN_TTL = 12 * 3600  # 12 soat
 
 
 def validate_init_data(init_data: str, max_age: int = 24 * 3600) -> dict | None:
-    """To'g'ri bo'lsa Telegram foydalanuvchisi (dict) qaytadi, aks holda None."""
+    """To‘g‘ri bo‘lsa Telegram foydalanuvchisi (dict) qaytadi, aks holda None."""
     try:
         pairs = dict(parse_qsl(init_data, strict_parsing=True))
     except ValueError:

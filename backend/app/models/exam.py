@@ -1,5 +1,5 @@
-"""Sinov imtihoni. Format JSON'da saqlanadi — rasmiy spetsifikatsiya chiqqanda
-kodni emas, faqat sozlamani o'zgartirasiz."""
+"""Sinov imtihoni. Format JSON’da saqlanadi — rasmiy spetsifikatsiya chiqqanda
+kodni emas, faqat sozlamani o‘zgartirasiz."""
 from datetime import datetime
 
 from sqlalchemy import JSON, Boolean, DateTime, Float, ForeignKey, Integer, String
@@ -15,7 +15,7 @@ class ExamConfig(Base):
     name: Mapped[str] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     duration_minutes: Mapped[int] = mapped_column(Integer, default=60)
-    # Masalan: [{"period": "O'rta asrlar", "difficulty": 2, "count": 10, "points": 1.5}]
+    # Masalan: [{"period": "O‘rta asrlar", "difficulty": 2, "count": 10, "points": 1.5}]
     rules: Mapped[list] = mapped_column(JSON, default=list)
     # Masalan: {"max_score": 100}
     scoring: Mapped[dict] = mapped_column(JSON, default=dict)

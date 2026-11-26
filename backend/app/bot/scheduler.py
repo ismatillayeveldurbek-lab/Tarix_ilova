@@ -1,7 +1,7 @@
 """Rejalashtirilgan vazifalar (APScheduler):
 
 * har daqiqa — kunlik eslatma vaqti kelgan foydalanuvchilarga eslatma
-  (agar bugungi maqsad hali bajarilmagan bo'lsa);
+  (agar bugungi maqsad hali bajarilmagan bo‘lsa);
 * har kuni HISTORY_POST_TIME da — "Tarixda bugun" posti kanalga va foydalanuvchilarga.
 """
 import asyncio
@@ -85,7 +85,7 @@ async def post_history_today(bot: Bot) -> int:
 
 
 async def cleanup_old_lessons(days: int = 7) -> int:
-    """Eski Mini App dars yozuvlarini o'chiradi (javoblar `answers` jadvalida qoladi)."""
+    """Eski Mini App dars yozuvlarini o‘chiradi (javoblar `answers` jadvalida qoladi)."""
     async with SessionLocal() as session:
         result = await session.execute(
             delete(LessonSession).where(LessonSession.created_at < utcnow() - timedelta(days=days))

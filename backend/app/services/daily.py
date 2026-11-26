@@ -11,7 +11,7 @@ from app.services.review import due_question_ids
 
 
 def local_midnight_utc(day: date | None = None) -> datetime:
-    """Toshkent vaqti bo'yicha kun boshini UTC'da qaytaradi."""
+    """Toshkent vaqti bo‘yicha kun boshini UTC’da qaytaradi."""
     day = day or local_today()
     return datetime.combine(day, time.min, settings.tz).astimezone(UTC).replace(tzinfo=None)
 
@@ -35,7 +35,7 @@ async def daily_question_ids(session: AsyncSession, user_id: int, count: int | N
             .order_by(func.random()).limit(count - len(ids))
         )
         ids += list(fresh)
-    if len(ids) < count:  # hamma savol yechilgan bo'lsa — tasodifiy
+    if len(ids) < count:  # hamma savol yechilgan bo‘lsa — tasodifiy
         more = await session.scalars(
             select(Question.id)
             .where(Question.is_active.is_(True), Question.id.not_in(ids or [0]))

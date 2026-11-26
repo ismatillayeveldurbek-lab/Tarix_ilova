@@ -49,7 +49,7 @@ def question_out(q: Question, chosen: str | None = None) -> dict:
 # ---------- Bosh sahifa va profil ----------
 
 async def week_activity(session, user: User) -> list[dict]:
-    """Oxirgi 7 kun: qaysi kunlari faol bo'lgan (ketma-ketlik kalendari uchun)."""
+    """Oxirgi 7 kun: qaysi kunlari faol bo‘lgan (ketma-ketlik kalendari uchun)."""
     today = local_today()
     since = utcnow() - timedelta(days=8)
     times = await session.scalars(
@@ -137,7 +137,7 @@ async def referrals(user: CurrentUser, session: Session, request: Request) -> di
     }
 
 
-# ---------- O'zlashtirish ----------
+# ---------- O‘zlashtirish ----------
 
 @router.get("/progress")
 async def progress_view(user: CurrentUser, session: Session) -> dict:
@@ -196,20 +196,20 @@ async def answer(body: AnswerIn, user: CurrentUser, session: Session, request: R
     if lesson is None or lesson.user_id != user.id or utcnow() - lesson.created_at > LESSON_TTL:
         raise HTTPException(404, "Dars topilmadi yoki eskirgan. Yangi dars boshlang")
     if body.question_id not in lesson.question_ids:
-        raise HTTPException(400, "Bu savol ushbu darsda yo'q")
+        raise HTTPException(400, "Bu savol ushbu darsda yo‘q")
     if body.question_id in lesson.answered_ids:
         raise HTTPException(409, "Bu savolga allaqachon javob berilgan")
     q = await get_question(session, body.question_id)
     if q is None:
         raise HTTPException(404, "Savol topilmadi")
-    lesson.answered_ids = [*lesson.answered_ids, q.id]  # yangi ro'yxat — SQLAlchemy o'zgarishni ko'radi
+    lesson.answered_ids = [*lesson.answered_ids, q.id]  # yangi ro‘yxat — SQLAlchemy o‘zgarishni ko‘radi
     result = await record_answer(session, user, q, body.option, source=lesson.source)
     referral = result.referral
     done = await answers_today(session, user.id)
     await session.commit()
     goal = settings.daily_question_count
     bot = getattr(request.app.state, "bot", None)
-    if referral and bot is not None:  # do'st yetarli savol yechdi — taklif qilganga xabar
+    if referral and bot is not None:  # do‘st yetarli savol yechdi — taklif qilganga xabar
         from app.bot.referral import notify_activated
         await notify_activated(bot, session, referral)
     return {
@@ -232,7 +232,7 @@ class ReportIn(BaseModel):
 @router.post("/reports")
 async def report(body: ReportIn, user: CurrentUser, session: Session, request: Request) -> dict:
     if await reports_last_day(session, user.id) >= REPORTS_PER_DAY:
-        raise HTTPException(429, "Bugun juda ko'p xabar yubordingiz. Ertaga urinib ko'ring")
+        raise HTTPException(429, "Bugun juda ko‘p xabar yubordingiz. Ertaga urinib ko‘ring")
     q = await get_question(session, body.question_id)
     if q is None:
         raise HTTPException(404, "Savol topilmadi")

@@ -70,7 +70,7 @@ export const haptic = {
   select: () => tg?.HapticFeedback?.selectionChanged(),
 };
 
-/** Telegram ichida bo'lsa uning oynasi, aks holda brauzer confirm(). */
+/** Telegram ichida bo‘lsa uning oynasi, aks holda brauzer confirm(). */
 export function confirmDialog(message: string): Promise<boolean> {
   return new Promise((resolve) => {
     if (tg?.initData && tg.showConfirm) {
@@ -85,7 +85,7 @@ export function confirmDialog(message: string): Promise<boolean> {
   });
 }
 
-/** Telegram'ning "ulashish" oynasi: do'stni tanlab, havolani yuborish */
+/** Telegram’ning "ulashish" oynasi: do‘stni tanlab, havolani yuborish */
 export function shareLink(url: string, text: string): void {
   const share = `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`;
   if (tg?.initData && tg.openTelegramLink) tg.openTelegramLink(share);

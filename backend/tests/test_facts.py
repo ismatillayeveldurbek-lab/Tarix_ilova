@@ -36,10 +36,11 @@ def to_csv(rows: list[dict]) -> bytes:
 # ---------- Tekshiruv ----------
 
 def test_clean_text():
-    assert clean_text("O'zbekiston  va g'alaba") == "O‘zbekiston va g‘alaba"
-    assert clean_text("ma'no") == "ma’no"
+    assert clean_text("O'zbekiston  va g'alaba") == "O‘zbekiston va g‘alaba"  # oddiy ' -> ‘
+    assert clean_text("Oʻzbekiston") == "O‘zbekiston"                            # ʻ -> ‘
+    assert clean_text("ma'no") == "ma’no"                                          # tutuq -> ’
     assert clean_text("««Avesto»» kitobi") == "«Avesto» kitobi"
-    assert clean_text("O‘rta asrlar") == "O‘rta asrlar"  # to'g'ri belgi o'zgarmaydi
+    assert clean_text("O‘rta asrlar") == "O‘rta asrlar"  # to‘g‘ri belgi o‘zgarmaydi
 
 
 def test_helpers():
@@ -52,7 +53,7 @@ def test_helpers():
 def test_check_row_flags():
     assert check_row(row()).flags == []
     assert "ishonch_past" in check_row(row(ishonch="past")).flags and check_row(row(ishonch="past")).hidden
-    assert check_row(row(bet="")).hidden  # manbasiz fakt ko'rsatilmaydi
+    assert check_row(row(bet="")).hidden  # manbasiz fakt ko‘rsatilmaydi
     assert check_row(row(tur="boshqa")).hidden
     yoq = check_row(row(yil_boshi="", asr=""))
     assert yoq.flags == ["yil_yoq"] and not yoq.hidden
@@ -78,14 +79,14 @@ async def test_import_idempotent_and_admin_hidden_kept(session):
     f1 = await session.get(Fact, "T-1")
     assert f1.source == "7-sinf Jahon tarixi, 5-§, 40-bet" and f1.visible
     assert not (await session.get(Fact, "T-2")).visible
-    f1.hidden_admin = True  # admin qo'lda yashirdi
+    f1.hidden_admin = True  # admin qo‘lda yashirdi
     await session.flush()
 
     r2 = await import_facts(session, read_csv(to_csv(rows)))
     assert (r2.added, r2.updated, r2.unchanged) == (0, 0, 3)
     assert (await session.get(Fact, "T-1")).hidden_admin  # import admin qarorini bekor qilmaydi
 
-    # matn o'zgardi + bitta fakt CSV'dan olib tashlandi
+    # matn o‘zgardi + bitta fakt CSV’dan olib tashlandi
     r3 = await import_facts(session, read_csv(to_csv([row(id="T-1", matn="Yangi matn."), rows[1]])))
     assert r3.updated == 1 and r3.missing_in_csv == 1
     t3 = await session.get(Fact, "T-3")
@@ -154,3 +155,22 @@ async def test_api_v1_me_and_admin(session):
         assert (await c.get("/api/admin/facts/summary")).json()["total"] == 6  # dry-run yozmaydi
     async with client("tma " + init_data(700)) as c:
         assert (await c.get("/api/v1/me")).json()["facts"]["total"] == 4  # admin yashirgani hisoblanmaydi
+
+
+async def test_api_v1_path(session):
+    from tests.test_api import client, init_data
+
+    rows = [row(id="A1", davr="Qadimgi"), row(id="A2", davr="Qadimgi", tur="shaxs", shaxs_ishoralar="a || b || c"),
+            row(id="B1", davr="Yangi", tur="atama", yil_boshi="", asr=""), row(id="H", davr="Yangi", ishonch="past")]
+    await import_facts(session, read_csv(to_csv(rows)))
+    await session.commit()
+    async with client("tma " + init_data(710)) as c:
+        uid = (await c.get("/api/v1/me")).json()["user"]["id"]
+    session.add(UserFactState(user_id=uid, fact_id="A1", holat=STATE_MASTERED))
+    await session.commit()
+    async with client("tma " + init_data(710)) as c:
+        p = (await c.get("/api/v1/path")).json()
+    assert p["total"] == 3 and p["mastered"] == 1
+    assert p["davrlar"] == [{"name": "Qadimgi", "total": 2, "mastered": 1, "started": 1},
+                            {"name": "Yangi", "total": 1, "mastered": 0, "started": 0}]  # yashirin fakt hisoblanmaydi
+    assert [s["label"] for s in p["sections"]] == ["Yillar", "Shaxslar", "Atamalar"]

@@ -1,11 +1,11 @@
 """API v1 — faktlar bazasiga qurilgan yangi qism (CLAUDE.md, MVP bosqichlari).
 
-Eski /api/... marshrutlari Mini App'ning hozirgi sahifalari uchun ishlashda davom etadi.
+Eski /api/... marshrutlari Mini App’ning hozirgi sahifalari uchun ishlashda davom etadi.
 """
 from fastapi import APIRouter
 
 from app.api.deps import CurrentUser, Session
-from app.services.facts import fact_progress, get_daily_stat
+from app.services.facts import fact_path, fact_progress, get_daily_stat
 from app.services.streak import effective_streak
 
 router = APIRouter(prefix="/api/v1")
@@ -31,3 +31,9 @@ async def me(user: CurrentUser, session: Session) -> dict:
         },
         "facts": await fact_progress(session, user),
     }
+
+
+@router.get("/path")
+async def path(user: CurrentUser, session: Session) -> dict:
+    """"Tarix yo‘lingiz": davrlar bo‘yicha o‘zlashtirish va bo‘limlar hajmi."""
+    return await fact_path(session, user)

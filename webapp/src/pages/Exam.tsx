@@ -39,7 +39,7 @@ export function ExamPage() {
     }
   }
 
-  // Imtihon va natija ekranida pastki menyu yashiriladi (tugmalarni to'smasin)
+  // Imtihon va natija ekranida pastki menyu yashiriladi (tugmalarni to‘smasin)
   useEffect(() => {
     document.body.classList.toggle("hide-nav", !!(running || result));
     return () => document.body.classList.remove("hide-nav");
@@ -71,9 +71,9 @@ function ExamIntro({ info, busy, onStart }: { info: Info; busy: boolean; onStart
       </div>
       <div className="card stack" style={{ gap: 6 }}>
         <div className="bold">Qoidalar</div>
-        <div className="small muted">• Taymer boshlangach to'xtamaydi. Vaqt tugasa, imtihon avtomatik yakunlanadi.</div>
+        <div className="small muted">• Taymer boshlangach to‘xtamaydi. Vaqt tugasa, imtihon avtomatik yakunlanadi.</div>
         <div className="small muted">• Javoblar darhol saqlanadi — ilovani yopsangiz, qaytib davom ettira olasiz.</div>
-        <div className="small muted">• Savollar orasida bemalol o'tishingiz mumkin. Izohlar imtihon oxirida ko'rsatiladi.</div>
+        <div className="small muted">• Savollar orasida bemalol o‘tishingiz mumkin. Izohlar imtihon oxirida ko‘rsatiladi.</div>
       </div>
       {c.grades.length > 0 && (
         <div className="card">
@@ -83,7 +83,7 @@ function ExamIntro({ info, busy, onStart }: { info: Info; busy: boolean; onStart
               <tr key={g.grade}><td><span className="serif bold" style={{ fontSize: 16 }}>{g.grade}</span></td><td className="muted">{`${g.min_percent}% va undan yuqori`}</td></tr>
             ))}
           </tbody></table>
-          <div className="tiny muted" style={{ marginTop: 8 }}>Format rasmiy spetsifikatsiya e'lon qilingach moslashtiriladi.</div>
+          <div className="tiny muted" style={{ marginTop: 8 }}>Format rasmiy spetsifikatsiya e’lon qilingach moslashtiriladi.</div>
         </div>
       )}
       {info.history.length > 0 && (
@@ -232,10 +232,10 @@ function ExamResult({ result, onDone }: { result: Result; onDone: () => void }) 
             <div className="tiny muted">daraja</div>
           </div>
         </div>
-        <p className="muted small" style={{ marginTop: 6 }}>Taxminiy natija — rasmiy shkala e'lon qilingach moslashtiriladi.</p>
+        <p className="muted small" style={{ marginTop: 6 }}>Taxminiy natija — rasmiy shkala e’lon qilingach moslashtiriladi.</p>
       </div>
       <div className="tiles">
-        <div className="tile green"><div className="label">To'g'ri</div><div className="value">{result.correct}</div></div>
+        <div className="tile green"><div className="label">To‘g‘ri</div><div className="value">{result.correct}</div></div>
         <div className="tile red"><div className="label">Xato</div><div className="value">{result.total - result.correct}</div></div>
         <div className="tile"><div className="label">Foiz</div><div className="value">{Math.round(result.percent)}%</div></div>
       </div>
@@ -246,7 +246,7 @@ function ExamResult({ result, onDone }: { result: Result; onDone: () => void }) 
             <button key={it.id} className={it.is_correct ? "ok" : "bad"} onClick={() => setOpen(i)}>{i + 1}</button>
           ))}
         </div>
-        <div className="tiny muted">Raqamni bosib, izohni ko'ring. Xato javoblar takrorlash bo'limiga qo'shildi.</div>
+        <div className="tiny muted">Raqamni bosib, izohni ko‘ring. Xato javoblar takrorlash bo‘limiga qo‘shildi.</div>
       </div>
       <div className="footer-bar"><div className="inner">
         <button className="btn block" onClick={onDone}>Davom etish</button>

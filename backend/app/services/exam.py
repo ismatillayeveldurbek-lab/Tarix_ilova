@@ -1,7 +1,7 @@
 """Sinov imtihoni.
 
 Format `exam_configs` jadvalidan olinadi (admin paneldan tahrirlanadi):
-  rules  — [{"count": 10, "points": 1.5, "difficulty": 2, "period": "O'rta asrlar", "topic": "..."}]
+  rules  — [{"count": 10, "points": 1.5, "difficulty": 2, "period": "O‘rta asrlar", "topic": "..."}]
            (difficulty/period/topic — ixtiyoriy filtrlar)
   scoring — {"max_score": 100}  — natija shu shkalaga keltiriladi
   grades — [{"min_percent": 85, "grade": "A+"}, ...]
@@ -17,7 +17,7 @@ from app.models import Answer, ExamAnswer, ExamConfig, ExamSession, Period, Ques
 from app.services.review import update_review
 from app.services.streak import touch_streak
 
-GRACE_SECONDS = 30  # internet sekinligi uchun qo'shimcha vaqt
+GRACE_SECONDS = 30  # internet sekinligi uchun qo‘shimcha vaqt
 
 
 class ExamError(Exception):
@@ -54,7 +54,7 @@ def total_questions(config: ExamConfig) -> int:
 
 
 async def expected_questions(session: AsyncSession, config: ExamConfig) -> int:
-    """Bazada yetarli savol bo'lmasa, haqiqatda nechta savol berilishini hisoblaydi."""
+    """Bazada yetarli savol bo‘lmasa, haqiqatda nechta savol berilishini hisoblaydi."""
     avail = await rule_availability(session, config.rules)
     return sum(min(int(r.get("count", 0)), a) for r, a in zip(config.rules, avail))
 
@@ -118,7 +118,7 @@ async def save_answer(session: AsyncSession, exam: ExamSession, question_id: int
         select(ExamAnswer).where(ExamAnswer.session_id == exam.id, ExamAnswer.question_id == question_id)
     )
     if item is None:
-        raise ExamError("Bu savol imtihonda yo'q")
+        raise ExamError("Bu savol imtihonda yo‘q")
     item.chosen_option = option
 
 

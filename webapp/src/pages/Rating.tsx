@@ -31,14 +31,14 @@ export function RatingPage() {
       </div>
 
       <div className="metrics" style={{ gridTemplateColumns: "1fr 1fr" }}>
-        <div className="metric"><span className="label">Sizning o'rningiz</span><span className="value">{data.me.rank ?? "—"}</span></div>
+        <div className="metric"><span className="label">Sizning o‘rningiz</span><span className="value">{data.me.rank ?? "—"}</span></div>
         <div className="metric"><span className="label">Bu hafta</span><span className="value">{data.me.xp}<small>XP</small></span></div>
       </div>
 
       {data.rows.length === 0 ? (
         <div className="card empty">
           <span className="empty-icon"><Trophy size={24} /></span>
-          <div className="muted small">Bu hafta hali hech kim savol yechmadi. Birinchi bo'ling.</div>
+          <div className="muted small">Bu hafta hali hech kim savol yechmadi. Birinchi bo‘ling.</div>
         </div>
       ) : (
         <div className="card list" style={{ padding: "4px 10px" }}>
@@ -54,7 +54,7 @@ export function RatingPage() {
           ))}
         </div>
       )}
-      <div className="tiny muted center">To'g'ri javob — 10 XP, noto'g'ri — 1 XP. Reyting har dushanba yangilanadi.</div>
+      <div className="tiny muted center">To‘g‘ri javob — 10 XP, noto‘g‘ri — 1 XP. Reyting har dushanba yangilanadi.</div>
     </div>
   );
 }

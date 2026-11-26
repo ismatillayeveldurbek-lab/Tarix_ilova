@@ -18,7 +18,7 @@ async def pick_question_ids(
     topic_id: int | None = None,
     period_id: int | None = None,
 ) -> list[int]:
-    """Tasodifiy tartibda faol savollar ID'larini qaytaradi."""
+    """Tasodifiy tartibda faol savollar ID’larini qaytaradi."""
     q = select(Question.id).where(Question.is_active.is_(True))
     if topic_id:
         q = q.where(Question.topic_id == topic_id)
@@ -36,7 +36,7 @@ async def get_question(session: AsyncSession, question_id: int) -> Question | No
 class AnswerResult:
     is_correct: bool
     streak_increased: bool
-    referral: Referral | None = None  # shu javob bilan taklif faollashgan bo'lsa
+    referral: Referral | None = None  # shu javob bilan taklif faollashgan bo‘lsa
 
 
 async def record_answer(
@@ -67,7 +67,7 @@ async def list_topics(session: AsyncSession, period_id: int | None = None) -> li
     return list(await session.scalars(q))
 
 
-REPORTS_PER_DAY = 20  # bitta foydalanuvchi bir kunda yuborishi mumkin bo'lgan xato xabarlari
+REPORTS_PER_DAY = 20  # bitta foydalanuvchi bir kunda yuborishi mumkin bo‘lgan xato xabarlari
 
 
 async def reports_last_day(session: AsyncSession, user_id: int) -> int:

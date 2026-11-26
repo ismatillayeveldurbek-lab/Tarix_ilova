@@ -1,8 +1,8 @@
-"""Mavzular bo'yicha o'zlashtirish va zaif mavzular.
+"""Mavzular bo‘yicha o‘zlashtirish va zaif mavzular.
 
-* O'zlashtirish (%): mavzudagi savollardan nechtasiga OXIRGI javob to'g'ri bo'lgan.
-  Avval to'g'ri, keyin xato javob berilgan savol o'zlashtirilmagan hisoblanadi.
-* Aniqlik (%): oxirgi 60 kundagi javoblarning to'g'ri ulushi.
+* O‘zlashtirish (%): mavzudagi savollardan nechtasiga OXIRGI javob to‘g‘ri bo‘lgan.
+  Avval to‘g‘ri, keyin xato javob berilgan savol o‘zlashtirilmagan hisoblanadi.
+* Aniqlik (%): oxirgi 60 kundagi javoblarning to‘g‘ri ulushi.
 * Zaif mavzu: kamida MIN_ATTEMPTS ta javob va aniqlik WEAK_BELOW % dan past.
 """
 from dataclasses import dataclass
@@ -26,10 +26,10 @@ class TopicProgress:
     period_id: int | None
     period_name: str | None
     total: int            # mavzudagi faol savollar
-    mastered: int = 0     # oxirgi javobi to'g'ri bo'lgan savollar
+    mastered: int = 0     # oxirgi javobi to‘g‘ri bo‘lgan savollar
     answered: int = 0     # kamida bir marta javob berilgan savollar
     attempts: int = 0     # oxirgi 60 kundagi javoblar soni
-    correct: int = 0      # ulardan to'g'ri
+    correct: int = 0      # ulardan to‘g‘ri
 
     @property
     def percent(self) -> int:
@@ -74,7 +74,7 @@ async def topic_progress(session: AsyncSession, user_id: int) -> list[TopicProgr
         item = items.get(topic_id)
         if item is None:
             continue
-        latest[qid] = (topic_id, ok)  # tartib bo'yicha — oxirgisi qoladi
+        latest[qid] = (topic_id, ok)  # tartib bo‘yicha — oxirgisi qoladi
         if at >= since:
             item.attempts += 1
             item.correct += int(ok)
@@ -90,7 +90,7 @@ def weak_topics(items: list[TopicProgress], limit: int = 3) -> list[TopicProgres
 
 
 def recommendation(items: list[TopicProgress]) -> dict | None:
-    """Bitta tavsiya: eng zaif mavzu, bo'lmasa hali boshlanmagan birinchi mavzu."""
+    """Bitta tavsiya: eng zaif mavzu, bo‘lmasa hali boshlanmagan birinchi mavzu."""
     weak = weak_topics(items, 1)
     if weak:
         return {"kind": "weak", **weak[0].as_dict()}

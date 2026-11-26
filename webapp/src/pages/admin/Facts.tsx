@@ -19,10 +19,10 @@ type ImportReport = { total: number; added: number; updated: number; unchanged: 
 
 export const TYPES: Record<string, string> = { sana: "Sana", shaxs: "Shaxs", atama: "Atama", joy: "Joy", urush: "Urush", asar: "Asar" };
 export const FLAG_LABELS: Record<string, string> = {
-  ishonch_past: "Ishonch past", manba_yoq: "Manba yo'q", tur_nomalum: "Turi noma'lum", matn_yoq: "Matn yo'q",
-  yil_yoq: "Aniq yil yo'q", yil_xato: "Yil xato", yil_asr_mos_emas: "Yil va asr mos emas",
-  atama_ozini_tushuntiradi: "Ta'rifda atamaning o'zi", kontekstsiz: "Kontekstsiz gap",
-  ishoralar_kam: "Ishoralar kam", csvda_yoq: "CSV'da yo'q",
+  ishonch_past: "Ishonch past", manba_yoq: "Manba yo‘q", tur_nomalum: "Turi noma’lum", matn_yoq: "Matn yo‘q",
+  yil_yoq: "Aniq yil yo‘q", yil_xato: "Yil xato", yil_asr_mos_emas: "Yil va asr mos emas",
+  atama_ozini_tushuntiradi: "Ta’rifda atamaning o‘zi", kontekstsiz: "Kontekstsiz gap",
+  ishoralar_kam: "Ishoralar kam", csvda_yoq: "CSV’da yo‘q",
 };
 const DAVRLAR = ["Qadimgi", "O‘rta asrlar", "Yangi", "Eng yangi"];
 const HUDUDLAR = ["Jahon", "O‘zbekiston va Markaziy Osiyo"];
@@ -43,7 +43,7 @@ function FactSheet({ fact, onClose, onChange }: { fact: Fact; onClose: () => voi
     setBusy(true);
     try {
       onChange(await api<Fact>(`/admin/facts/${fact.id}`, { method: "PATCH", body: { hidden_admin: !fact.hidden_admin } }));
-      toast(fact.hidden_admin ? "Fakt yana ko'rsatiladi" : "Fakt yashirildi", "success");
+      toast(fact.hidden_admin ? "Fakt yana ko‘rsatiladi" : "Fakt yashirildi", "success");
     } catch (e) {
       toast((e as Error).message, "error");
     } finally {
@@ -56,7 +56,7 @@ function FactSheet({ fact, onClose, onChange }: { fact: Fact; onClose: () => voi
       <div className="stack">
         <div className="row between">
           <span className="chip">{fact.id}</span>
-          <span className={`chip ${fact.visible ? "green" : "red"}`}>{fact.visible ? "Ko'rinadi" : "Yashirin"}</span>
+          <span className={`chip ${fact.visible ? "green" : "red"}`}>{fact.visible ? "Ko‘rinadi" : "Yashirin"}</span>
         </div>
         <div>
           <div className="eyebrow">{TYPES[fact.tur] ?? fact.tur} · {fact.davr} · {fact.hudud}</div>
@@ -75,7 +75,7 @@ function FactSheet({ fact, onClose, onChange }: { fact: Fact; onClose: () => voi
           <Field label="Faoliyati" value={fact.shaxs_faoliyati} />
           <Field label="Ishoralar" value={fact.shaxs_ishoralar.length ? <ol style={{ margin: 0, paddingLeft: 18 }}>{fact.shaxs_ishoralar.map((x) => <li key={x}>{x}</li>)}</ol> : ""} />
           <Field label="Tomonlar" value={fact.urush_tomonlari.join(" — ")} />
-          <Field label="G'olib" value={fact.golib} />
+          <Field label="G‘olib" value={fact.golib} />
           <Field label="Natija" value={fact.natija} />
           <Field label="Joy turi" value={fact.joy_turi} />
           <Field label="Hozirgi joy" value={fact.joy_hozirgi} />
@@ -89,15 +89,15 @@ function FactSheet({ fact, onClose, onChange }: { fact: Fact; onClose: () => voi
         )}
         {fact.izoh && (
           <div className="card callout" style={{ "--c": "var(--accent)", boxShadow: "none" } as React.CSSProperties}>
-            <div className="eyebrow">Metodist izohi (o'quvchiga ko'rinmaydi)</div>
+            <div className="eyebrow">Metodist izohi (o‘quvchiga ko‘rinmaydi)</div>
             <div className="small" style={{ marginTop: 4 }}>{fact.izoh}</div>
           </div>
         )}
-        {fact.hidden_import && <div className="small muted">Import tekshiruvi bu faktni yashirgan (masalan, ishonch past). Uni CSV'da tuzating.</div>}
+        {fact.hidden_import && <div className="small muted">Import tekshiruvi bu faktni yashirgan (masalan, ishonch past). Uni CSV’da tuzating.</div>}
         <div className="row">
           <button className="btn white grow" onClick={onClose}>Yopish</button>
           <button className={`btn grow ${fact.hidden_admin ? "" : "red"}`} disabled={busy} onClick={toggle}>
-            {fact.hidden_admin ? "Yana ko'rsatish" : "Yashirish"}
+            {fact.hidden_admin ? "Yana ko‘rsatish" : "Yashirish"}
           </button>
         </div>
       </div>
@@ -137,7 +137,7 @@ function ImportBox({ onDone }: { onDone: () => void }) {
       <div className="row between">
         <div>
           <div className="bold">Faktlar bazasini yangilash</div>
-          <div className="small muted">CSV (UTF-8). Avval tekshiriladi, so'ng tasdiqlaysiz. Faktlar ID bo'yicha yangilanadi.</div>
+          <div className="small muted">CSV (UTF-8). Avval tekshiriladi, so‘ng tasdiqlaysiz. Faktlar ID bo‘yicha yangilanadi.</div>
         </div>
         <button className="btn sm white" disabled={busy} onClick={() => input.current?.click()}>
           {busy ? <Spinner /> : <Upload size={16} />} CSV tanlash
@@ -152,10 +152,10 @@ function ImportBox({ onDone }: { onDone: () => void }) {
           <div className="row" style={{ flexWrap: "wrap", gap: 6 }}>
             <span className="chip">{file.name}: {preview.total} qator</span>
             <span className="chip green">Yangi: {preview.added}</span>
-            <span className="chip blue">O'zgargan: {preview.updated}</span>
-            <span className="chip">O'zgarmagan: {preview.unchanged}</span>
+            <span className="chip blue">O‘zgargan: {preview.updated}</span>
+            <span className="chip">O‘zgarmagan: {preview.unchanged}</span>
             <span className="chip red">Yashiriladi: {preview.hidden}</span>
-            {preview.missing_in_csv > 0 && <span className="chip gold">CSV'da yo'q: {preview.missing_in_csv}</span>}
+            {preview.missing_in_csv > 0 && <span className="chip gold">CSV’da yo‘q: {preview.missing_in_csv}</span>}
           </div>
           {preview.errors.length > 0 && <ul className="err-list">{preview.errors.slice(0, 20).map((e) => <li key={e}>{e}</li>)}</ul>}
           <div className="row">
@@ -198,13 +198,13 @@ export function FactsPage() {
     <div className="stack">
       <div>
         <h1>Faktlar bazasi</h1>
-        <p className="muted small">Kartochka, test va o'yinlar shu faktlardan tuziladi. Har faktda darslik manbasi bor.</p>
+        <p className="muted small">Kartochka, test va o‘yinlar shu faktlardan tuziladi. Har faktda darslik manbasi bor.</p>
       </div>
 
       {summary && (
         <div className="stat-grid">
           <div className="stat-card"><div className="v">{summary.total}</div><div className="l">Jami faktlar</div></div>
-          <div className="stat-card"><div className="v">{summary.visible}</div><div className="l">O'quvchiga ko'rinadi</div></div>
+          <div className="stat-card"><div className="v">{summary.visible}</div><div className="l">O‘quvchiga ko‘rinadi</div></div>
           {Object.entries(summary.by_type).map(([t, n]) => (
             <div key={t} className="stat-card"><div className="v">{n}</div><div className="l">{TYPES[t] ?? t}</div></div>
           ))}
@@ -220,7 +220,7 @@ export function FactsPage() {
               </button>
             ))}
           </div>
-          <div className="tiny muted">"Ishonch past" — o'quvchiga ko'rsatilmaydi. "Aniq yil yo'q" — kartochkada bor, yillar o'yinida yo'q.</div>
+          <div className="tiny muted">"Ishonch past" — o‘quvchiga ko‘rsatilmaydi. "Aniq yil yo‘q" — kartochkada bor, yillar o‘yinida yo‘q.</div>
         </div>
       )}
 
@@ -246,7 +246,7 @@ export function FactsPage() {
         </select>
         <select className="select" value={f.hidden} onChange={(e) => set("hidden")(e.target.value)}>
           <option value="">Hammasi</option>
-          <option value="false">Ko'rinadiganlar</option>
+          <option value="false">Ko‘rinadiganlar</option>
           <option value="true">Yashirinlar</option>
         </select>
       </div>

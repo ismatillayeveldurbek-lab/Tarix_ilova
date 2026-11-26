@@ -1,179 +1,185 @@
-import { Calendar, ChevronRight, Clipboard, Flame, Refresh, Star, Target, Users } from "../components/Icons";
-import { Progress } from "../components/ui";
+import { Bar, Card, HeroCard, IconTile, Initials, ListRow, Pill, Screen, SectionTitle, cx, fmt } from "../components/kit";
+import { Check, ChevronRight, Clipboard, Flame, Lightning, Refresh, Star, Target, Trophy, Users } from "../components/Icons";
 import { navigate } from "../lib/router";
 import { useStore } from "../lib/store";
 import { haptic } from "../lib/telegram";
-import type { PeriodNode } from "../lib/types";
+import type { FactPath } from "../lib/types";
+import { useApi } from "../lib/useApi";
 
-const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX", "X", "XI", "XII"];
 const MONTHS = ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "sentabr", "oktabr", "noyabr", "dekabr"];
-
-function greeting(): string {
-  const h = new Date().getHours();
-  return h < 5 ? "Xayrli tun" : h < 12 ? "Xayrli tong" : h < 18 ? "Xayrli kun" : "Xayrli kech";
-}
-
+const WEEKDAYS = ["yakshanba", "dushanba", "seshanba", "chorshanba", "payshanba", "juma", "shanba"];
 const go = (to: string) => { haptic.tap(); navigate(to); };
 
-/** Kurs dasturi: bitta davr va uning mavzulari */
-function Unit({ period, index }: { period: PeriodNode; index: number }) {
-  const solved = period.topics.reduce((s, x) => s + x.solved, 0);
-  const total = period.topics.reduce((s, x) => s + x.total, 0);
-  const pct = total ? Math.round((100 * solved) / total) : 0;
+/** "Tarix yo‘lingiz": faktlar bo‘yicha umumiy yo‘l va to‘rt davr */
+function PathHero({ path, due, xp, done, goal }: { path: FactPath | null; due: number; xp: number; done: number; goal: number }) {
+  const pct = path && path.total ? path.mastered / path.total : 0;
   return (
-    <section className="unit">
-      <button className="unit-head" onClick={() => go(period.id ? `/lesson?mode=period&id=${period.id}` : "/lesson?mode=mixed")}>
-        <span className="unit-num">{period.id ? ROMAN[index] ?? index + 1 : "—"}</span>
-        <div className="grow stack" style={{ gap: 6 }}>
-          <div className="row between">
-            <h3>{period.name}</h3>
-            <span className="small muted num">{pct}%</span>
+    <HeroCard>
+      <div className="flex items-start justify-between">
+        <div>
+          <div className="text-[12px] font-semibold uppercase tracking-[.12em] text-white/65">Tarix yo‘lingiz</div>
+          <div className="mt-1 flex items-baseline gap-2">
+            <span className="text-[34px] font-extrabold leading-none tracking-tight">{fmt(path?.mastered ?? 0)}</span>
+            <span className="text-[15px] font-semibold text-white/60">/ {fmt(path?.total ?? 0)} fakt</span>
           </div>
-          <Progress value={pct / 100} thin />
-          <div className="tiny muted">{period.topics.length} mavzu · {solved}/{total} savol o'zlashtirilgan</div>
+          <div className="mt-1 text-[13px] text-white/65">o‘zlashtirildi · {Math.round(pct * 100)}%</div>
         </div>
-      </button>
-      {period.topics.map((t, i) => {
-        const done = t.total > 0 && t.percent >= 100;
-        const started = t.solved > 0;
-        return (
-          <button key={t.id} className="lesson-row" onClick={() => go(`/lesson?mode=topic&id=${t.id}`)}>
-            <span className={`status ${done ? "done" : started ? "started" : ""}`}>{done ? "✓" : i + 1}</span>
-            <span className="grow" style={{ minWidth: 0 }}>
-              <span className="ellipsis" style={{ display: "block", fontWeight: 500 }}>{t.name}</span>
-              <span className="tiny muted">{t.solved}/{t.total} savol</span>
-            </span>
-            <span className="pct">{t.percent}%</span>
-          </button>
-        );
-      })}
-    </section>
+        <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/12"><Target size={22} /></span>
+      </div>
+
+      {/* To‘rt davr — bekatlar */}
+      <div className="mt-5 grid grid-cols-4 gap-2">
+        {(path?.davrlar ?? []).slice(0, 4).map((d) => {
+          const p = d.total ? d.mastered / d.total : 0;
+          return (
+            <div key={d.name} className="min-w-0">
+              <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
+                <div className="h-full rounded-full bg-[#ffe064]" style={{ width: `${Math.max(p * 100, d.started ? 4 : 0)}%` }} />
+              </div>
+              <div className="mt-1.5 truncate text-[11.5px] font-semibold text-white/80">{d.name}</div>
+              <div className="text-[11px] text-white/50">{fmt(d.total)}</div>
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="mt-5 grid grid-cols-3 gap-2">
+        {[
+          ["Takrorga", fmt(due)],
+          ["Bugungi XP", fmt(xp)],
+          ["Bugun", `${Math.min(done, goal)}/${goal}`],
+        ].map(([label, value]) => (
+          <div key={label} className="rounded-2xl bg-white/[.08] px-3 py-2.5">
+            <div className="text-[11.5px] font-medium text-white/60">{label}</div>
+            <div className="text-[18px] font-bold">{value}</div>
+          </div>
+        ))}
+      </div>
+    </HeroCard>
   );
 }
 
 export function HomePage() {
   const { home } = useStore();
+  const { data: path } = useApi<FactPath>("/v1/path");
+  const { data: me } = useApi<{ facts: { due_now: number }; today: { xp: number } }>("/v1/me");
   if (!home) return null;
-  const { done, goal } = home.today;
-  const goalDone = done >= goal;
-  const firstName = home.user.name.split(" ")[0] || "";
+
   const now = new Date();
+  const { done, goal } = home.today;
+  const firstName = home.user.name.split(" ")[0] || "";
   const rec = home.recommendation;
+  const planItems = [
+    {
+      key: "srs", tone: "peri", icon: <Refresh size={20} />, title: "Kunlik takrorlash",
+      sub: "Faktlar kartochkasi · tez orada", done: false, soon: true, to: "",
+    },
+    {
+      key: "daily", tone: "peach", icon: <Lightning size={20} />, title: `Kunlik ${goal} savol`,
+      sub: done >= goal ? "Bajarildi" : `${Math.min(done, goal)} / ${goal} savol`, done: done >= goal, soon: false, to: "/lesson?mode=daily",
+    },
+    {
+      key: "review", tone: "danger", icon: <Target size={20} />, title: "Xatolar ustida ishlash",
+      sub: home.due_count ? `${home.due_count} ta savol kutmoqda` : "Hozircha xato savol yo‘q", done: home.due_count === 0, soon: false, to: "/lesson?mode=review",
+    },
+    {
+      key: "exam", tone: "shaxs", icon: <Clipboard size={20} />, title: "Sinov imtihoni",
+      sub: home.exam ? `${home.exam.count} savol · ${home.exam.minutes} daqiqa` : "Tez orada", done: false, soon: !home.exam, to: "/exam",
+    },
+  ];
+  const planDone = planItems.filter((p) => p.done).length;
 
   return (
-    <div className="page stack">
-      <div className="page-head rise">
-        <div>
-          <div className="eyebrow">{now.getDate()}-{MONTHS[now.getMonth()]}</div>
-          <h1>{greeting()}{firstName ? `, ${firstName}` : ""}</h1>
+    <Screen>
+      {/* Salomlashish */}
+      <header className="flex items-center gap-3">
+        <Initials name={home.user.name} size={46} />
+        <div className="min-w-0 flex-1">
+          <div className="truncate text-[21px] font-bold tracking-tight text-ink">Salom{firstName ? `, ${firstName}` : ""}!</div>
+          <div className="text-[13px] text-muted">{WEEKDAYS[now.getDay()]}, {now.getDate()}-{MONTHS[now.getMonth()]}</div>
         </div>
-      </div>
+        <span className={cx("inline-flex items-center gap-1 rounded-full bg-surface px-3 py-1.5 text-[15px] font-bold shadow-soft",
+          home.user.streak ? "text-peach" : "text-faint")}>
+          <Flame size={17} /> {home.user.streak}
+        </span>
+      </header>
 
-      {/* Asosiy ko'rsatkichlar */}
-      <div className="metrics rise">
-        <div className="metric">
-          <span className="label"><Flame size={14} /> Ketma-ket</span>
-          <span className="value">{home.user.streak}<small>kun</small></span>
-        </div>
-        <div className="metric">
-          <span className="label"><Star size={14} /> Bu hafta</span>
-          <span className="value">{home.week.xp}<small>XP</small></span>
-        </div>
-        <div className="metric">
-          <span className="label"><Target size={14} /> Bugun</span>
-          <span className="value">{Math.min(done, goal)}<small>/ {goal}</small></span>
-        </div>
-      </div>
+      <PathHero path={path} due={me?.facts.due_now ?? 0} xp={me?.today.xp ?? 0} done={done} goal={goal} />
 
-      {/* Kunlik mashq — sahifadagi asosiy harakat */}
-      <button className="card hero tap stack" style={{ gap: 12 }} onClick={() => go("/lesson?mode=daily")}>
-        <div className="row between">
+      {/* Bugungi reja */}
+      <Card className="overflow-hidden">
+        <div className="flex items-center justify-between px-4 pt-4 pb-1">
           <div>
-            <div className="eyebrow" style={{ color: "rgba(255,255,255,.7)" }}>Kunlik mashq</div>
-            <h2 style={{ marginTop: 2 }}>{goalDone ? "Bugungi maqsad bajarildi" : `${goal} ta savol`}</h2>
+            <div className="text-[17px] font-bold text-ink">Bugungi reja</div>
+            <div className="text-[13px] text-muted">Har kuni ozgina — lekin muntazam</div>
           </div>
-          <span className="icon-box on-hero"><Target size={22} /></span>
+          <Pill className="bg-peri-soft text-peri">{planDone} / {planItems.length}</Pill>
         </div>
-        <Progress value={done / goal} onColor />
-        <div className="row between small">
-          <span className="muted">{goalDone ? "Qo'shimcha mashq ham foydali" : "Takrorlash vaqti kelganlar + yangi savollar"}</span>
-          <span className="bold row" style={{ gap: 4 }}>{done > 0 && !goalDone ? "Davom etish" : "Boshlash"} <ChevronRight size={16} /></span>
-        </div>
-      </button>
-
-      <div className="grid-2" style={{ gridTemplateColumns: "1fr 1fr" }}>
-        <button className={`card tap stack ${home.due_count ? "" : "disabled"}`} style={{ gap: 10 }} onClick={() => go("/lesson?mode=review")}>
-          <span className="icon-box accent"><Refresh size={20} /></span>
-          <div>
-            <div className="bold">Takrorlash</div>
-            <div className="small muted">{home.due_count ? `${home.due_count} ta savol kutmoqda` : "Hozircha yo'q"}</div>
-          </div>
-        </button>
-        <button className="card tap stack" style={{ gap: 10 }} onClick={() => go("/exam")}>
-          <span className="icon-box"><Clipboard size={20} /></span>
-          <div>
-            <div className="bold">Sinov imtihoni</div>
-            <div className="small muted">{home.exam ? `${home.exam.count} savol · ${home.exam.minutes} daq.` : "Tez orada"}</div>
-          </div>
-        </button>
-      </div>
-
-      {/* Tavsiya: zaif yoki yangi mavzu */}
-      {rec && (
-        <button className="card tap row callout" style={{ "--c": rec.kind === "weak" ? "var(--danger)" : "var(--primary)" } as React.CSSProperties}
-          onClick={() => go(`/lesson?mode=topic&id=${rec.id}`)}>
-          <div className="grow" style={{ minWidth: 0 }}>
-            <div className="eyebrow">{rec.kind === "weak" ? "Mustahkamlash tavsiya etiladi" : "Keyingi mavzu"}</div>
-            <div className="bold ellipsis" style={{ marginTop: 2 }}>{rec.name}</div>
-            <div className="small muted">
-              {rec.kind === "weak" ? `Aniqlik ${rec.accuracy}% — mavzuni qayta ishlang` : `${rec.total} ta savol`}
-            </div>
-          </div>
-          <ChevronRight size={18} />
-        </button>
-      )}
-
-      {/* Tarixda bugun */}
-      {home.history_today.length > 0 && (
-        <div className="card stack" style={{ gap: 10 }}>
-          <div className="row" style={{ color: "var(--accent)" }}>
-            <Calendar size={18} /><span className="eyebrow" style={{ color: "var(--accent)" }}>Tarixda bugun</span>
-          </div>
-          {home.history_today.map((e, i) => (
-            <div key={i} className="row" style={{ alignItems: "flex-start", gap: 14 }}>
-              {e.year && <span className="serif bold num" style={{ fontSize: 18, minWidth: 48, color: "var(--accent)" }}>{e.year}</span>}
-              <div>
-                <div className="bold">{e.title}</div>
-                {e.text && <div className="small muted">{e.text}</div>}
-              </div>
-            </div>
+        <div className="divide-y divide-line">
+          {planItems.map((p) => (
+            <ListRow key={p.key} title={p.title} subtitle={p.sub} disabled={p.soon}
+              icon={<IconTile tone={p.done ? "success" : p.tone}>{p.done ? <Check size={20} /> : p.icon}</IconTile>}
+              onClick={p.soon ? undefined : () => go(p.to)}
+              right={p.soon ? <Pill>Tez orada</Pill> : undefined} />
           ))}
         </div>
+      </Card>
+
+      {/* Tavsiya */}
+      {rec && (
+        <Card onClick={() => go(`/lesson?mode=topic&id=${rec.id}`)} className="flex items-center gap-3 p-4">
+          <IconTile tone={rec.kind === "weak" ? "danger" : "peri"}>{rec.kind === "weak" ? <Target size={20} /> : <Star size={20} />}</IconTile>
+          <div className="min-w-0 flex-1">
+            <div className="text-[12px] font-semibold uppercase tracking-[.08em] text-muted">
+              {rec.kind === "weak" ? "Mustahkamlash kerak" : "Keyingi mavzu"}
+            </div>
+            <div className="truncate text-[15.5px] font-semibold text-ink">{rec.name}</div>
+            <div className="text-[13px] text-muted">{rec.kind === "weak" ? `Aniqlik ${rec.accuracy}%` : `${rec.total} ta savol`}</div>
+          </div>
+          <ChevronRight size={18} className="text-faint" />
+        </Card>
       )}
 
-      {/* Kurs dasturi */}
-      <div className="section-title">
-        <span>Kurs dasturi</span>
-        <span className="tiny muted">o'zlashtirish {home.mastery}%</span>
+      {/* Bugun tarixda — taqvim varag‘i */}
+      {home.history_today.length > 0 && (
+        <Card className="flex gap-4 p-4">
+          <div className="w-[68px] shrink-0 overflow-hidden rounded-2xl border border-line text-center">
+            <div className="bg-danger py-1 text-[11px] font-bold uppercase tracking-wider text-white">{MONTHS[now.getMonth()].slice(0, 3)}</div>
+            <div className="py-1.5 text-[28px] font-extrabold leading-none text-ink">{now.getDate()}</div>
+          </div>
+          <div className="min-w-0 flex-1 space-y-2">
+            <div className="text-[12px] font-semibold uppercase tracking-[.08em] text-muted">Bugun tarixda</div>
+            {home.history_today.slice(0, 2).map((e, i) => (
+              <div key={i}>
+                <div className="text-[15px] font-semibold leading-snug text-ink">{e.year ? `${e.year} · ` : ""}{e.title}</div>
+                {e.text && <div className="font-reading text-[14px] leading-relaxed text-ink-2">{e.text}</div>}
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
+
+      <div className="grid grid-cols-2 gap-3">
+        <Card onClick={() => go("/rating")} className="p-4">
+          <IconTile tone="sana"><Trophy size={20} /></IconTile>
+          <div className="mt-3 text-[15px] font-bold text-ink">Reyting</div>
+          <div className="text-[13px] text-muted">{home.week.rank ? `${home.week.rank}-o‘rin · ${home.week.xp} XP` : "Bu hafta hali yo‘q"}</div>
+        </Card>
+        <Card onClick={() => go("/invite")} className="p-4">
+          <IconTile tone="joy"><Users size={20} /></IconTile>
+          <div className="mt-3 text-[15px] font-bold text-ink">Do‘stlarni taklif</div>
+          <div className="text-[13px] text-muted">Har do‘st uchun XP</div>
+        </Card>
       </div>
-      {home.path.length === 0 && (
-        <div className="card empty">
-          <span className="empty-icon"><Clipboard size={24} /></span>
-          <div className="muted small">Hozircha savollar qo'shilmagan. Admin panel orqali savollar yuklang.</div>
-        </div>
-      )}
-      {home.path.map((p, i) => <Unit key={p.id} period={p} index={i} />)}
 
-      <button className="btn white block" onClick={() => go("/lesson?mode=mixed")}>Aralash test</button>
-
-      <button className="card tap row" onClick={() => go("/invite")}>
-        <span className="icon-box"><Users size={20} /></span>
-        <div className="grow">
-          <div className="bold">Do'stlarni taklif qilish</div>
-          <div className="small muted">Har bir faol do'st uchun bonus XP</div>
+      <SectionTitle right={`${home.mastery}%`}>Mavzular bo‘yicha natija</SectionTitle>
+      <Card onClick={() => go("/progress")} className="p-4">
+        <div className="flex items-center justify-between">
+          <span className="text-[15px] font-semibold text-ink">O‘zlashtirish va zaif mavzular</span>
+          <ChevronRight size={18} className="text-faint" />
         </div>
-        <ChevronRight size={18} />
-      </button>
-    </div>
+        <Bar value={home.mastery / 100} className="mt-3" />
+      </Card>
+    </Screen>
   );
 }

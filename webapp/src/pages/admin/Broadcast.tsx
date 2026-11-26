@@ -23,7 +23,7 @@ export function BroadcastPage() {
   }, [info?.status.running, load]);
 
   async function send() {
-    if (!info || !(await confirmDialog(`E'lon ${info.recipients} ta foydalanuvchiga yuborilsinmi?`))) return;
+    if (!info || !(await confirmDialog(`E’lon ${info.recipients} ta foydalanuvchiga yuborilsinmi?`))) return;
     setBusy(true);
     try {
       const r = await api<{ queued: number }>("/admin/broadcast", { body: { text, audience } });
@@ -40,7 +40,7 @@ export function BroadcastPage() {
   const s = info?.status ?? {};
   return (
     <div className="stack">
-      <h1>E'lon yuborish</h1>
+      <h1>E’lon yuborish</h1>
       <p className="muted">Xabar bot orqali barcha tanlangan foydalanuvchilarga yuboriladi.</p>
       {info && !info.bot_ready && (
         <div className="card" style={{ borderColor: "var(--danger)", background: "var(--danger-soft)" }}>
@@ -56,7 +56,7 @@ export function BroadcastPage() {
           </div>
           <label className="field"><span>Matn</span>
             <textarea className="textarea" style={{ minHeight: 160 }} maxLength={4000} value={text}
-              placeholder="Masalan: Yangi 50 ta savol qo'shildi! Temuriylar davri bo'yicha mashq qiling."
+              placeholder="Masalan: Yangi 50 ta savol qo‘shildi! Temuriylar davri bo‘yicha mashq qiling."
               onChange={(e) => setText(e.target.value)} />
           </label>
           <div className="row between small muted">
@@ -67,14 +67,14 @@ export function BroadcastPage() {
         <div className="stack">
           {s.total !== undefined && (
             <div className="card stack" style={{ gap: 8 }}>
-              <div className="bold">{s.running ? "Yuborilmoqda..." : "Oxirgi e'lon"}</div>
+              <div className="bold">{s.running ? "Yuborilmoqda..." : "Oxirgi e’lon"}</div>
               <Progress value={s.total ? ((s.sent ?? 0) + (s.failed ?? 0)) / s.total : 1} />
               <div className="row small" style={{ flexWrap: "wrap" }}>
                 <span className="chip green">Yuborildi: {s.sent}</span>
                 <span className="chip red">Yetmadi: {s.failed}</span>
                 <span className="chip">Jami: {s.total}</span>
               </div>
-              <div className="tiny muted">Botni bloklagan foydalanuvchilar avtomatik belgilanadi va keyingi e'lonlarda hisobga olinmaydi.</div>
+              <div className="tiny muted">Botni bloklagan foydalanuvchilar avtomatik belgilanadi va keyingi e’lonlarda hisobga olinmaydi.</div>
             </div>
           )}
         </div>

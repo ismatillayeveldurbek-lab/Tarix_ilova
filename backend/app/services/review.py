@@ -1,8 +1,8 @@
 """Xatolar ustida ishlash — Leitner tizimi (oraliqli takrorlash).
 
-Noto'g'ri javob berilgan savol 0-qutiga tushadi va ertaga qayta beriladi.
-Har to'g'ri javobda keyingi qutiga o'tadi, oraliq esa uzayadi.
-Oxirgi qutidan ham to'g'ri o'tsa — "o'zlashtirildi" deb belgilanadi.
+Noto‘g‘ri javob berilgan savol 0-qutiga tushadi va ertaga qayta beriladi.
+Har to‘g‘ri javobda keyingi qutiga o‘tadi, oraliq esa uzayadi.
+Oxirgi qutidan ham to‘g‘ri o‘tsa — "o‘zlashtirildi" deb belgilanadi.
 """
 from datetime import datetime, timedelta
 
@@ -35,7 +35,7 @@ async def update_review(
         item.last_reviewed_at = now
         return
 
-    # To'g'ri javob: faqat takrorlash vaqti kelgan savol keyingi qutiga o'tadi
+    # To‘g‘ri javob: faqat takrorlash vaqti kelgan savol keyingi qutiga o‘tadi
     if item is None or item.mastered or item.next_review_at > now:
         return
     item.last_reviewed_at = now

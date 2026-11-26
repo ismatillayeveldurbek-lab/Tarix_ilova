@@ -1,11 +1,11 @@
-"""Faktlar bazasini CSV'dan import qilish.
+"""Faktlar bazasini CSV’dan import qilish.
 
 Ishga tushirish (backend/ papkasida):
     python -m scripts.import_facts                  # ../data/baza.csv
-    python -m scripts.import_facts yo'l/fayl.csv
+    python -m scripts.import_facts yo‘l/fayl.csv
     python -m scripts.import_facts --dry-run        # faqat tekshiradi, bazaga yozmaydi
 
-Qayta ishga tushirish xavfsiz: faktlar ID bo'yicha yangilanadi.
+Qayta ishga tushirish xavfsiz: faktlar ID bo‘yicha yangilanadi.
 """
 import asyncio
 import sys
@@ -19,13 +19,13 @@ DEFAULT_CSV = BASE_DIR.parent / "data" / "baza.csv"
 
 FLAG_NAMES = {
     "ishonch_past": "ishonch past (yashirildi)",
-    "manba_yoq": "manba yo'q (yashirildi)",
-    "tur_nomalum": "turi noma'lum (yashirildi)",
-    "matn_yoq": "matn yo'q (yashirildi)",
-    "yil_yoq": "sana, lekin aniq yil yo'q (yil o'yinlarida yo'q)",
+    "manba_yoq": "manba yo‘q (yashirildi)",
+    "tur_nomalum": "turi noma’lum (yashirildi)",
+    "matn_yoq": "matn yo‘q (yashirildi)",
+    "yil_yoq": "sana, lekin aniq yil yo‘q (yil o‘yinlarida yo‘q)",
     "yil_xato": "yil son emas",
     "yil_asr_mos_emas": "yil va asr mos emas",
-    "atama_ozini_tushuntiradi": "atama ta'rifida o'zi bor (savolda yashiriladi)",
+    "atama_ozini_tushuntiradi": "atama ta’rifida o‘zi bor (savolda yashiriladi)",
     "kontekstsiz": "kontekstsiz gap (\"Bu...\", \"U...\")",
     "ishoralar_kam": "shaxsda 3 tadan kam ishora",
 }
@@ -39,10 +39,10 @@ async def main(path: Path, dry_run: bool) -> None:
             await session.commit()
     print(f"{'TEKSHIRUV (bazaga yozilmadi)' if dry_run else 'IMPORT'}: {path.name}")
     print(f"  Jami qatorlar: {r.total}")
-    print(f"  Qo'shildi: {r.added} · yangilandi: {r.updated} · o'zgarmadi: {r.unchanged}")
+    print(f"  Qo‘shildi: {r.added} · yangilandi: {r.updated} · o‘zgarmadi: {r.unchanged}")
     print(f"  Foydalanuvchidan yashirildi: {r.hidden}")
     if r.missing_in_csv:
-        print(f"  CSV'da endi yo'q (yashirildi): {r.missing_in_csv}")
+        print(f"  CSV’da endi yo‘q (yashirildi): {r.missing_in_csv}")
     if r.flags:
         print("  Tekshiruv belgilari:")
         for flag, n in r.flags.most_common():

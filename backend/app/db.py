@@ -1,4 +1,4 @@
-"""Ma'lumotlar bazasiga ulanish."""
+"""Ma’lumotlar bazasiga ulanish."""
 from datetime import UTC, date, datetime
 
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
@@ -15,10 +15,10 @@ class Base(DeclarativeBase):
 
 
 def utcnow() -> datetime:
-    """Hozirgi vaqt (UTC). Bazada vaqtlar UTC'da saqlanadi."""
+    """Hozirgi vaqt (UTC). Bazada vaqtlar UTC’da saqlanadi."""
     return datetime.now(UTC).replace(tzinfo=None)
 
 
 def local_today() -> date:
-    """Toshkent vaqti bo'yicha bugungi sana (streak uchun)."""
+    """Toshkent vaqti bo‘yicha bugungi sana (streak uchun)."""
     return datetime.now(settings.tz).date()

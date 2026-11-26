@@ -33,7 +33,7 @@ export function QuestionsPage() {
   }, [q, periodId, topicId, difficulty, active, page]);
 
   useEffect(() => {
-    const id = setTimeout(load, 250); // qidiruvda har harfda emas, biroz kutib so'raymiz
+    const id = setTimeout(load, 250); // qidiruvda har harfda emas, biroz kutib so‘raymiz
     return () => clearTimeout(id);
   }, [load]);
 
@@ -46,7 +46,7 @@ export function QuestionsPage() {
       <div className="row between">
         <h1>Savollar {data && <span className="muted" style={{ fontSize: 18 }}>({data.total})</span>}</h1>
         <div className="row">
-          <button className="btn sm white" title="Barcha savollarni Excel'ga yuklab olish (zaxira nusxa)"
+          <button className="btn sm white" title="Barcha savollarni Excel’ga yuklab olish (zaxira nusxa)"
             onClick={() => download("/admin/export/questions.xlsx", "savollar.xlsx").catch((e) => toast(e.message, "error"))}>
             <Download size={18} /> Excel
           </button>
@@ -70,7 +70,7 @@ export function QuestionsPage() {
         <select className="select" value={active} onChange={(e) => resetPage(setActive)(e.target.value)}>
           <option value="">Hammasi</option>
           <option value="true">Faol</option>
-          <option value="false">O'chirilgan</option>
+          <option value="false">O‘chirilgan</option>
         </select>
       </div>
       {!data ? <Loading /> : (
@@ -81,13 +81,13 @@ export function QuestionsPage() {
               <span className="q-id">#{x.id}</span>
               <div className="grow stack" style={{ gap: 4 }}>
                 <div className="bold">{x.text}</div>
-                <div className="small muted">To'g'ri: {x.correct.toUpperCase()}) {x[x.correct]}</div>
+                <div className="small muted">To‘g‘ri: {x.correct.toUpperCase()}) {x[x.correct]}</div>
                 <div className="row" style={{ flexWrap: "wrap", gap: 6 }}>
                   {x.period && <span className="chip blue">{x.period}</span>}
                   {x.topic && <span className="chip">{x.topic}</span>}
                   <Stars n={x.difficulty} />
-                  {!x.is_active && <span className="chip red">o'chirilgan</span>}
-                  {!x.explanation && <span className="chip red">izoh yo'q</span>}
+                  {!x.is_active && <span className="chip red">o‘chirilgan</span>}
+                  {!x.explanation && <span className="chip red">izoh yo‘q</span>}
                   {x.image_url && <span className="chip purple">rasm</span>}
                 </div>
               </div>

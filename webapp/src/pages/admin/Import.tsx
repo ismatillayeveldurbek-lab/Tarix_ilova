@@ -21,7 +21,7 @@ function UploadBox({ kind, title, columns, notes }: {
     try {
       const r = await api<ImportReport>(`/admin/import/${kind}`, { form });
       setReport({ ...r, file: file.name });
-      toast(`${r.added} ta qo'shildi`, r.added ? "success" : "info");
+      toast(`${r.added} ta qo‘shildi`, r.added ? "success" : "info");
     } catch (e) {
       toast((e as Error).message, "error");
     } finally {
@@ -47,7 +47,7 @@ function UploadBox({ kind, title, columns, notes }: {
         <div className="stack" style={{ gap: 8 }}>
           <div className="bold">{report.file}</div>
           <div className="row" style={{ flexWrap: "wrap" }}>
-            <span className="chip green">Qo'shildi: {report.added}</span>
+            <span className="chip green">Qo‘shildi: {report.added}</span>
             <span className="chip">Takroriy: {report.skipped_duplicates}</span>
             <span className={`chip ${report.errors.length ? "red" : ""}`}>Xato qatorlar: {report.errors.length}</span>
           </div>
@@ -75,9 +75,9 @@ export function ImportPage() {
   return (
     <div className="stack">
       <h1>Import</h1>
-      <p className="muted">Shablonni yuklab oling, to'ldiring va shu yerga yuklang. Matni bir xil yozuvlar qayta qo'shilmaydi, shuning uchun bitta faylni qayta yuklash xavfsiz.</p>
+      <p className="muted">Shablonni yuklab oling, to‘ldiring va shu yerga yuklang. Matni bir xil yozuvlar qayta qo‘shilmaydi, shuning uchun bitta faylni qayta yuklash xavfsiz.</p>
       <div className="card row" style={{ flexWrap: "wrap" }}>
-        <div className="grow"><b>Zaxira nusxa:</b> <span className="muted">barcha ma'lumotni Excel'ga yuklab oling. Fayl import formatida — tahrirlab, qayta yuklash mumkin.</span></div>
+        <div className="grow"><b>Zaxira nusxa:</b> <span className="muted">barcha ma’lumotni Excel’ga yuklab oling. Fayl import formatida — tahrirlab, qayta yuklash mumkin.</span></div>
         <button className="btn sm white" onClick={() => download("/admin/export/questions.xlsx", "savollar.xlsx").catch((e) => toast(e.message, "error"))}><Download size={18} /> Savollar</button>
         <button className="btn sm white" onClick={() => download("/admin/export/history.xlsx", "voqealar.xlsx").catch((e) => toast(e.message, "error"))}><Download size={18} /> Voqealar</button>
       </div>
@@ -86,7 +86,7 @@ export function ImportPage() {
           columns={["savol", "a", "b", "c", "d", "togri", "izoh", "mavzu", "davr", "qiyinlik", "rasm"]}
           notes={[
             "togri — A, B, C yoki D",
-            "qiyinlik — 1, 2, 3 yoki oson / o'rta / qiyin (bo'sh bo'lsa 1)",
+            "qiyinlik — 1, 2, 3 yoki oson / o‘rta / qiyin (bo‘sh bo‘lsa 1)",
             "rasm — ixtiyoriy, https:// havola (yoki keyin savolni tahrirlab rasm yuklang)",
             "Yangi davr va mavzular avtomatik yaratiladi",
           ]} />

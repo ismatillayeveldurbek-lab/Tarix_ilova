@@ -1,9 +1,9 @@
-"""Namuna ma'lumotlarni bazaga yuklaydi: 20 ta savol va "Tarixda bugun" voqealari.
+"""Namuna ma’lumotlarni bazaga yuklaydi: 20 ta savol va "Tarixda bugun" voqealari.
 
 Ishga tushirish (backend/ papkasida, `alembic upgrade head` dan keyin):
     python -m scripts.seed                 # namuna savollar + voqealar + imtihon formati
     python -m scripts.seed --faqat-format  # faqat imtihon formati (serverda shu ishlatiladi)
-Qayta ishga tushirish xavfsiz — takroriy yozuvlar qo'shilmaydi.
+Qayta ishga tushirish xavfsiz — takroriy yozuvlar qo‘shilmaydi.
 """
 import asyncio
 import sys
@@ -18,7 +18,7 @@ from app.services.importer import import_file, import_history_file
 DATA = BASE_DIR / "data"
 
 # Vaqtinchalik imtihon formati. Rasmiy spetsifikatsiya chiqqach, shu yerda yoki
-# admin panelda o'zgartiriladi — kodga tegish shart emas.
+# admin panelda o‘zgartiriladi — kodga tegish shart emas.
 DEFAULT_EXAM = dict(
     name="Sinov imtihoni (namuna format)",
     duration_minutes=60,
@@ -42,7 +42,7 @@ async def seed(samples: bool = True) -> None:
             await load_samples(session)
         if not await session.scalar(select(ExamConfig).limit(1)):
             session.add(ExamConfig(**DEFAULT_EXAM))
-            print("Imtihon formati (namuna) qo'shildi")
+            print("Imtihon formati (namuna) qo‘shildi")
         await session.commit()
 
 

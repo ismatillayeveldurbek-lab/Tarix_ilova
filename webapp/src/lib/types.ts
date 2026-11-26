@@ -53,7 +53,7 @@ export type Referrals = {
   friends: { name: string; joined_at: string; active: boolean }[];
 };
 
-/** Mavzu bo'yicha natija */
+/** Mavzu bo‘yicha natija */
 export type TopicProgress = {
   id: number; name: string; period: string | null; total: number; mastered: number; answered: number;
   attempts: number; percent: number; accuracy: number | null;
@@ -64,4 +64,12 @@ export type Progress = {
   periods: { id: number; name: string; percent: number; total: number; topics: TopicProgress[] }[];
   weak: TopicProgress[];
   recommendation: Recommendation | null;
+};
+
+/** /api/v1/path — "Tarix yo‘lingiz" */
+export type FactPath = {
+  total: number;
+  mastered: number;
+  davrlar: { name: string; total: number; mastered: number; started: number }[];
+  sections: { tur: "sana" | "shaxs" | "atama" | "joy" | "urush" | "asar"; label: string; total: number }[];
 };

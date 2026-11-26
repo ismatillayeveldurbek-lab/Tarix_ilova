@@ -64,18 +64,18 @@ async def notify_admins(bot: Bot, report, question, user: User) -> None:
     note = (
         f"⚠️ <b>Yangi xato xabari #{report.id}</b>\n"
         f"Savol #{question.id}: {esc(question.text[:300])}\n"
-        f"To'g'ri javob: {question.correct_option.upper()}\n\n"
+        f"To‘g‘ri javob: {question.correct_option.upper()}\n\n"
         f"💬 {esc(report.comment)}\n"
         f"👤 {esc(user.full_name)} (id {user.telegram_id})"
     )
     for admin_id in settings.admin_id_list:
         try:
             await bot.send_message(admin_id, note, reply_markup=report_admin_kb(report.id))
-        except Exception as e:  # admin botni hali ochmagan bo'lishi mumkin
+        except Exception as e:  # admin botni hali ochmagan bo‘lishi mumkin
             log.warning("Adminga xabar yuborilmadi (%s): %s", admin_id, e)
 
 
 def _continue(data: dict, user: User):
-    """Test davom etayotgan bo'lsa — 'Davom etish' tugmasini ko'rsatamiz."""
+    """Test davom etayotgan bo‘lsa — 'Davom etish' tugmasini ko‘rsatamiz."""
     quiz = data.get("quiz")
     return continue_kb() if quiz and quiz.get("answered") else None

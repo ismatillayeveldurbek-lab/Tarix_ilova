@@ -1,13 +1,13 @@
 """Savollarni Excel (.xlsx) yoki CSV fayldan import qilish.
 
-Fayl birinchi qatorida ustun nomlari bo'lishi kerak:
+Fayl birinchi qatorida ustun nomlari bo‘lishi kerak:
     savol | a | b | c | d | togri | izoh | mavzu | davr | qiyinlik | rasm
 
 - togri: A, B, C yoki D
-- qiyinlik: 1/2/3 yoki oson/o'rta/qiyin (bo'sh bo'lsa — 1)
-- mavzu va davr bazada bo'lmasa, avtomatik yaratiladi
+- qiyinlik: 1/2/3 yoki oson/o‘rta/qiyin (bo‘sh bo‘lsa — 1)
+- mavzu va davr bazada bo‘lmasa, avtomatik yaratiladi
 - rasm (ixtiyoriy): rasmning https:// havolasi
-- matni bir xil savol ikkinchi marta qo'shilmaydi
+- matni bir xil savol ikkinchi marta qo‘shilmaydi
 """
 import csv
 import io
@@ -18,6 +18,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.models import OPTIONS, Period, Question, Topic
+from app.services.facts_validation import clean_text
 from app.services.media import is_valid_image_url
 
 # Ustun nomlarining turli yozilishlari -> ichki nom
@@ -56,19 +57,19 @@ class ImportReport:
 
 
 def read_table(filename: str, content: bytes) -> list[list]:
-    """Excel yoki CSV faylni qatorlar ro'yxatiga aylantiradi."""
+    """Excel yoki CSV faylni qatorlar ro‘yxatiga aylantiradi."""
     name = filename.lower()
     if name.endswith(".xlsx"):
         try:
             wb = load_workbook(io.BytesIO(content), read_only=True, data_only=True)
         except Exception:
-            raise ValueError("Excel fayl o'qilmadi (fayl buzilgan yoki .xlsx emas)") from None
+            raise ValueError("Excel fayl o‘qilmadi (fayl buzilgan yoki .xlsx emas)") from None
         return [list(r) for r in wb.active.iter_rows(values_only=True)]
     if name.endswith(".csv"):
         try:
             text = content.decode("utf-8-sig")
         except UnicodeDecodeError:
-            text = content.decode("cp1251")  # Excel ba'zan shu kodlashda saqlaydi
+            text = content.decode("cp1251")  # Excel ba’zan shu kodlashda saqlaydi
         try:
             dialect = csv.Sniffer().sniff(text[:4096], delimiters=",;\t")
         except csv.Error:
@@ -93,7 +94,7 @@ def _map_rows(raw: list[list], aliases: dict[str, str], required: tuple[str, ...
 
 
 def read_rows(filename: str, content: bytes) -> list[dict[str, str]]:
-    """Savollar faylini o'qib, har bir qatorni {ichki_nom: qiymat} lug'atiga aylantiradi."""
+    """Savollar faylini o‘qib, har bir qatorni {ichki_nom: qiymat} lug‘atiga aylantiradi."""
     return _map_rows(read_table(filename, content), HEADER_ALIASES, REQUIRED)
 
 
@@ -106,9 +107,9 @@ def _difficulty(value: str) -> int:
     try:
         d = int(float(key))
     except ValueError:
-        raise ValueError(f"qiyinlik noto'g'ri: {value}") from None
+        raise ValueError(f"qiyinlik noto‘g‘ri: {value}") from None
     if d not in (1, 2, 3):
-        raise ValueError(f"qiyinlik 1, 2 yoki 3 bo'lishi kerak: {value}")
+        raise ValueError(f"qiyinlik 1, 2 yoki 3 bo‘lishi kerak: {value}")
     return d
 
 
@@ -155,10 +156,10 @@ async def import_rows(session: AsyncSession, rows: list[dict[str, str]]) -> Impo
         try:
             missing = [f for f in REQUIRED if not row.get(f)]
             if missing:
-                raise ValueError("bo'sh maydon: " + ", ".join(missing))
+                raise ValueError("bo‘sh maydon: " + ", ".join(missing))
             correct = row["correct"].strip().lower()
             if correct not in OPTIONS:
-                raise ValueError(f"to'g'ri javob A/B/C/D bo'lishi kerak: {row['correct']}")
+                raise ValueError(f"to‘g‘ri javob A/B/C/D bo‘lishi kerak: {row['correct']}")
             difficulty = _difficulty(row.get("difficulty", ""))
             image = row.get("image", "")
             if image and not is_valid_image_url(image):
@@ -167,6 +168,8 @@ async def import_rows(session: AsyncSession, rows: list[dict[str, str]]) -> Impo
             report.errors.append(f"{line_no}-qator: {e}")
             continue
 
+        row = {**row, "text": clean_text(row["text"]), "period": clean_text(row.get("period", "")),
+               "topic": clean_text(row.get("topic", ""))}
         if row["text"] in existing:
             report.skipped_duplicates += 1
             continue
@@ -174,9 +177,9 @@ async def import_rows(session: AsyncSession, rows: list[dict[str, str]]) -> Impo
         period = await _get_period(session, row.get("period", ""), periods)
         topic = await _get_topic(session, row.get("topic", ""), period, topics)
         session.add(Question(
-            text=row["text"], option_a=row["a"], option_b=row["b"],
-            option_c=row["c"], option_d=row["d"], correct_option=correct,
-            explanation=row.get("explanation", ""), difficulty=difficulty, image_url=image or None,
+            text=clean_text(row["text"]), option_a=clean_text(row["a"]), option_b=clean_text(row["b"]),
+            option_c=clean_text(row["c"]), option_d=clean_text(row["d"]), correct_option=correct,
+            explanation=clean_text(row.get("explanation", "")), difficulty=difficulty, image_url=image or None,
             topic_id=topic.id if topic else None, period_id=period.id if period else None,
         ))
         existing.add(row["text"])
@@ -210,9 +213,9 @@ async def import_history_file(session: AsyncSession, filename: str, content: byt
             month, day = int(float(row["month"])), int(float(row["day"]))
             year = int(float(row["year"])) if row.get("year") else None
             if not (1 <= month <= 12 and 1 <= day <= 31):
-                raise ValueError("oy 1–12, kun 1–31 bo'lishi kerak")
+                raise ValueError("oy 1–12, kun 1–31 bo‘lishi kerak")
             if not row.get("title"):
-                raise ValueError("sarlavha bo'sh")
+                raise ValueError("sarlavha bo‘sh")
         except (ValueError, KeyError) as e:
             report.errors.append(f"{line_no}-qator: {e}")
             continue
@@ -220,7 +223,8 @@ async def import_history_file(session: AsyncSession, filename: str, content: byt
         if key in existing:
             report.skipped_duplicates += 1
             continue
-        session.add(HistoryEvent(month=month, day=day, year=year, title=row["title"], text=row.get("text", "")))
+        session.add(HistoryEvent(month=month, day=day, year=year, title=clean_text(row["title"]),
+                                 text=clean_text(row.get("text", ""))))
         existing.add(key)
         report.added += 1
     await session.flush()

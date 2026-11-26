@@ -43,3 +43,9 @@ export const Globe = (p: P) => <S {...p}><circle cx="12" cy="12" r="9" /><path d
 export const ChevronRight = (p: P) => <S {...p}><path d="M9 6l6 6-6 6" /></S>;
 export const ChevronLeft = (p: P) => <S {...p}><path d="M15 6l-6 6 6 6" /></S>;
 export const Lightning = (p: P) => <S {...p} fill="currentColor"><path d="M13 2L4 14h7l-1 8 9-12h-7z" strokeWidth={1.5} /></S>;
+export const MapPin = (p: P) => <S {...p}><path d="M12 21s7-6.2 7-12a7 7 0 0 0-14 0c0 5.8 7 12 7 12z" /><circle cx="12" cy="9" r="2.5" /></S>;
+export const Swords = (p: P) => <S {...p}><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2M9.5 6.5L14 2h3v3l-4.5 4.5M5 14l-2 2 3 3 2-2M7 17l-3 3" /></S>;
+export const Scroll = (p: P) => <S {...p}><path d="M8 21h11a2 2 0 0 0 2-2v-1H10v1a2 2 0 0 1-4 0V5a2 2 0 0 0-2-2h13a2 2 0 0 1 2 2v13M4 3a2 2 0 0 0-2 2v2h4M10 8h6M10 12h6" /></S>;
+export const Dumbbell = (p: P) => <S {...p}><path d="M6.5 6.5v11M17.5 6.5v11M3.5 9v6M20.5 9v6M6.5 12h11" /></S>;
+export const Sparkle = (p: P) => <S {...p}><path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8zM19 16l.8 2.2L22 19l-2.2.8L19 22l-.8-2.2L16 19l2.2-.8z" /></S>;
+export const ArrowRight = (p: P) => <S {...p}><path d="M5 12h14M13 6l6 6-6 6" /></S>;

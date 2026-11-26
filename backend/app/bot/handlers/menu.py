@@ -1,4 +1,4 @@
-"""Profil, reyting, imtihon (Mini App'ga yo'naltirish), "Tarixda bugun"."""
+"""Profil, reyting, imtihon (Mini App’ga yo‘naltirish), "Tarixda bugun"."""
 from aiogram import F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext

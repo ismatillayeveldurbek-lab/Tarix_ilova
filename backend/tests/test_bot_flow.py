@@ -1,4 +1,4 @@
-"""Botni Telegramga ulanmasdan sinash: so'rovlar soxta sessiyaga yoziladi."""
+"""Botni Telegramga ulanmasdan sinash: so‘rovlar soxta sessiyaga yoziladi."""
 import itertools
 from datetime import datetime
 
@@ -49,7 +49,7 @@ class FakeSession(BaseSession):
 
 
 def msg(text: str, user: TgUser = TG_USER) -> Update:
-    chat = Chat(id=user.id, type="private")  # har foydalanuvchi o'z chatida
+    chat = Chat(id=user.id, type="private")  # har foydalanuvchi o‘z chatida
     return Update(update_id=next(_ids), message=Message(
         message_id=next(_ids), date=datetime.now(), chat=chat, from_user=user, text=text))
 
@@ -88,7 +88,7 @@ async def test_full_quiz_flow():
         q_markup = fake.last_markup()
         qid = int(q_markup.inline_keyboard[0][0].callback_data.split(":")[1])
         assert f"Savol {i + 1}/10" in fake.texts()[-1]
-        # juft savollarga xato, toq savollarga to'g'ri javob beramiz
+        # juft savollarga xato, toq savollarga to‘g‘ri javob beramiz
         from app.models import Question
         async with SessionLocal() as s:
             q = await s.get(Question, qid)
@@ -96,7 +96,7 @@ async def test_full_quiz_flow():
         correct_count += i % 2
         await dp.feed_update(bot, cb(f"ans:{qid}:{choice}"))
         edited = [r.text for r in fake.requests if isinstance(r, EditMessageText)][-1]
-        assert ("To'g'ri" in edited) or ("Noto'g'ri" in edited)
+        assert ("To‘g‘ri" in edited) or ("Noto‘g‘ri" in edited)
         assert "Izoh" in edited
         # A/B/C/D harflari lotinda qolishi kerak
         assert "<b>A)</b>" in edited
@@ -125,14 +125,14 @@ async def test_report_flow_and_admin_view():
 
     await dp.feed_update(bot, cb(f"rep:{qid}"))
     assert "xatoni qisqacha yozing" in fake.texts()[-1]
-    await dp.feed_update(bot, msg("Javob noto'g'ri ko'rsatilgan"))
+    await dp.feed_update(bot, msg("Javob noto‘g‘ri ko‘rsatilgan"))
     assert "Rahmat" in fake.texts()[-2] or "Rahmat" in fake.texts()[-1]
     # adminga (id 999) xabar ketgan
     assert any(isinstance(r, SendMessage) and r.chat_id == 999 for r in fake.requests)
 
     async with SessionLocal() as s:
         report = await s.scalar(select(QuestionReport))
-        assert report.comment == "Javob noto'g'ri ko'rsatilgan" and report.status == "new"
+        assert report.comment == "Javob noto‘g‘ri ko‘rsatilgan" and report.status == "new"
 
     # oddiy foydalanuvchi /admin ishlata olmaydi
     n = len(fake.requests)
@@ -141,7 +141,7 @@ async def test_report_flow_and_admin_view():
 
     admin = TgUser(id=999, is_bot=False, first_name="Admin")
     await dp.feed_update(bot, msg("/reports", admin))
-    assert "Javob noto'g'ri ko'rsatilgan" in fake.texts()[-1]
+    assert "Javob noto‘g‘ri ko‘rsatilgan" in fake.texts()[-1]
     await dp.feed_update(bot, cb(f"rs:fixed:{report.id}", admin))
     async with SessionLocal() as s:
         assert (await s.get(QuestionReport, report.id)).status == "fixed"
@@ -153,7 +153,7 @@ async def test_settings_and_profile():
     await dp.feed_update(bot, msg("⚙️ Sozlamalar"))
     assert "19:00" in fake.texts()[-1]
     await dp.feed_update(bot, cb("set:reminder"))
-    assert "o'chirilgan" in fake.texts()[-1]
+    assert "o‘chirilgan" in fake.texts()[-1]
     await dp.feed_update(bot, msg("👤 Profil"))
     assert "Jami javoblar" in fake.texts()[-1]
 
@@ -163,7 +163,7 @@ async def test_review_daily_rating_history():
     await dp.feed_update(bot, msg("/start"))
 
     await dp.feed_update(bot, msg("🔁 Xatolar ustida ishlash"))
-    assert "takrorlash kerak bo'lgan savol yo'q" in fake.texts()[-1]
+    assert "takrorlash kerak bo‘lgan savol yo‘q" in fake.texts()[-1]
 
     await dp.feed_update(bot, msg("🔥 Kunlik 10 savol"))
     assert "Kunlik mashq" in fake.texts()[-2] and "Savol 1/10" in fake.texts()[-1]
@@ -174,7 +174,7 @@ async def test_review_daily_rating_history():
     wrong = next(o for o in "abcd" if o != q.correct_option)
     await dp.feed_update(bot, cb(f"ans:{qid}:{wrong}"))
 
-    # xato savol takrorlashga tushdi; vaqtini o'tkazib yuboramiz
+    # xato savol takrorlashga tushdi; vaqtini o‘tkazib yuboramiz
     from datetime import timedelta
     from app.db import utcnow
     async with SessionLocal() as s:
@@ -249,7 +249,7 @@ async def test_profile_shows_weak_topics():
         await s.commit()
     await dp.feed_update(bot, msg("👤 Profil"))
     sent = [r for r in fake.requests if isinstance(r, SendMessage)][-1]
-    assert "Zaif mavzular" in sent.text and "O'zlashtirish" in sent.text.replace("o'zlashtirish", "O'zlashtirish")
+    assert "Zaif mavzular" in sent.text and "O‘zlashtirish" in sent.text.replace("o‘zlashtirish", "O‘zlashtirish")
     button = sent.reply_markup.inline_keyboard[0][0]
     assert button.callback_data.startswith("tp:") and "0%" in button.text
     await dp.feed_update(bot, cb(button.callback_data))  # tugma mavzu testini boshlaydi

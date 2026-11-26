@@ -24,7 +24,7 @@ const MENU = [
   { path: "/admin/history", label: "Tarixda bugun", icon: Calendar },
   { path: "/admin/reports", label: "Xato xabarlari", icon: Flag },
   { path: "/admin/exam", label: "Imtihon formati", icon: Clipboard },
-  { path: "/admin/broadcast", label: "E'lon yuborish", icon: Bell },
+  { path: "/admin/broadcast", label: "E’lon yuborish", icon: Bell },
 ];
 
 export function AdminApp() {
@@ -59,7 +59,7 @@ export function AdminApp() {
         <div className="card" style={{ textAlign: "left" }}>
           <ol style={{ margin: 0, paddingLeft: 20 }}>
             <li>Telegramda botingizni oching.</li>
-            <li><b>/panel</b> buyrug'ini yuboring (sizning ID raqamingiz <code>ADMIN_IDS</code> da bo'lishi kerak).</li>
+            <li><b>/panel</b> buyrug‘ini yuboring (sizning ID raqamingiz <code>ADMIN_IDS</code> da bo‘lishi kerak).</li>
             <li>"Brauzerda ochish" tugmasini bosing.</li>
           </ol>
         </div>

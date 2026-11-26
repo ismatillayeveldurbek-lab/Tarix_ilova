@@ -1,4 +1,4 @@
-"""Barcha jadvallar shu yerdan import qilinadi (Alembic ham shu orqali ko'radi)."""
+"""Barcha jadvallar shu yerdan import qilinadi (Alembic ham shu orqali ko‘radi)."""
 from app.models.activity import Answer, LessonSession, QuestionReport, ReviewItem
 from app.models.content import OPTIONS, Media, Period, Question, Topic
 from app.models.exam import ExamAnswer, ExamConfig, ExamSession

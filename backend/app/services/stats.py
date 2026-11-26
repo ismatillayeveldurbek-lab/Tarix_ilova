@@ -15,7 +15,7 @@ async def answer_totals(session: AsyncSession, user_id: int) -> tuple[int, int]:
 
 
 async def learning_path(session: AsyncSession, user: User) -> list[dict]:
-    """Davrlar -> mavzular: har mavzuda nechta savol va nechtasi o'zlashtirilgan."""
+    """Davrlar -> mavzular: har mavzuda nechta savol va nechtasi o‘zlashtirilgan."""
     groups = group_by_period(await topic_progress(session, user.id))
     return [
         {"id": g["id"], "name": g["name"], "topics": [

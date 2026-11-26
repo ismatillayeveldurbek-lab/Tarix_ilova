@@ -1,4 +1,4 @@
-"""'👥 Do'stlarni taklif qilish' — shaxsiy havola va statistika."""
+"""'👥 Do‘stlarni taklif qilish' — shaxsiy havola va statistika."""
 from aiogram import Bot, F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext

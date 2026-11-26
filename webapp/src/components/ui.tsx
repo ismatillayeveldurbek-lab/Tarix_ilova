@@ -92,9 +92,9 @@ export function Avatar({ name, size = "" }: { name: string; size?: "" | "lg" | "
   return <div className={`avatar ${size}`}>{letters}</div>;
 }
 
-/** Qiyinlik: uchta kichik ustun (oson / o'rta / qiyin) */
+/** Qiyinlik: uchta kichik ustun (oson / o‘rta / qiyin) */
 export function Stars({ n }: { n: number }) {
-  const label = ["", "Oson", "O'rta", "Qiyin"][n] ?? "";
+  const label = ["", "Oson", "O‘rta", "Qiyin"][n] ?? "";
   return (
     <span className="chip" title={label} style={{ gap: 6 }}>
       <span style={{ display: "inline-flex", gap: 2, alignItems: "flex-end" }} aria-hidden>

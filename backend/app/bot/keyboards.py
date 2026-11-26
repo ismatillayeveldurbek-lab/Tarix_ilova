@@ -94,11 +94,11 @@ def report_admin_kb(report_id: int) -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="✅ Tuzatildi", callback_data=f"rs:fixed:{report_id}"),
         InlineKeyboardButton(text="❌ Rad etish", callback_data=f"rs:rejected:{report_id}"),
     ], [
-        InlineKeyboardButton(text="🚫 Savolni o'chirish", callback_data=f"rs:off:{report_id}"),
+        InlineKeyboardButton(text="🚫 Savolni o‘chirish", callback_data=f"rs:off:{report_id}"),
     ]])
 
 
 def invite_kb(link: str) -> InlineKeyboardMarkup:
-    """Telegram'ning "ulashish" oynasini ochadigan tugma."""
+    """Telegram’ning "ulashish" oynasini ochadigan tugma."""
     url = "https://t.me/share/url?" + urlencode({"url": link, "text": t("share_text")})
     return InlineKeyboardMarkup(inline_keyboard=[[InlineKeyboardButton(text=t("btn_share"), url=url)]])

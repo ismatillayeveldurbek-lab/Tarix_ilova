@@ -20,13 +20,13 @@ def test_parse_ref():
 async def test_register_rules(session):
     inviter = await get_or_create_user(session, 1, "Ali")
     code = await ensure_ref_code(session, inviter)
-    assert len(code) == 8 and await ensure_ref_code(session, inviter) == code  # kod o'zgarmaydi
+    assert len(code) == 8 and await ensure_ref_code(session, inviter) == code  # kod o‘zgarmaydi
 
-    assert await register_referral(session, inviter, code) is None          # o'zini taklif qilish
+    assert await register_referral(session, inviter, code) is None          # o‘zini taklif qilish
     old = await get_or_create_user(session, 1, "Ali")                         # mavjud foydalanuvchi
     assert await register_referral(session, old, code) is None
     new = await get_or_create_user(session, 2, "Vali")
-    assert await register_referral(session, new, "yoqkod") is None          # noma'lum kod
+    assert await register_referral(session, new, "yoqkod") is None          # noma’lum kod
     r = await register_referral(session, new, code)
     assert r and r.inviter_id == inviter.id and new.referred_by == inviter.id
     assert await register_referral(session, new, code) is None              # ikkinchi marta emas
@@ -64,7 +64,7 @@ async def test_bot_referral_flow():
     vali = TgUser(id=301, is_bot=False, first_name="Vali")
 
     await dp.feed_update(bot, msg("/start", ali))
-    await dp.feed_update(bot, msg("👥 Do'stlarni taklif qilish", ali))
+    await dp.feed_update(bot, msg("👥 Do‘stlarni taklif qilish", ali))
     invite = [r for r in fake.requests if isinstance(r, SendMessage)][-1]
     assert "https://t.me/tarix_test_bot?start=ref_" in invite.text
     assert invite.reply_markup.inline_keyboard[0][0].url.startswith("https://t.me/share/url?")
@@ -73,7 +73,7 @@ async def test_bot_referral_flow():
     await dp.feed_update(bot, msg(f"/start ref_{code}", vali))
     sent = [r for r in fake.requests if isinstance(r, SendMessage)]
     assert any(r.chat_id == 301 and "taklif qildi" in r.text for r in sent)
-    assert any(r.chat_id == 300 and "havolangiz orqali qo'shildi" in r.text for r in sent)
+    assert any(r.chat_id == 300 and "havolangiz orqali qo‘shildi" in r.text for r in sent)
 
     # Vali 5 ta savol yechadi -> Ali ga xabar va ikkalasiga bonus
     await dp.feed_update(bot, msg("📝 Test ishlash", vali))
@@ -83,7 +83,7 @@ async def test_bot_referral_flow():
         await dp.feed_update(bot, cb(f"ans:{qid}:a", vali))
         await dp.feed_update(bot, cb("nxt", vali))
     sent = [r for r in fake.requests if isinstance(r, SendMessage)]
-    assert any(r.chat_id == 300 and "sizga <b>+50 XP</b> qo'shildi" in r.text for r in sent)
+    assert any(r.chat_id == 300 and "sizga <b>+50 XP</b> qo‘shildi" in r.text for r in sent)
     assert any(r.chat_id == 301 and "Taklif bonusi" in r.text for r in sent)
 
     # takroriy /start yangi taklif yaratmaydi

@@ -1,21 +1,21 @@
 """Faktlarni tekshirish (CLAUDE.md → "Mezon xatolarini takrorlamaslik").
 
 Har qator uchun:
-* matnlar tozalanadi (qo'sh qo'shtirnoq, o‘/g‘ uchun ‘ belgisi);
-* muammolar `flags` ro'yxatiga yoziladi;
+* matnlar tozalanadi (qo‘sh qo‘shtirnoq, o‘/g‘ uchun ‘ belgisi);
+* muammolar `flags` ro‘yxatiga yoziladi;
 * jiddiy muammoda fakt foydalanuvchidan yashiriladi (`hidden=True`).
 
-Bayroqlar va ularning ta'siri:
+Bayroqlar va ularning ta’siri:
   ishonch_past           — yashiriladi (CLAUDE.md talabi)
-  manba_yoq              — yashiriladi: har faktda darslik beti bo'lishi shart
+  manba_yoq              — yashiriladi: har faktda darslik beti bo‘lishi shart
   tur_nomalum            — yashiriladi
   matn_yoq               — yashiriladi
-  yil_xato               — yil son emas; yil olib tashlanadi, o'yinlarga kirmaydi
-  yil_yoq                — sana faktida aniq yil yo'q: kartochkada bor, yil o'yinlarida yo'q
-  yil_asr_mos_emas       — yil va asr bir-biriga zid: yil o'yinlarida yo'q
-  atama_ozini_tushuntiradi — ta'rif ichida atamaning o'zi bor: savolda atama yashirib ko'rsatiladi
-  kontekstsiz            — "Bu...", "U..." bilan boshlanadi: matn yolg'iz ko'rsatiladigan o'yinlarda yo'q
-  ishoralar_kam          — shaxsda 3 tadan kam ishora: "Kim men?" o'yinida yo'q
+  yil_xato               — yil son emas; yil olib tashlanadi, o‘yinlarga kirmaydi
+  yil_yoq                — sana faktida aniq yil yo‘q: kartochkada bor, yil o‘yinlarida yo‘q
+  yil_asr_mos_emas       — yil va asr bir-biriga zid: yil o‘yinlarida yo‘q
+  atama_ozini_tushuntiradi — ta’rif ichida atamaning o‘zi bor: savolda atama yashirib ko‘rsatiladi
+  kontekstsiz            — "Bu...", "U..." bilan boshlanadi: matn yolg‘iz ko‘rsatiladigan o‘yinlarda yo‘q
+  ishoralar_kam          — shaxsda 3 tadan kam ishora: "Kim men?" o‘yinida yo‘q
 """
 import re
 from dataclasses import dataclass, field
@@ -46,7 +46,7 @@ def century_of(year: int) -> int:
 
 
 def clean_text(text: str) -> str:
-    """Bo'sh joylar, qo'sh qo'shtirnoq va o‘/g‘ belgisini to'g'rilaydi."""
+    """Bo‘sh joylar, qo‘sh qo‘shtirnoq va o‘/g‘ belgisini to‘g‘rilaydi."""
     if not text:
         return ""
     t = " ".join(text.split())

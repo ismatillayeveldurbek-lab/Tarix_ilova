@@ -1,4 +1,4 @@
-// Oddiy "hash" router: manzil #/lesson?mode=daily ko'rinishida bo'ladi.
+// Oddiy "hash" router: manzil #/lesson?mode=daily ko‘rinishida bo‘ladi.
 import { useEffect, useState } from "react";
 
 export type Route = { path: string; params: URLSearchParams };

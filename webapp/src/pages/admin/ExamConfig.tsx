@@ -49,7 +49,7 @@ export function ExamConfigPage() {
   return (
     <div className="stack">
       <h1>Imtihon formati</h1>
-      <p className="muted">Rasmiy spetsifikatsiya e'lon qilinganda shu yerda o'zgartirasiz — kodga tegish shart emas.</p>
+      <p className="muted">Rasmiy spetsifikatsiya e’lon qilinganda shu yerda o‘zgartirasiz — kodga tegish shart emas.</p>
       <div className="card grid-2" style={{ gridTemplateColumns: "2fr 1fr 1fr" }}>
         <label className="field"><span>Nomi</span><input className="input" value={c.name} onChange={(e) => setC({ ...c, name: e.target.value })} /></label>
         <label className="field"><span>Vaqt (daqiqa)</span><input className="input" type="number" value={c.duration_minutes} onChange={(e) => setC({ ...c, duration_minutes: Number(e.target.value) })} /></label>
@@ -58,7 +58,7 @@ export function ExamConfigPage() {
 
       <div className="card stack">
         <div className="row between">
-          <div><div className="bold">Savollar qoidalari</div><div className="small muted">Har qoida bo'yicha bazadan tasodifiy savollar olinadi. Filtrlar ixtiyoriy.</div></div>
+          <div><div className="bold">Savollar qoidalari</div><div className="small muted">Har qoida bo‘yicha bazadan tasodifiy savollar olinadi. Filtrlar ixtiyoriy.</div></div>
           <button className="btn sm white" onClick={() => setC({ ...c, rules: [...c.rules, { count: 5, points: 1 }] })}><Plus size={18} /> Qoida</button>
         </div>
         <div className="rule-row tiny muted bold"><span className="rule-head">Soni</span><span className="rule-head">Ball</span><span className="rule-head">Qiyinlik</span><span className="rule-head">Davr</span><span className="rule-head">Mavzu</span><span /></div>
@@ -95,7 +95,7 @@ export function ExamConfigPage() {
 
       <div className="card stack">
         <div className="row between">
-          <div><div className="bold">Darajalar</div><div className="small muted">Foiz chegarasi bo'yicha (yuqoridan pastga)</div></div>
+          <div><div className="bold">Darajalar</div><div className="small muted">Foiz chegarasi bo‘yicha (yuqoridan pastga)</div></div>
           <button className="btn sm white" onClick={() => setC({ ...c, grades: [...c.grades, { min_percent: 0, grade: "" }] })}><Plus size={18} /> Daraja</button>
         </div>
         {c.grades.map((g, i) => (

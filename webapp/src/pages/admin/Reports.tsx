@@ -40,14 +40,14 @@ export function ReportsPage({ onCount }: { onCount: (n: number) => void }) {
         <Segmented value={status} onChange={setStatus}
           options={[{ value: "new", label: "Yangi" }, { value: "fixed", label: "Tuzatilgan" }, { value: "rejected", label: "Rad etilgan" }]} />
       </div>
-      {rows.length === 0 && <div className="card muted center">Yangi xabar yo'q</div>}
+      {rows.length === 0 && <div className="card muted center">Yangi xabar yo‘q</div>}
       {rows.map((r) => {
         const q = r.question;
         return (
           <div key={r.id} className="card stack" style={{ gap: 8 }}>
             <div className="row between small muted">
               <span>#{r.id} · {r.user} · {new Date(r.created_at).toLocaleString()}</span>
-              <span>Savol #{q.id}{!q.is_active && " (o'chirilgan)"}</span>
+              <span>Savol #{q.id}{!q.is_active && " (o‘chirilgan)"}</span>
             </div>
             <div className="card" style={{ background: "var(--danger-soft)", border: 0, boxShadow: "none", padding: 12 }}>{r.comment}</div>
             <div className="bold">{q.text}</div>
@@ -63,7 +63,7 @@ export function ReportsPage({ onCount }: { onCount: (n: number) => void }) {
               <button className="btn sm blue" onClick={() => setEditing(q)}>Savolni tahrirlash</button>
               {status !== "fixed" && <button className="btn sm" onClick={() => resolve(r, "fixed")}>✓ Tuzatildi</button>}
               {status !== "rejected" && <button className="btn sm white" onClick={() => resolve(r, "rejected")}>Rad etish</button>}
-              {q.is_active && <button className="btn sm red" onClick={() => resolve(r, "fixed", true)}>Savolni o'chirish</button>}
+              {q.is_active && <button className="btn sm red" onClick={() => resolve(r, "fixed", true)}>Savolni o‘chirish</button>}
             </div>
           </div>
         );

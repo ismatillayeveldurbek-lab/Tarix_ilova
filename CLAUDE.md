@@ -28,6 +28,8 @@ tegishli bo'limini o'qi.
 ## Texnologiya (tavsiya; foydalanuvchi hali yakuniy tasdiqlamagan — o'zgartirishdan oldin so'ra)
 - Backend: Python 3.12, FastAPI, SQLAlchemy + Alembic, PostgreSQL
 - Frontend: React + Vite + TypeScript, Tailwind CSS, Telegram Mini App SDK
+  (TASDIQLANGAN: Tailwind CSS v4 — 2-bosqichdan. Yangi ekranlar Tailwind'da; eski ekranlar
+  `webapp/src/styles.css` (legacy qatlami) da, bosqichma-bosqich ko'chiriladi)
 - Bot: aiogram 3 (faqat /start va "Ochish" tugmasi, keyin eslatmalar)
 - Auth: Telegram WebApp initData'ni serverda HMAC bilan tekshirish; sessiya — httpOnly cookie
 - Hosting (boshlanishiga): Vercel (frontend), Railway yoki Render (backend), Supabase yoki

@@ -1,7 +1,7 @@
 """Faktlar bazasi: darsliklar, faktlar, foydalanuvchi faktining holati, kunlik hisob.
 
-Hamma narsa (kartochka, test, o'yin) shu faktlardan tuziladi. Har fakt darslik,
-paragraf va betga bog'langan — foydalanuvchiga doim manba ko'rsatiladi.
+Hamma narsa (kartochka, test, o‘yin) shu faktlardan tuziladi. Har fakt darslik,
+paragraf va betga bog‘langan — foydalanuvchiga doim manba ko‘rsatiladi.
 """
 from datetime import date, datetime
 
@@ -20,7 +20,7 @@ STATE_MASTERED = "ozlashtirildi"
 
 
 class Book(Base):
-    """Darslik. id — CSV'dagi kitob_id (masalan, K08J: 8-sinf, Jahon tarixi)."""
+    """Darslik. id — CSV’dagi kitob_id (masalan, K08J: 8-sinf, Jahon tarixi)."""
 
     __tablename__ = "books"
 
@@ -64,12 +64,12 @@ class Fact(Base):
     asar_muallifi: Mapped[str] = mapped_column(String(255), default="")
 
     ishonch: Mapped[str] = mapped_column(String(16), default="yuqori")
-    izoh: Mapped[str] = mapped_column(Text, default="")  # metodist izohi — foydalanuvchiga ko'rsatilmaydi
+    izoh: Mapped[str] = mapped_column(Text, default="")  # metodist izohi — foydalanuvchiga ko‘rsatilmaydi
 
     # Tekshiruv natijasi (import paytida): ["yil_yoq", "atama_ozini_tushuntiradi", ...]
     flags: Mapped[list] = mapped_column(JSON, default=list)
     hidden_import: Mapped[bool] = mapped_column(Boolean, default=False)  # ishonch=past yoki jiddiy xato
-    hidden_admin: Mapped[bool] = mapped_column(Boolean, default=False)   # admin qo'lda yashirgan
+    hidden_admin: Mapped[bool] = mapped_column(Boolean, default=False)   # admin qo‘lda yashirgan
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=utcnow, onupdate=utcnow)
 
     book: Mapped[Book] = relationship(lazy="joined")
@@ -90,7 +90,7 @@ class Fact(Base):
 
 
 class UserFactState(Base):
-    """Foydalanuvchining bitta fakt bo'yicha holati (oraliqli takrorlash)."""
+    """Foydalanuvchining bitta fakt bo‘yicha holati (oraliqli takrorlash)."""
 
     __tablename__ = "user_fact_state"
     __table_args__ = (UniqueConstraint("user_id", "fact_id"),)
@@ -107,7 +107,7 @@ class UserFactState(Base):
 
 
 class DailyStat(Base):
-    """Kunlik hisob (Toshkent sanasi bo'yicha): XP, ko'rilgan kartalar, o'yinlar."""
+    """Kunlik hisob (Toshkent sanasi bo‘yicha): XP, ko‘rilgan kartalar, o‘yinlar."""
 
     __tablename__ = "daily_stats"
     __table_args__ = (UniqueConstraint("user_id", "day"),)
@@ -118,4 +118,4 @@ class DailyStat(Base):
     xp: Mapped[int] = mapped_column(Integer, default=0)
     cards_reviewed: Mapped[int] = mapped_column(Integer, default=0)
     games_played: Mapped[int] = mapped_column(Integer, default=0)
-    game_xp: Mapped[dict] = mapped_column(JSON, default=dict)  # {"oldin": 40} — o'yin bo'yicha XP (limit uchun)
+    game_xp: Mapped[dict] = mapped_column(JSON, default=dict)  # {"oldin": 40} — o‘yin bo‘yicha XP (limit uchun)

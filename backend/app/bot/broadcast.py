@@ -1,4 +1,4 @@
-"""Ko'p foydalanuvchiga xabar yuborish (Telegram limitlariga rioya qilgan holda)."""
+"""Ko‘p foydalanuvchiga xabar yuborish (Telegram limitlariga rioya qilgan holda)."""
 import asyncio
 import logging
 
@@ -28,9 +28,9 @@ async def safe_send(bot: Bot, chat_id: int | str, text: str,
 
 
 async def broadcast(bot: Bot, recipients: list[int], text: str, status: dict) -> None:
-    """Admin e'loni. recipients: foydalanuvchilarning Telegram ID'lari.
+    """Admin e’loni. recipients: foydalanuvchilarning Telegram ID’lari.
 
-    status lug'ati jarayonda yangilanadi — admin panel undan progressni ko'rsatadi.
+    status lug‘ati jarayonda yangilanadi — admin panel undan progressni ko‘rsatadi.
     """
     import html
 

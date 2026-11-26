@@ -1,5 +1,6 @@
 import { useEffect } from "react";
-import { Clipboard, Home, Trophy, User } from "./components/Icons";
+import { Dumbbell, Home, User } from "./components/Icons";
+import { cx } from "./components/kit";
 import { Logo } from "./components/Logo";
 import { ToastHost } from "./components/ui";
 import { AdminApp } from "./pages/admin/AdminApp";
@@ -7,6 +8,7 @@ import { ExamPage } from "./pages/Exam";
 import { HomePage } from "./pages/Home";
 import { HomeSkeleton } from "./components/Skeleton";
 import { LessonPage } from "./pages/Lesson";
+import { MashqPage } from "./pages/Mashq";
 import { ProfilePage } from "./pages/Profile";
 import { ProgressPage } from "./pages/Progress";
 import { InvitePage } from "./pages/Invite";
@@ -16,25 +18,34 @@ import { StoreProvider, useStore } from "./lib/store";
 import { haptic, tg } from "./lib/telegram";
 
 const TABS = [
-  { path: "/", label: "Asosiy", icon: Home },
-  { path: "/exam", label: "Imtihon", icon: Clipboard },
-  { path: "/rating", label: "Reyting", icon: Trophy },
+  { path: "/", label: "Bosh", icon: Home },
+  { path: "/mashq", label: "Mashq", icon: Dumbbell },
   { path: "/profile", label: "Profil", icon: User },
 ];
+/** Ichki sahifalar qaysi bo‘limga tegishli (menyuda shu belgilanadi) */
+const OWNER: Record<string, string> = { "/exam": "/mashq", "/rating": "/profile", "/progress": "/profile", "/invite": "/profile" };
 
-function BottomNav({ path }: { path: string }) {
+/** Pastda suzib turuvchi oq menyu (Mezon) */
+function BottomNav({ active }: { active: string }) {
   return (
-    <nav className="bottom-nav"><div className="inner">
-      {TABS.map(({ path: p, label, icon: Icon }) => (
-        <button key={p} className={path === p ? "active" : ""} onClick={() => { haptic.select(); navigate(p, true); }}>
-          <span className="nav-icon"><Icon size={26} /></span>{label}
-        </button>
-      ))}
-    </div></nav>
+    <nav className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[calc(var(--safe-bottom)+10px)]">
+      <div className="mx-auto flex max-w-[520px] rounded-[26px] border border-line bg-surface/95 p-1.5 shadow-lift backdrop-blur-md">
+        {TABS.map(({ path: p, label, icon: Icon }) => {
+          const on = active === p;
+          return (
+            <button key={p} type="button" onClick={() => { haptic.select(); navigate(p, true); }}
+              className={cx("flex flex-1 flex-col items-center gap-0.5 rounded-[20px] py-2 text-[11.5px] font-semibold transition",
+                on ? "bg-peri-soft text-peri" : "text-faint hover:text-muted")}>
+              <Icon size={23} />{label}
+            </button>
+          );
+        })}
+      </div>
+    </nav>
   );
 }
 
-/** Telegram'ning "Orqaga" tugmasi */
+/** Telegram’ning "Orqaga" tugmasi */
 function useBackButton(show: boolean) {
   useEffect(() => {
     const bb = tg?.BackButton;
@@ -54,7 +65,7 @@ function UserApp() {
     return (
       <div className="page empty" style={{ minHeight: "80vh", justifyContent: "center" }}>
         <Logo withName={false} />
-        <h2>Ulanib bo'lmadi</h2>
+        <h2>Ulanib bo‘lmadi</h2>
         <p className="muted">{error}</p>
         <button className="btn" onClick={() => window.location.reload()}>Qayta urinish</button>
       </div>
@@ -67,15 +78,19 @@ function UserApp() {
     const id = params.get("id") ? Number(params.get("id")) : null;
     return <LessonPage key={`${mode}-${id}`} mode={mode} id={id} />;
   }
-  const page = path === "/invite" ? <InvitePage /> : path === "/progress" ? <ProgressPage /> : path === "/exam" ? <ExamPage /> : path === "/rating" ? <RatingPage /> : path === "/profile" ? <ProfilePage /> : <HomePage />;
-  return <>{page}<BottomNav path={TABS.some((x) => x.path === path) ? path : "/"} /></>;
+  const pages: Record<string, React.ReactNode> = {
+    "/mashq": <MashqPage />, "/profile": <ProfilePage />, "/invite": <InvitePage />, "/progress": <ProgressPage />,
+    "/exam": <ExamPage />, "/rating": <RatingPage />,
+  };
+  const active = TABS.some((x) => x.path === path) ? path : OWNER[path] ?? "/";
+  return <>{pages[path] ?? <HomePage />}<BottomNav active={active} /></>;
 }
 
 export default function App() {
   const { path } = useRoute();
   const isAdmin = path.startsWith("/admin");
   return (
-    <div className={isAdmin ? "" : "app"}>
+    <div className={isAdmin ? "" : "min-h-screen bg-sky"}>
       <StoreProvider enabled={!isAdmin}>
         {isAdmin ? <AdminApp /> : <UserApp />}
       </StoreProvider>

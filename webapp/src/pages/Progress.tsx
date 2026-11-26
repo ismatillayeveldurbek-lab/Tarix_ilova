@@ -17,7 +17,7 @@ function TopicRow({ t }: { t: TopicProgress }) {
         </div>
         <Bar value={t.percent / 100} thin color={levelColor(t.percent)} />
         <div className="tiny muted">
-          {t.mastered}/{t.total} o'zlashtirilgan
+          {t.mastered}/{t.total} o‘zlashtirilgan
           {t.accuracy !== null && <> · aniqlik {t.accuracy}%</>}
           {t.answered === 0 && <> · hali boshlanmagan</>}
         </div>
@@ -40,8 +40,8 @@ export function ProgressPage() {
         </Ring>
         <div className="grow">
           <div className="eyebrow">Natijalar</div>
-          <h1 style={{ fontSize: 23 }}>O'zlashtirish</h1>
-          <div className="small muted">{data.mastered} / {data.total} savolga oxirgi javobingiz to'g'ri</div>
+          <h1 style={{ fontSize: 23 }}>O‘zlashtirish</h1>
+          <div className="small muted">{data.mastered} / {data.total} savolga oxirgi javobingiz to‘g‘ri</div>
         </div>
       </div>
 
@@ -59,7 +59,7 @@ export function ProgressPage() {
         </div>
       ) : data.overall > 0 ? (
         <div className="card row">
-          <span className="icon-box success"><Check size={20} /></span><div className="bold">Zaif mavzu yo'q — barcha mavzularda aniqlik 70% dan yuqori</div>
+          <span className="icon-box success"><Check size={20} /></span><div className="bold">Zaif mavzu yo‘q — barcha mavzularda aniqlik 70% dan yuqori</div>
         </div>
       ) : null}
 
@@ -75,7 +75,7 @@ export function ProgressPage() {
         </div>
       ))}
       <div className="tiny muted center">
-        O'zlashtirish — oxirgi javobi to'g'ri bo'lgan savollar ulushi. Aniqlik — oxirgi 60 kundagi javoblar bo'yicha.
+        O‘zlashtirish — oxirgi javobi to‘g‘ri bo‘lgan savollar ulushi. Aniqlik — oxirgi 60 kundagi javoblar bo‘yicha.
       </div>
     </div>
   );

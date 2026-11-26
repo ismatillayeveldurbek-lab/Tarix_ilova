@@ -30,7 +30,7 @@ async def test_import_validation_semicolon_csv(session):
         "Savol;A;B;C;D;To'g'ri javob;Izoh;Mavzu;Davr;Qiyinlik\n"
         "Yaxshi savol?;1;2;3;4;b;izoh;M;D;o'rta\n"
         "Javobsiz savol?;1;2;3;4;;;;;\n"
-        "Noto'g'ri harf?;1;2;3;4;E;;;;\n"
+        "Noto‘g‘ri harf?;1;2;3;4;E;;;;\n"
     )
     report = await import_file(session, "q.csv", csv_text.encode())
     assert report.added == 1
@@ -75,7 +75,7 @@ async def test_review_leitner(session):
     item = await session.scalar(select(ReviewItem))
     assert item.box == 0 and item.next_review_at == now + timedelta(days=1)
 
-    # muddati kelmasdan to'g'ri javob — quti o'zgarmaydi
+    # muddati kelmasdan to‘g‘ri javob — quti o‘zgarmaydi
     await update_review(session, user.id, qid, True, now=now)
     assert item.box == 0
 
@@ -119,7 +119,7 @@ def test_effective_streak():
         last_active_date = date(2026, 1, 10)
     assert effective_streak(U(), date(2026, 1, 10)) == 5
     assert effective_streak(U(), date(2026, 1, 11)) == 5  # bugun hali yechmagan — lekin uzilmagan
-    assert effective_streak(U(), date(2026, 1, 12)) == 0  # bir kun o'tkazib yuborildi
+    assert effective_streak(U(), date(2026, 1, 12)) == 0  # bir kun o‘tkazib yuborildi
 
 
 async def test_orphan_topics_in_path(session):
@@ -147,9 +147,9 @@ async def test_topic_progress_and_weak(session):
     def add(q, ok, minutes):
         session.add(Answer(user_id=user.id, question_id=q.id, chosen_option="a", is_correct=ok,
                            answered_at=t0 + timedelta(minutes=minutes)))
-    # 1-savol: avval xato, keyin to'g'ri -> o'zlashtirilgan
+    # 1-savol: avval xato, keyin to‘g‘ri -> o‘zlashtirilgan
     add(temur[0], False, 1); add(temur[0], True, 2)
-    # 2-savol: avval to'g'ri, keyin xato -> o'zlashtirilmagan
+    # 2-savol: avval to‘g‘ri, keyin xato -> o‘zlashtirilmagan
     add(temur[1], True, 3); add(temur[1], False, 4)
     # 3-savol: xato
     add(temur[2], False, 5)
@@ -164,7 +164,7 @@ async def test_topic_progress_and_weak(session):
     assert rec["kind"] == "weak" and rec["id"] == t.id
     assert overall_percent(items) == 5  # 1 / 20
 
-    # 60 kundan eski javoblar aniqlikka kirmaydi (lekin o'zlashtirishga kiradi)
+    # 60 kundan eski javoblar aniqlikka kirmaydi (lekin o‘zlashtirishga kiradi)
     for a in await session.scalars(select(Answer).where(Answer.user_id == user.id)):
         a.answered_at = utcnow() - timedelta(days=90)
     await session.flush()
@@ -178,3 +178,13 @@ async def test_recommendation_new_topic(session):
     user = await get_or_create_user(session, 51, "T")
     rec = recommendation(await topic_progress(session, user.id))
     assert rec["kind"] == "new" and rec["answered"] == 0
+
+
+async def test_import_normalizes_apostrophes(session):
+    csv_text = "savol,a,b,c,d,togri,izoh,mavzu,davr\nQo'qon xonligiga kim asos solgan?,Olimxon,Shohruxbiy,Umarxon,X,B,1709-yil,O'zbek xonliklari,Yangi davr\n"
+    r = await import_file(session, "q.csv", csv_text.encode())
+    q = await session.scalar(select(Question))
+    assert r.added == 1 and q.text == "Qo‘qon xonligiga kim asos solgan?" and q.topic.name == "O‘zbek xonliklari"
+    # xuddi shu savol ‘ belgisi bilan — takroriy deb topiladi
+    again = await import_file(session, "q.csv", csv_text.replace("Qo'qon", "Qo‘qon").encode())
+    assert again.skipped_duplicates == 1

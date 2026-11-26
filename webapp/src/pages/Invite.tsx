@@ -18,13 +18,13 @@ export function InvitePage() {
       haptic.success();
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
-    } else toast("Nusxalab bo'lmadi", "error");
+    } else toast("Nusxalab bo‘lmadi", "error");
   }
 
   const steps = [
-    "Shaxsiy havolangizni do'stingizga yuboring",
-    `Do'stingiz botga kirib, ${data.min_answers} ta savol yechadi`,
-    `Sizga +${data.xp_inviter} XP, do'stingizga +${data.xp_invited} XP beriladi`,
+    "Shaxsiy havolangizni do‘stingizga yuboring",
+    `Do‘stingiz botga kirib, ${data.min_answers} ta savol yechadi`,
+    `Sizga +${data.xp_inviter} XP, do‘stingizga +${data.xp_invited} XP beriladi`,
   ];
 
   return (
@@ -32,8 +32,8 @@ export function InvitePage() {
       <div className="page-head">
         <div>
           <div className="eyebrow">Taklif dasturi</div>
-          <h1>Do'stlarni taklif qilish</h1>
-          <p className="muted small" style={{ marginTop: 4 }}>Birga tayyorlanish samaraliroq. Har bir faol do'st uchun bonus XP oling.</p>
+          <h1>Do‘stlarni taklif qilish</h1>
+          <p className="muted small" style={{ marginTop: 4 }}>Birga tayyorlanish samaraliroq. Har bir faol do‘st uchun bonus XP oling.</p>
         </div>
       </div>
 
@@ -65,11 +65,11 @@ export function InvitePage() {
         <div className="metric"><span className="label">Topilgan</span><span className="value">{data.earned_xp}<small>XP</small></span></div>
       </div>
 
-      <div className="section-title"><span>Do'stlaringiz</span></div>
+      <div className="section-title"><span>Do‘stlaringiz</span></div>
       {data.friends.length === 0 ? (
         <div className="card empty">
           <span className="empty-icon"><Users size={24} /></span>
-          <div className="muted small">Hali hech kim qo'shilmadi. Havolani birinchi do'stingizga yuboring.</div>
+          <div className="muted small">Hali hech kim qo‘shilmadi. Havolani birinchi do‘stingizga yuboring.</div>
         </div>
       ) : (
         <div className="card list" style={{ padding: "4px 10px" }}>

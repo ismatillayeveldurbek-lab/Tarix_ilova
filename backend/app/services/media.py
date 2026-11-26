@@ -39,7 +39,7 @@ async def save_image(session: AsyncSession, data: bytes) -> Media:
 
 
 def media_id(url: str | None) -> int | None:
-    """"/api/media/12" -> 12 (admin yuklagan rasm bo'lsa)."""
+    """"/api/media/12" -> 12 (admin yuklagan rasm bo‘lsa)."""
     m = MEDIA_PATH.match(url or "")
     return int(m.group(1)) if m else None
 

@@ -57,7 +57,7 @@ class QuestionReport(Base):
 class LessonSession(Base):
     """Mini App darsi: qaysi savollar berilgani va qaysilariga javob berilgani.
 
-    Har bir savolga faqat bir marta javob qabul qilinadi — XP'ni soxta oshirib bo'lmaydi.
+    Har bir savolga faqat bir marta javob qabul qilinadi — XP’ni soxta oshirib bo‘lmaydi.
     """
 
     __tablename__ = "lesson_sessions"

@@ -1,9 +1,9 @@
 """Referal (taklif) tizimi.
 
 1. Har bir foydalanuvchining shaxsiy kodi bor: t.me/<bot>?start=ref_<kod>
-2. Havola orqali kelgan YANGI foydalanuvchi taklif qilgan kishiga bog'lanadi.
-   (Botda avvaldan bor foydalanuvchilar va o'zini o'zi taklif qilish hisoblanmaydi.)
-3. Do'st REFERRAL_MIN_ANSWERS ta savol yechgach, taklif "faol" bo'ladi va ikkalasiga XP bonus beriladi.
+2. Havola orqali kelgan YANGI foydalanuvchi taklif qilgan kishiga bog‘lanadi.
+   (Botda avvaldan bor foydalanuvchilar va o‘zini o‘zi taklif qilish hisoblanmaydi.)
+3. Do‘st REFERRAL_MIN_ANSWERS ta savol yechgach, taklif "faol" bo‘ladi va ikkalasiga XP bonus beriladi.
 """
 import secrets
 
@@ -14,7 +14,7 @@ from app.config import settings
 from app.db import utcnow
 from app.models import Answer, Referral, User, XpBonus
 
-CODE_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"  # adashtiradigan belgilar (0/o, 1/l/i) yo'q
+CODE_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"  # adashtiradigan belgilar (0/o, 1/l/i) yo‘q
 CODE_LENGTH = 8
 
 
@@ -45,7 +45,7 @@ def referral_link(bot_username: str, code: str) -> str:
 
 
 async def register_referral(session: AsyncSession, invited: User, code: str | None) -> Referral | None:
-    """Yangi foydalanuvchini taklif qilgan kishiga bog'laydi. Shartlar bajarilmasa None."""
+    """Yangi foydalanuvchini taklif qilgan kishiga bog‘laydi. Shartlar bajarilmasa None."""
     if not code or not getattr(invited, "is_new", False):
         return None
     inviter = await session.scalar(select(User).where(User.ref_code == code))
@@ -61,7 +61,7 @@ async def register_referral(session: AsyncSession, invited: User, code: str | No
 
 
 async def try_activate(session: AsyncSession, user: User) -> Referral | None:
-    """Do'st yetarli savol yechgan bo'lsa, taklifni faollashtirib, bonuslarni beradi."""
+    """Do‘st yetarli savol yechgan bo‘lsa, taklifni faollashtirib, bonuslarni beradi."""
     referral = await session.scalar(
         select(Referral).where(Referral.invited_id == user.id, Referral.activated_at.is_(None))
     )

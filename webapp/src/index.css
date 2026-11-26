@@ -1,0 +1,74 @@
+/* =====================================================================
+   Kirish nuqtasi: Tailwind + eski uslublar (legacy qatlamida).
+   Qatlamlar tartibi: Tailwind utilitylari eski CSS'dan ustun turadi, shuning uchun
+   yangi (Tailwind) sahifalar eski klasslar bilan to'qnashmaydi.
+   ===================================================================== */
+@layer theme, base, legacy, components, utilities;
+@import "tailwindcss";
+@import "./styles.css" layer(legacy);
+
+/* Mezon uslubidagi dizayn tokenlari (docs/mezon-tahlili.md → "Dizayn tizimi").
+   Qiymatlar styles.css :root'dagi CSS o'zgaruvchilaridan olinadi — qorong'i mavzu
+   ham avtomatik ishlaydi. Misol: bg-canvas, text-ink, text-muted, rounded-card. */
+@theme inline {
+  --font-sans: var(--font);
+  --font-reading: var(--reading);
+
+  --color-canvas: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-ink: var(--text);
+  --color-ink-2: var(--text-2);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+
+  --color-cta: var(--primary);
+  --color-cta-hover: var(--primary-hover);
+  --color-on-cta: var(--on-primary);
+  --color-peri: var(--primary-text);
+  --color-peri-soft: var(--primary-soft);
+  --color-peach: var(--accent);
+  --color-peach-soft: var(--accent-soft);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
+
+  /* Bo'limlar ranglari: Yillar, Shaxslar, Atamalar, Joylar, Urushlar, Asarlar */
+  --color-sana: var(--c-sana);       --color-sana-soft: var(--c-sana-soft);
+  --color-shaxs: var(--c-shaxs);     --color-shaxs-soft: var(--c-shaxs-soft);
+  --color-atama: var(--c-atama);     --color-atama-soft: var(--c-atama-soft);
+  --color-joy: var(--c-joy);         --color-joy-soft: var(--c-joy-soft);
+  --color-urush: var(--c-urush);     --color-urush-soft: var(--c-urush-soft);
+  --color-asar: var(--c-asar);       --color-asar-soft: var(--c-asar-soft);
+
+  --radius-card: 22px;
+  --radius-tile: 16px;
+  --shadow-soft: 0 1px 0 rgba(15, 27, 51, .03), 0 18px 32px -24px rgba(15, 27, 51, .28);
+  --shadow-lift: 0 22px 36px -22px rgba(15, 27, 51, .35);
+}
+
+@layer base {
+  /* Tailwind ro'yxat belgilarini olib tashlaydi — eski sahifalar uchun qaytaramiz */
+  :where(.legacy-list) ol, :where(.sheet, .card, .err-list) ol { list-style: decimal; }
+  :where(.sheet, .card, .err-list) ul { list-style: disc; }
+}
+
+/* Telegram safe-area: Telegram ilovasi beradigan o'zgaruvchilar (bo'lmasa — 0) */
+:root {
+  --safe-top: calc(var(--tg-safe-area-inset-top, 0px) + var(--tg-content-safe-area-inset-top, 0px));
+  --safe-bottom: max(env(safe-area-inset-bottom, 0px), var(--tg-safe-area-inset-bottom, 0px));
+}
+
+/* Sahifa foni: tepada yumshoq peri, pastda iliq shaftoli (Mezon, lekin xotirjam) */
+@utility bg-sky {
+  background:
+    radial-gradient(90% 40% at 50% -10%, color-mix(in srgb, var(--primary-soft) 90%, transparent) 0%, transparent 70%),
+    radial-gradient(70% 30% at 100% 105%, color-mix(in srgb, var(--accent-soft) 70%, transparent) 0%, transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
+}

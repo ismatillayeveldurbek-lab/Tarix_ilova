@@ -42,7 +42,7 @@ class Question(Base):
 
     topic_id: Mapped[int | None] = mapped_column(ForeignKey("topics.id"), index=True)
     period_id: Mapped[int | None] = mapped_column(ForeignKey("periods.id"), index=True)
-    difficulty: Mapped[int] = mapped_column(Integer, default=1)  # 1 oson, 2 o'rta, 3 qiyin
+    difficulty: Mapped[int] = mapped_column(Integer, default=1)  # 1 oson, 2 o‘rta, 3 qiyin
     # Rasm (xarita, portret...): "/api/media/12" (admin yuklagan) yoki https://... havola
     image_url: Mapped[str | None] = mapped_column(String(500))
 
@@ -61,7 +61,7 @@ class Question(Base):
 
 
 class Media(Base):
-    """Admin yuklagan rasmlar. Bazada saqlanadi — server qayta joylansa ham yo'qolmaydi."""
+    """Admin yuklagan rasmlar. Bazada saqlanadi — server qayta joylansa ham yo‘qolmaydi."""
 
     __tablename__ = "media"
 

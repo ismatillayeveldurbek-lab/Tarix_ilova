@@ -8,7 +8,7 @@ import { DIFFICULTY, type AdminPeriod, type AdminQuestion } from "./shared";
 type Draft = Omit<AdminQuestion, "id" | "period" | "topic">;
 const EMPTY: Draft = { text: "", a: "", b: "", c: "", d: "", correct: "a", explanation: "", difficulty: 1, period_id: null, topic_id: null, is_active: true, image_url: null };
 
-/** Savol qo'shish / tahrirlash oynasi */
+/** Savol qo‘shish / tahrirlash oynasi */
 export function QuestionForm({ question, periods, onClose, onSaved }: {
   question: AdminQuestion | null; periods: AdminPeriod[]; onClose: () => void; onSaved: () => void;
 }) {
@@ -24,7 +24,7 @@ export function QuestionForm({ question, periods, onClose, onSaved }: {
       await api(question ? `/admin/questions/${question.id}` : "/admin/questions", {
         method: question ? "PUT" : "POST", body: d,
       });
-      toast(question ? "Saqlandi" : "Savol qo'shildi", "success");
+      toast(question ? "Saqlandi" : "Savol qo‘shildi", "success");
       onSaved();
     } catch (e) {
       toast((e as Error).message, "error");
@@ -34,10 +34,10 @@ export function QuestionForm({ question, periods, onClose, onSaved }: {
   }
 
   async function remove() {
-    if (!question || !(await confirmDialog("Savolni o'chirasizmi?"))) return;
+    if (!question || !(await confirmDialog("Savolni o‘chirasizmi?"))) return;
     try {
       const r = await api<{ deleted: boolean }>(`/admin/questions/${question.id}`, { method: "DELETE" });
-      toast(r.deleted ? "Savol o'chirildi" : "Savolga javoblar bor — u o'chirib qo'yildi (statistika saqlanadi)", "success");
+      toast(r.deleted ? "Savol o‘chirildi" : "Savolga javoblar bor — u o‘chirib qo‘yildi (statistika saqlanadi)", "success");
       onSaved();
     } catch (e) {
       toast((e as Error).message, "error");
@@ -55,7 +55,7 @@ export function QuestionForm({ question, periods, onClose, onSaved }: {
           <textarea className="textarea" value={d.text} onChange={(e) => set("text", e.target.value)} />
         </label>
         <ImageField value={d.image_url} onChange={(v) => set("image_url", v)} />
-        <div className="field"><span>Variantlar (to'g'ri javobni harf ustiga bosib belgilang)</span>
+        <div className="field"><span>Variantlar (to‘g‘ri javobni harf ustiga bosib belgilang)</span>
           {(["a", "b", "c", "d"] as const).map((k) => (
             <div key={k} className="opt-edit">
               <button type="button" className={`radio ${d.correct === k ? "on" : ""}`} onClick={() => set("correct", k)}>{k.toUpperCase()}</button>
@@ -63,7 +63,7 @@ export function QuestionForm({ question, periods, onClose, onSaved }: {
             </div>
           ))}
         </div>
-        <label className="field"><span>Izoh (javobdan keyin ko'rsatiladi)</span>
+        <label className="field"><span>Izoh (javobdan keyin ko‘rsatiladi)</span>
           <textarea className="textarea" value={d.explanation} onChange={(e) => set("explanation", e.target.value)} />
         </label>
         <div className="grid-2">
@@ -85,7 +85,7 @@ export function QuestionForm({ question, periods, onClose, onSaved }: {
             options={[1, 2, 3].map((n) => ({ value: n, label: DIFFICULTY[n] }))} />
         </div>
         <div className="row">
-          {question && <button className="btn red" onClick={remove} aria-label="O'chirish"><Trash size={20} /></button>}
+          {question && <button className="btn red" onClick={remove} aria-label="O‘chirish"><Trash size={20} /></button>}
           <button className="btn white grow" onClick={onClose}>Bekor qilish</button>
           <button className="btn grow" disabled={!valid || busy} onClick={save}>Saqlash</button>
         </div>
@@ -117,7 +117,7 @@ function ImageField({ value, onChange }: { value: string | null; onChange: (v: s
   return (
     <div className="field"><span>Rasm (ixtiyoriy — xarita, portret, hujjat...)</span>
       <div className="image-field">
-        <div className="thumb">{value ? <img src={value} alt="" /> : "Rasm yo'q"}</div>
+        <div className="thumb">{value ? <img src={value} alt="" /> : "Rasm yo‘q"}</div>
         <div className="stack grow" style={{ gap: 8, minWidth: 200 }}>
           <div className="row">
             <button type="button" className="btn sm white" disabled={busy} onClick={() => input.current?.click()}>

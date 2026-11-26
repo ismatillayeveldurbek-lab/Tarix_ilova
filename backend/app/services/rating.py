@@ -1,4 +1,4 @@
-"""Haftalik reyting. Ball (XP): to'g'ri javob — 10, noto'g'ri — 1 (harakat uchun)."""
+"""Haftalik reyting. Ball (XP): to‘g‘ri javob — 10, noto‘g‘ri — 1 (harakat uchun)."""
 from dataclasses import dataclass
 from datetime import UTC, datetime, time, timedelta
 
@@ -14,7 +14,7 @@ XP_WRONG = 1
 
 
 def week_start_utc() -> datetime:
-    """Joriy hafta boshi (dushanba 00:00, Toshkent vaqti) — UTC'da."""
+    """Joriy hafta boshi (dushanba 00:00, Toshkent vaqti) — UTC’da."""
     today = local_today()
     monday = today - timedelta(days=today.weekday())
     return datetime.combine(monday, time.min, settings.tz).astimezone(UTC).replace(tzinfo=None)
@@ -61,7 +61,7 @@ async def user_week_xp(session: AsyncSession, user_id: int) -> int:
 
 
 async def user_rank(session: AsyncSession, user_id: int) -> int | None:
-    """Foydalanuvchining shu haftadagi o'rni (XP bo'lmasa None)."""
+    """Foydalanuvchining shu haftadagi o‘rni (XP bo‘lmasa None)."""
     w = _week_xp()
     my_xp = int(await session.scalar(select(w.c.xp).where(w.c.user_id == user_id)) or 0)
     if my_xp == 0:

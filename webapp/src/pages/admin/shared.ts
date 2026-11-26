@@ -24,4 +24,4 @@ export function usePeriods() {
   return { periods, reload };
 }
 
-export const DIFFICULTY = ["", "Oson", "O'rta", "Qiyin"];
+export const DIFFICULTY = ["", "Oson", "O‘rta", "Qiyin"];

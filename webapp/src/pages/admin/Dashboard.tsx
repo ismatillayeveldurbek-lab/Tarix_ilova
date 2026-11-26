@@ -22,7 +22,7 @@ export function Dashboard() {
     ["7 kunda faol", s.active_week, "var(--text)"],
     ["Faol savollar", s.questions, "var(--text)"],
     ["Bugungi javoblar", s.answers_today, "var(--text)"],
-    ["O'rtacha aniqlik", `${s.accuracy}%`, "var(--text)"],
+    ["O‘rtacha aniqlik", `${s.accuracy}%`, "var(--text)"],
     ["Yangi xato xabarlari", s.reports_new, s.reports_new ? "var(--danger)" : "var(--text)"],
   ];
   return (
@@ -38,7 +38,7 @@ export function Dashboard() {
           <div className="bold">Referal (taklif) tizimi</div>
           <div className="row small"><span className="chip blue">Takliflar: {s.referrals.total}</span><span className="chip green">Faol: {s.referrals.active}</span></div>
         </div>
-        {s.referrals.top.length === 0 ? <div className="small muted">Hali taklif yo'q</div> : (
+        {s.referrals.top.length === 0 ? <div className="small muted">Hali taklif yo‘q</div> : (
           <div className="list">
             {s.referrals.top.map((r, i) => (
               <div key={i} className="list-row"><span className="rank">{i + 1}</span><span className="grow bold">{r.name}</span>
@@ -49,22 +49,22 @@ export function Dashboard() {
       </div>
       {s.questions === 0 && (
         <div className="card row" style={{ borderColor: "var(--success)", background: "var(--success-soft)" }}>
-          <div className="grow"><b>Bazada savol yo'q.</b> Excel yoki CSV fayldan savollarni yuklang.</div>
+          <div className="grow"><b>Bazada savol yo‘q.</b> Excel yoki CSV fayldan savollarni yuklang.</div>
           <button className="btn sm" onClick={() => navigate("/admin/import")}>Import</button>
         </div>
       )}
       <div className="grid-2">
         <div className="card stack">
-          <div className="bold">Davrlar bo'yicha savollar</div>
+          <div className="bold">Davrlar bo‘yicha savollar</div>
           <div className="bars">
             {s.by_period.map((p) => (
               <div key={p.name} className="bar-row"><span>{p.name}</span><Progress value={p.count / maxPeriod} thin /><span className="bold">{p.count}</span></div>
             ))}
-            {s.by_period.length === 0 && <div className="muted small">Ma'lumot yo'q</div>}
+            {s.by_period.length === 0 && <div className="muted small">Ma’lumot yo‘q</div>}
           </div>
         </div>
         <div className="card stack">
-          <div className="bold">Qiyinlik bo'yicha</div>
+          <div className="bold">Qiyinlik bo‘yicha</div>
           <div className="bars">
             {[1, 2, 3].map((d) => (
               <div key={d} className="bar-row">
@@ -76,7 +76,7 @@ export function Dashboard() {
           </div>
           {s.hard_topics.length > 0 && (
             <>
-              <div className="bold" style={{ marginTop: 8 }}>Eng qiyin mavzular (o'quvchilar aniqligi)</div>
+              <div className="bold" style={{ marginTop: 8 }}>Eng qiyin mavzular (o‘quvchilar aniqligi)</div>
               <div className="bars">
                 {s.hard_topics.map((h) => (
                   <div key={h.name} className="bar-row">
@@ -86,10 +86,10 @@ export function Dashboard() {
                   </div>
                 ))}
               </div>
-              <div className="small muted">Kamida 10 ta javob berilgan mavzular. Bu mavzularga izoh va savollarni ko'paytirish foydali.</div>
+              <div className="small muted">Kamida 10 ta javob berilgan mavzular. Bu mavzularga izoh va savollarni ko‘paytirish foydali.</div>
             </>
           )}
-          <div className="small muted">O'chirilgan savollar: {s.questions_inactive} · "Tarixda bugun" voqealari: {s.history_events} · Jami javoblar: {s.answers_total}</div>
+          <div className="small muted">O‘chirilgan savollar: {s.questions_inactive} · "Tarixda bugun" voqealari: {s.history_events} · Jami javoblar: {s.answers_total}</div>
         </div>
       </div>
     </div>

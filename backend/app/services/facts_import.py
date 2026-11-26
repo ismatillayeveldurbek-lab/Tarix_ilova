@@ -1,8 +1,8 @@
-"""Faktlarni CSV'dan bazaga import qilish (ID bo'yicha yangilash).
+"""Faktlarni CSV’dan bazaga import qilish (ID bo‘yicha yangilash).
 
-* Yangi fakt qo'shiladi, mavjudi yangilanadi.
-* `hidden_admin` (admin qo'lda yashirgani) import paytida o'zgarmaydi.
-* CSV'da endi yo'q faktlar o'chirilmaydi (foydalanuvchi progressi saqlanadi), balki yashiriladi.
+* Yangi fakt qo‘shiladi, mavjudi yangilanadi.
+* `hidden_admin` (admin qo‘lda yashirgani) import paytida o‘zgarmaydi.
+* CSV’da endi yo‘q faktlar o‘chirilmaydi (foydalanuvchi progressi saqlanadi), balki yashiriladi.
 """
 import csv
 import io
@@ -43,7 +43,7 @@ def read_csv(content: bytes) -> list[dict[str, str]]:
     reader = csv.DictReader(io.StringIO(text))
     missing = [c for c in REQUIRED_COLUMNS if c not in (reader.fieldnames or [])]
     if missing:
-        raise ValueError("CSV'da ustunlar yo'q: " + ", ".join(missing))
+        raise ValueError("CSV’da ustunlar yo‘q: " + ", ".join(missing))
     return list(reader)
 
 
@@ -57,7 +57,7 @@ async def import_facts(session: AsyncSession, rows: list[dict[str, str]], dry_ru
         checked = check_row(row)
         d = checked.data
         if not d["id"]:
-            report.errors.append(f"{line_no}-qator: id bo'sh")
+            report.errors.append(f"{line_no}-qator: id bo‘sh")
             continue
         if d["id"] in seen:
             report.errors.append(f"{line_no}-qator: takroriy id {d['id']}")
@@ -70,7 +70,7 @@ async def import_facts(session: AsyncSession, rows: list[dict[str, str]], dry_ru
         if book is None:
             parsed = book_from_id(d["kitob_id"])
             if parsed is None:
-                report.errors.append(f"{line_no}-qator: noma'lum kitob_id {d['kitob_id']}")
+                report.errors.append(f"{line_no}-qator: noma’lum kitob_id {d['kitob_id']}")
                 continue
             book = Book(id=d["kitob_id"], sinf=parsed[0], fan=parsed[1])
             books[book.id] = book

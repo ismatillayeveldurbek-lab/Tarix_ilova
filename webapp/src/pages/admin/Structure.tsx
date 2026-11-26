@@ -19,7 +19,7 @@ function InlineName({ value, order, onSave, onDelete, count }: {
         <span className="grow bold">{value}</span>
         <span className="chip">{count} savol</span>
         <button className="icon-btn" onClick={() => setEdit(true)} aria-label="Tahrirlash"><Edit size={18} /></button>
-        <button className="icon-btn" onClick={onDelete} aria-label="O'chirish"><Trash size={18} /></button>
+        <button className="icon-btn" onClick={onDelete} aria-label="O‘chirish"><Trash size={18} /></button>
       </div>
     );
   }
@@ -47,19 +47,19 @@ export function StructurePage() {
     }
   };
   const confirmDel = async (what: string, fn: () => Promise<unknown>) => {
-    if (await confirmDialog(`${what} o'chirilsinmi?`)) await run(fn, "O'chirildi");
+    if (await confirmDialog(`${what} o‘chirilsinmi?`)) await run(fn, "O‘chirildi");
   };
 
   return (
     <div className="stack">
       <h1>Davr va mavzular</h1>
-      <p className="muted">Mini App'dagi "mavzular yo'li" shu tartibda ko'rinadi. Tartib raqami kichik bo'lgani yuqorida turadi.</p>
+      <p className="muted">Mini App’dagi "mavzular yo‘li" shu tartibda ko‘rinadi. Tartib raqami kichik bo‘lgani yuqorida turadi.</p>
       <div className="card row">
         <input className="input grow" placeholder="Yangi davr nomi (masalan: Qadimgi davr)" value={newPeriod} onChange={(e) => setNewPeriod(e.target.value)} />
         <button className="btn sm" disabled={!newPeriod.trim()} onClick={() => run(async () => {
           await api("/admin/periods", { body: { name: newPeriod, sort_order: periods.length + 1 } });
           setNewPeriod("");
-        }, "Davr qo'shildi")}><Plus size={18} /> Davr</button>
+        }, "Davr qo‘shildi")}><Plus size={18} /> Davr</button>
       </div>
       {periods.map((p) => (
         <div key={p.id} className="card stack">
@@ -84,7 +84,7 @@ export function StructurePage() {
               <button className="btn sm white" disabled={!newTopic[p.id]?.trim()} onClick={() => run(async () => {
                 await api("/admin/topics", { body: { name: newTopic[p.id], period_id: p.id, sort_order: p.topics.length + 1 } });
                 setNewTopic({ ...newTopic, [p.id]: "" });
-              }, "Mavzu qo'shildi")}><Plus size={18} /></button>
+              }, "Mavzu qo‘shildi")}><Plus size={18} /></button>
             </div>
           </div>
         </div>

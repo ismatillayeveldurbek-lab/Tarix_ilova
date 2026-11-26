@@ -23,7 +23,7 @@ async def notify_joined(bot: Bot, session: AsyncSession, referral: Referral) -> 
     inviter = await session.get(User, referral.inviter_id)
     invited = await session.get(User, referral.invited_id)
     await safe_send(bot, inviter.telegram_id, t(
-        "ref_joined", name=esc(invited.full_name or "Do'stingiz"),
+        "ref_joined", name=esc(invited.full_name or "Do‘stingiz"),
         min=settings.referral_min_answers, xp=settings.referral_xp_inviter,
     ))
 
@@ -32,7 +32,7 @@ async def notify_activated(bot: Bot, session: AsyncSession, referral: Referral) 
     inviter = await session.get(User, referral.inviter_id)
     invited = await session.get(User, referral.invited_id)
     await safe_send(bot, inviter.telegram_id, t(
-        "ref_activated", name=esc(invited.full_name or "Do'stingiz"),
+        "ref_activated", name=esc(invited.full_name or "Do‘stingiz"),
         min=settings.referral_min_answers, xp=settings.referral_xp_inviter,
     ))
     await safe_send(bot, invited.telegram_id, t("ref_bonus", xp=settings.referral_xp_invited))

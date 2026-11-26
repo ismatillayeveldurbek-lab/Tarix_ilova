@@ -30,7 +30,7 @@ export function HistoryPage() {
   }
 
   async function remove(e: Event) {
-    if (!(await confirmDialog(`"${e.title}" o'chirilsinmi?`))) return;
+    if (!(await confirmDialog(`"${e.title}" o‘chirilsinmi?`))) return;
     await api(`/admin/history/${e.id}`, { method: "DELETE" }).catch((err) => toast(err.message, "error"));
     void load();
   }
@@ -53,7 +53,7 @@ export function HistoryPage() {
         ))}
       </div>
       <div className="stack" style={{ gap: 8 }}>
-        {events.length === 0 && <div className="card muted center">Bu oy uchun voqea yo'q</div>}
+        {events.length === 0 && <div className="card muted center">Bu oy uchun voqea yo‘q</div>}
         {events.map((e) => {
           const isToday = e.month === today.getMonth() + 1 && e.day === today.getDate();
           return (

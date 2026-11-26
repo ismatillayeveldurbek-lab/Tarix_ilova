@@ -1,4 +1,4 @@
-/** Ma'lumot yuklanayotganda sahifa shaklidagi "skelet" */
+/** Ma’lumot yuklanayotganda sahifa shaklidagi "skelet" */
 export function HomeSkeleton() {
   return (
     <div className="page stack" aria-busy>

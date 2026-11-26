@@ -51,14 +51,14 @@ export async function api<T = unknown>(path: string, opts: Options = {}): Promis
   try {
     res = await fetch(`/api${path}`, { method: opts.method || (body ? "POST" : "GET"), headers, body });
   } catch {
-    throw new ApiError("Internet aloqasi yo'q. Qayta urinib ko'ring", 0);
+    throw new ApiError("Internet aloqasi yo‘q. Qayta urinib ko‘ring", 0);
   }
   if (!res.ok) {
     let message = `Xatolik (${res.status})`;
     try {
       const data = await res.json();
       if (typeof data.detail === "string") message = data.detail;
-      else if (Array.isArray(data.detail)) message = "Maydonlar noto'g'ri to'ldirilgan";
+      else if (Array.isArray(data.detail)) message = "Maydonlar noto‘g‘ri to‘ldirilgan";
     } catch {
       /* JSON emas */
     }

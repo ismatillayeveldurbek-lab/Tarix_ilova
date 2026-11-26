@@ -10,7 +10,7 @@ os.environ["BOT_TOKEN"] = "42:TEST"
 import pytest  # noqa: E402
 
 from app.db import Base, SessionLocal, engine  # noqa: E402
-import app.models  # noqa: E402,F401  (jadvallar ro'yxatga olinsin)
+import app.models  # noqa: E402,F401  (jadvallar ro‘yxatga olinsin)
 
 
 @pytest.fixture(autouse=True)

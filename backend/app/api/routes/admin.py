@@ -23,6 +23,7 @@ from app.models import (
 from app.services.daily import local_midnight_utc
 from app.services.exam import get_active_config, rule_availability
 from app.services.facts import VISIBLE as VISIBLE_FACTS
+from app.services.facts_validation import clean_text
 from app.services.facts_import import import_facts, read_csv as read_facts_csv
 from app.services.importer import import_file, import_history_file
 from app.services.media import MAX_IMAGE_BYTES, is_valid_image_url, save_image
@@ -48,7 +49,7 @@ async def stats(_: AdminUser, session: Session) -> dict:
     accuracy = (await session.execute(
         select(func.count(), func.coalesce(func.sum(cast(Answer.is_correct, Integer)), 0))
     )).one()
-    # Foydalanuvchilar eng ko'p xato qiladigan mavzular (kamida 10 ta javob)
+    # Foydalanuvchilar eng ko‘p xato qiladigan mavzular (kamida 10 ta javob)
     ok_sum = func.sum(cast(Answer.is_correct, Integer))
     hard = (await session.execute(
         select(Topic.name, func.count(), ok_sum)
@@ -120,15 +121,16 @@ class QuestionIn(BaseModel):
 
 
 async def reload_question(session, qid: int) -> Question:
-    """Saqlangandan keyin savolni davr/mavzu nomlari bilan qayta o'qiydi."""
+    """Saqlangandan keyin savolni davr/mavzu nomlari bilan qayta o‘qiydi."""
     session.expunge_all()
     return await session.get(Question, qid)
 
 
 def apply_question(q: Question, body: QuestionIn) -> None:
+    # o‘/g‘ belgisi va qo'shtirnoqlar CLAUDE.md qoidasiga ko'ra tozalanadi
     q.text, q.option_a, q.option_b, q.option_c, q.option_d = (
-        body.text.strip(), body.a.strip(), body.b.strip(), body.c.strip(), body.d.strip())
-    q.correct_option, q.explanation, q.difficulty = body.correct, body.explanation.strip(), body.difficulty
+        clean_text(body.text), clean_text(body.a), clean_text(body.b), clean_text(body.c), clean_text(body.d))
+    q.correct_option, q.explanation, q.difficulty = body.correct, clean_text(body.explanation), body.difficulty
     q.period_id, q.topic_id, q.is_active = body.period_id, body.topic_id, body.is_active
     q.image_url = body.image_url
 
@@ -178,7 +180,7 @@ async def update_question(qid: int, body: QuestionIn, _: AdminUser, session: Ses
 
 @router.delete("/questions/{qid}")
 async def delete_question(qid: int, _: AdminUser, session: Session) -> dict:
-    """Hech kim javob bermagan savol butunlay o'chadi, aks holda faqat o'chirib qo'yiladi (statistika saqlanadi)."""
+    """Hech kim javob bermagan savol butunlay o‘chadi, aks holda faqat o‘chirib qo‘yiladi (statistika saqlanadi)."""
     q = await session.get(Question, qid)
     if q is None:
         raise HTTPException(404, "Savol topilmadi")
@@ -239,12 +241,12 @@ async def import_history(file: UploadFile, _: AdminUser, session: Session) -> di
 TEMPLATES = {
     "questions": (
         ["savol", "a", "b", "c", "d", "togri", "izoh", "mavzu", "davr", "qiyinlik", "rasm"],
-        [["Amir Temur qaysi yilda tug'ilgan?", "1320", "1336", "1370", "1405", "B",
-          "Amir Temur 1336-yil 9-aprelda tug'ilgan.", "Amir Temur va Temuriylar", "O'rta asrlar", "1", ""]],
+        [["Amir Temur qaysi yilda tug‘ilgan?", "1320", "1336", "1370", "1405", "B",
+          "Amir Temur 1336-yil 9-aprelda tug‘ilgan.", "Amir Temur va Temuriylar", "O‘rta asrlar", "1", ""]],
     ),
     "history": (
         ["oy", "kun", "yil", "sarlavha", "matn"],
-        [["4", "9", "1336", "Amir Temur tavalludi", "Amir Temur Kesh yaqinidagi Xo'ja Ilg'or qishlog'ida tug'ilgan."]],
+        [["4", "9", "1336", "Amir Temur tavalludi", "Amir Temur Kesh yaqinidagi Xo‘ja Ilg‘or qishlog‘ida tug‘ilgan."]],
     ),
 }
 
@@ -302,12 +304,12 @@ XLSX = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 
 @router.get("/export/{kind}.xlsx")
 async def export(kind: Literal["questions", "history"], _: AdminUser, session: Session) -> Response:
-    """Import formatining o'zida yuklab beradi — faylni tahrirlab, qayta import qilish mumkin."""
+    """Import formatining o‘zida yuklab beradi — faylni tahrirlab, qayta import qilish mumkin."""
     if kind == "questions":
         qs = await session.scalars(select(Question).order_by(Question.id))
         rows = [[q.text, q.option_a, q.option_b, q.option_c, q.option_d, q.correct_option.upper(),
                  q.explanation, q.topic.name if q.topic else "", q.period.name if q.period else "",
-                 q.difficulty, q.image_url or "", q.id, "ha" if q.is_active else "yo'q"] for q in qs]
+                 q.difficulty, q.image_url or "", q.id, "ha" if q.is_active else "yo‘q"] for q in qs]
         data = _xlsx("Savollar", [*TEMPLATES["questions"][0], "id", "faol"], rows,
                      [50, 18, 18, 18, 18, 8, 50, 28, 18, 10, 30, 6, 6])
     else:
@@ -318,7 +320,7 @@ async def export(kind: Literal["questions", "history"], _: AdminUser, session: S
     return Response(data, media_type=XLSX, headers={"Content-Disposition": f'attachment; filename="{name}"'})
 
 
-# ---------- E'lon yuborish ----------
+# ---------- E’lon yuborish ----------
 
 class BroadcastIn(BaseModel):
     text: str = Field(min_length=1, max_length=4000)
@@ -348,7 +350,7 @@ async def broadcast_send(body: BroadcastIn, _: AdminUser, request: Request, sess
         raise HTTPException(503, "Bot ishga tushmagan (ilovani python -m app.main orqali ishga tushiring)")
     status = getattr(request.app.state, "broadcast", None)
     if status and status.get("running"):
-        raise HTTPException(409, "Oldingi e'lon hali yuborilmoqda")
+        raise HTTPException(409, "Oldingi e’lon hali yuborilmoqda")
     recipients = await _recipients(session, body.audience)
     status = {"total": len(recipients), "sent": 0, "failed": 0, "running": True, "started_at": utcnow().isoformat() + "Z"}
     request.app.state.broadcast = status
@@ -411,7 +413,7 @@ async def delete_period(pid: int, _: AdminUser, session: Session) -> dict:
     if p is None:
         raise HTTPException(404, "Topilmadi")
     if await session.scalar(select(func.count()).select_from(Question).where(Question.period_id == pid)):
-        raise HTTPException(400, "Bu davrda savollar bor. Avval savollarni boshqa davrga o'tkazing")
+        raise HTTPException(400, "Bu davrda savollar bor. Avval savollarni boshqa davrga o‘tkazing")
     for t in await session.scalars(select(Topic).where(Topic.period_id == pid)):
         if await session.scalar(select(func.count()).select_from(Question).where(Question.topic_id == t.id)):
             raise HTTPException(400, "Bu davr mavzularida savollar bor")
@@ -445,7 +447,7 @@ async def delete_topic(tid: int, _: AdminUser, session: Session) -> dict:
     if t is None:
         raise HTTPException(404, "Topilmadi")
     if await session.scalar(select(func.count()).select_from(Question).where(Question.topic_id == tid)):
-        raise HTTPException(400, "Bu mavzuda savollar bor. Avval ularni boshqa mavzuga o'tkazing")
+        raise HTTPException(400, "Bu mavzuda savollar bor. Avval ularni boshqa mavzuga o‘tkazing")
     await session.delete(t)
     await session.commit()
     return {"ok": True}
@@ -640,7 +642,7 @@ async def list_facts(
     elif hidden is False:
         query = query.where(VISIBLE_FACTS)
     rows = list(await session.scalars(query.order_by(Fact.id)))
-    if flag:  # JSON ro'yxat bo'yicha filtr — bazadan mustaqil bo'lishi uchun Python'da
+    if flag:  # JSON ro‘yxat bo‘yicha filtr — bazadan mustaqil bo‘lishi uchun Python’da
         rows = [f for f in rows if flag in (f.flags or [])]
     size = max(1, min(size, 100))
     start = (max(page, 1) - 1) * size
@@ -664,14 +666,14 @@ async def set_fact_visibility(fact_id: str, body: FactVisibilityIn, _: AdminUser
 @router.post("/import/facts")
 async def import_facts_file(file: UploadFile, _: AdminUser, session: Session, dry_run: bool = False) -> dict:
     if not (file.filename or "").lower().endswith(".csv"):
-        raise HTTPException(400, "Faktlar bazasi .csv (UTF-8) formatida bo'lishi kerak")
+        raise HTTPException(400, "Faktlar bazasi .csv (UTF-8) formatida bo‘lishi kerak")
     content = await file.read(20 * 1024 * 1024 + 1)
     if len(content) > 20 * 1024 * 1024:
         raise HTTPException(413, "Fayl 20 MB dan katta")
     try:
         report = await import_facts(session, read_facts_csv(content), dry_run=dry_run)
     except (ValueError, UnicodeDecodeError) as e:
-        raise HTTPException(400, f"CSV o'qilmadi: {e}") from None
+        raise HTTPException(400, f"CSV o‘qilmadi: {e}") from None
     if not dry_run:
         await session.commit()
     return report.as_dict()

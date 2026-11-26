@@ -27,7 +27,7 @@ router = Router(name="quiz")
 log = logging.getLogger(__name__)
 
 
-# ---------- Ko'rinish ----------
+# ---------- Ko‘rinish ----------
 
 def format_question(q: Question, n: int, total: int) -> str:
     meta = " · ".join(x for x in (
@@ -90,7 +90,7 @@ async def send_image(message: Message, session: AsyncSession, url: str) -> None:
                 await message.answer_photo(BufferedInputFile(media.data, filename=f"rasm{mid}.jpg"))
         else:
             await message.answer_photo(url)
-    except Exception as e:  # noqa: BLE001 — noto'g'ri havola testni to'xtatmasin
+    except Exception as e:  # noqa: BLE001 — noto‘g‘ri havola testni to‘xtatmasin
         log.warning("Savol rasmi yuborilmadi (%s): %s", url, e)
 
 
@@ -183,7 +183,7 @@ async def on_answer(cb: CallbackQuery, user: User, session: AsyncSession, state:
     qid = int(qid_str)
     quiz = (await state.get_data()).get("quiz")
 
-    # Eski xabardagi tugma bosilgan yoki savolga allaqachon javob berilgan bo'lsa
+    # Eski xabardagi tugma bosilgan yoki savolga allaqachon javob berilgan bo‘lsa
     if not quiz or quiz["ids"][quiz["idx"]] != qid or quiz["answered"]:
         await cb.answer(t("quiz_expired"), show_alert=True)
         return
@@ -203,7 +203,7 @@ async def on_answer(cb: CallbackQuery, user: User, session: AsyncSession, state:
 
     if await answers_today(session, user.id) == settings.daily_question_count:
         await cb.message.answer(t("goal_done", n=settings.daily_question_count, streak=user.streak_current))
-    if result.referral:  # do'st yetarli savol yechdi — ikkalasiga bonus
+    if result.referral:  # do‘st yetarli savol yechdi — ikkalasiga bonus
         await notify_activated(cb.bot, session, result.referral)
 
 

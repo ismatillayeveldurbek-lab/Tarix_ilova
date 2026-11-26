@@ -1,4 +1,4 @@
-// Ilova bo'ylab umumiy ma'lumot: foydalanuvchi va statistika.
+// Ilova bo‘ylab umumiy ma’lumot: foydalanuvchi va statistika.
 import { createContext, useCallback, useContext, useEffect, useState, type ReactNode } from "react";
 import { api } from "./api";
 import type { Home } from "./types";
@@ -34,6 +34,6 @@ export function StoreProvider({ children, enabled }: { children: ReactNode; enab
 
 export function useStore(): Store {
   const s = useContext(Ctx);
-  if (!s) throw new Error("StoreProvider yo'q");
+  if (!s) throw new Error("StoreProvider yo‘q");
   return s;
 }

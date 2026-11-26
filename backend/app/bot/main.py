@@ -1,8 +1,8 @@
-"""Faqat botni ishga tushirish (Mini App'siz).
+"""Faqat botni ishga tushirish (Mini App’siz).
 
     python -m app.bot.main
 
-To'liq ilova (bot + Mini App + admin panel) uchun:  python -m app.main
+To‘liq ilova (bot + Mini App + admin panel) uchun:  python -m app.main
 """
 import asyncio
 import logging
@@ -27,7 +27,7 @@ def create_dispatcher() -> Dispatcher:
     mw = DbUserMiddleware()
     dp.message.outer_middleware(mw)
     dp.callback_query.outer_middleware(mw)
-    # Tartib muhim: xato xabari kutilayotganda matn avval report'ga tushadi
+    # Tartib muhim: xato xabari kutilayotganda matn avval report’ga tushadi
     dp.include_routers(
         start.router, report.router, admin.router, quiz.router,
         settings_handlers.router, invite.router, menu.router,
@@ -38,18 +38,18 @@ def create_dispatcher() -> Dispatcher:
 def create_bot() -> Bot:
     if not settings.bot_token or ":" not in settings.bot_token:
         raise SystemExit(
-            "BOT_TOKEN topilmadi. backend/.env faylini yarating (.env.example'dan nusxa oling) "
+            "BOT_TOKEN topilmadi. backend/.env faylini yarating (.env.example’dan nusxa oling) "
             "va @BotFather bergan tokenni yozing."
         )
     return Bot(settings.bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 
 
 async def prepare_bot(bot: Bot) -> None:
-    """Buyruqlar ro'yxati va (bo'lsa) Mini App menyu tugmasini o'rnatadi."""
+    """Buyruqlar ro‘yxati va (bo‘lsa) Mini App menyu tugmasini o‘rnatadi."""
     await bot.set_my_commands([
         BotCommand(command="start", description="Boshlash"),
         BotCommand(command="bugun", description="Tarixda bugun"),
-        BotCommand(command="taklif", description="Do'stlarni taklif qilish"),
+        BotCommand(command="taklif", description="Do‘stlarni taklif qilish"),
     ])
     if settings.webapp_url:
         await bot.set_chat_menu_button(menu_button=MenuButtonWebApp(text="📱 Ilova", web_app=webapp()))

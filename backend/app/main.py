@@ -1,4 +1,4 @@
-"""TO'LIQ ilovani ishga tushirish: Telegram bot + Mini App + admin panel + eslatmalar.
+"""TO‘LIQ ilovani ishga tushirish: Telegram bot + Mini App + admin panel + eslatmalar.
 
     python -m app.main
 

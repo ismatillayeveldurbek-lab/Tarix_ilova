@@ -1,4 +1,4 @@
-"""/start buyrug'i (referal havolasi bilan ham)."""
+"""/start buyrug‘i (referal havolasi bilan ham)."""
 from aiogram import Bot, Router
 from aiogram.filters import CommandObject, CommandStart
 from aiogram.fsm.context import FSMContext
@@ -27,7 +27,7 @@ async def cmd_start(
     if referral:
         inviter = await session.get(User, referral.inviter_id)
         await message.answer(t(
-            "ref_welcome", name=esc(inviter.full_name or "do'stingiz"),
+            "ref_welcome", name=esc(inviter.full_name or "do‘stingiz"),
             min=settings.referral_min_answers, xp=settings.referral_xp_invited,
         ))
         await notify_joined(bot, session, referral)

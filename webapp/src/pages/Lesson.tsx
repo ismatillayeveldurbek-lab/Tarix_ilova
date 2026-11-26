@@ -11,7 +11,7 @@ import { confirmDialog, haptic } from "../lib/telegram";
 import type { AnswerResult, Question } from "../lib/types";
 
 type Mode = "daily" | "review" | "mixed" | "period" | "topic";
-const PRAISE = ["To'g'ri", "To'g'ri javob", "Aynan shunday"];
+const PRAISE = ["To‘g‘ri", "To‘g‘ri javob", "Aynan shunday"];
 
 export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
   const { reload } = useStore();
@@ -40,11 +40,11 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
       <div className="page no-nav">
         <div className="empty" style={{ minHeight: "70vh", justifyContent: "center" }}>
           <span className="empty-icon"><Refresh size={26} /></span>
-          <h2>{mode === "review" ? "Takrorlash uchun savol yo'q" : "Bu bo'limda savol yo'q"}</h2>
+          <h2>{mode === "review" ? "Takrorlash uchun savol yo‘q" : "Bu bo‘limda savol yo‘q"}</h2>
           <p className="muted">
             {mode === "review"
               ? "Xato javob bergan savollaringiz shu yerga tushadi va 1, 2, 4, 7, 15, 30 kunlik oraliqlarda qayta beriladi."
-              : "Tez orada savollar qo'shiladi."}
+              : "Tez orada savollar qo‘shiladi."}
           </p>
           <button className="btn block" onClick={() => navigate("/", true)}>Bosh sahifa</button>
         </div>
@@ -108,9 +108,9 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
           <div className="eyebrow">Dars yakunlandi</div>
           <div className="result-score"><CountUp value={stats.correct} /><small> / {total}</small></div>
           <p className="muted">
-            {accuracy >= 80 ? "A'lo natija. Bilimingiz mustahkam."
-              : accuracy >= 50 ? "Yaxshi natija. Xato savollar takrorlashga qo'shildi."
-              : `${wrong} ta xato savol takrorlash bo'limiga qo'shildi — ularni qayta ishlang.`}
+            {accuracy >= 80 ? "A’lo natija. Bilimingiz mustahkam."
+              : accuracy >= 50 ? "Yaxshi natija. Xato savollar takrorlashga qo‘shildi."
+              : `${wrong} ta xato savol takrorlash bo‘limiga qo‘shildi — ularni qayta ishlang.`}
           </p>
         </div>
         <div className="tiles rise">
@@ -142,7 +142,7 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
         {stats.combo >= 3 && <span className="combo"><Flame size={14} />{stats.combo}</span>}
         <span className="count">{idx + 1}/{total}</span>
       </div>
-      {/* Izoh oynasi ochiq bo'lsa, pastki variantlarni surib ko'rish uchun joy qoldiramiz */}
+      {/* Izoh oynasi ochiq bo‘lsa, pastki variantlarni surib ko‘rish uchun joy qoldiramiz */}
       <div className="page no-nav" style={{ paddingTop: 4, paddingBottom: result ? "min(60vh, 420px)" : undefined }}>
         <div className="eyebrow" style={{ marginBottom: 10 }}>
           {source === "review" ? "Takrorlash" : source === "daily" ? "Kunlik mashq" : "Mashq"}
@@ -161,7 +161,7 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
             <div className="row between">
               <h3>
                 {result.is_correct ? <Check size={22} /> : <Cross size={22} />}
-                {result.is_correct ? PRAISE[idx % PRAISE.length] : "Noto'g'ri"}
+                {result.is_correct ? PRAISE[idx % PRAISE.length] : "Noto‘g‘ri"}
               </h3>
               <button className="icon-btn" onClick={() => setReport(true)} aria-label="Xato bor" title="Xato bor">
                 <Flag size={18} />
@@ -169,7 +169,7 @@ export function LessonPage({ mode, id }: { mode: Mode; id: number | null }) {
             </div>
             {!result.is_correct && (
               <div className="answer">
-                To'g'ri javob: {result.correct_option.toUpperCase()}) {q.options.find((o) => o.key === result.correct_option)?.text}
+                To‘g‘ri javob: {result.correct_option.toUpperCase()}) {q.options.find((o) => o.key === result.correct_option)?.text}
               </div>
             )}
             {result.explanation && (

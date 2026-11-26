@@ -36,7 +36,7 @@ class User(Base):
 
 
 class Referral(Base):
-    """Taklif: kim kimni taklif qildi. Do'st yetarli savol yechganda "faol" bo'ladi va bonus beriladi."""
+    """Taklif: kim kimni taklif qildi. Do‘st yetarli savol yechganda "faol" bo‘ladi va bonus beriladi."""
 
     __tablename__ = "referrals"
 
@@ -48,7 +48,7 @@ class Referral(Base):
 
 
 class XpBonus(Base):
-    """Javobdan tashqari XP (masalan, taklif bonusi). Haftalik reytingga qo'shiladi."""
+    """Javobdan tashqari XP (masalan, taklif bonusi). Haftalik reytingga qo‘shiladi."""
 
     __tablename__ = "xp_bonuses"
 

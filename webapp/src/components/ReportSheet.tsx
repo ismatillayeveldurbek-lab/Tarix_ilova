@@ -7,7 +7,7 @@ import { Sheet, toast } from "./ui";
 export function ReportSheet({ questionId, onClose }: { questionId: number; onClose: () => void }) {
   const [text, setText] = useState("");
   const [busy, setBusy] = useState(false);
-  const quick = ["To'g'ri javob noto'g'ri belgilangan", "Savol matnida xato bor", "Izoh noto'g'ri", "Variantlarda xato bor"];
+  const quick = ["To‘g‘ri javob noto‘g‘ri belgilangan", "Savol matnida xato bor", "Izoh noto‘g‘ri", "Variantlarda xato bor"];
 
   async function send() {
     setBusy(true);

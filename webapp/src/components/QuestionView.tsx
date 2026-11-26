@@ -45,7 +45,7 @@ export function QuestionView({ q, selected, correct, locked, onSelect }: {
   );
 }
 
-/** Savol rasmi: bosilsa to'liq ekranda ochiladi */
+/** Savol rasmi: bosilsa to‘liq ekranda ochiladi */
 function QuestionImage({ src }: { src: string }) {
   const [zoom, setZoom] = useState(false);
   const [failed, setFailed] = useState(false);

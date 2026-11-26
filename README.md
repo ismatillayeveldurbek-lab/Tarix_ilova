@@ -1,20 +1,20 @@
 # Tarix — milliy sertifikatga tayyorgarlik 📜
 
 Tarix fanidan milliy sertifikat imtihoniga tayyorlanuvchilar uchun **Telegram bot** va **Mini App**.
-Dizayn akademik uslubda: to'q ko'k va to'q oltin ranglar, serif sarlavhalar. Ilovada XP ballari, ketma-ket kunlar, kurs dasturi va haftalik reyting bor.
+Dizayn Mezon uslubida (osmon palitrasi, Urbanist shrifti, Tailwind CSS). Pastki menyu: Bosh, Mashq, Profil. Ilovada faktlar bazasi, XP, ketma-ket kunlar, kurs dasturi va haftalik reyting bor.
 Interfeys o'zbek tilida.
 
-| Bosh sahifa | Dars | Natija | Imtihon |
+| Bosh | Mashq | Profil | Dars |
 |---|---|---|---|
-| ![](docs/screenshots/home.png) | ![](docs/screenshots/lesson.png) | ![](docs/screenshots/result.png) | ![](docs/screenshots/exam.png) |
+| ![](docs/screenshots/home.png) | ![](docs/screenshots/mashq.png) | ![](docs/screenshots/profile.png) | ![](docs/screenshots/lesson.png) |
 
-| Reyting | O'zlashtirish | Do'stlarni taklif qilish | Qorong'i mavzu |
+| Imtihon | Reyting | O‘zlashtirish | Qorong‘i mavzu |
 |---|---|---|---|
-| ![](docs/screenshots/rating.png) | ![](docs/screenshots/progress.png) | ![](docs/screenshots/invite.png) | ![](docs/screenshots/dark.png) |
+| ![](docs/screenshots/exam.png) | ![](docs/screenshots/rating.png) | ![](docs/screenshots/progress.png) | ![](docs/screenshots/dark.png) |
 
-| Admin: statistika | Admin: savollar |
+| Admin: faktlar bazasi | Admin: statistika |
 |---|---|
-| ![](docs/screenshots/admin.png) | ![](docs/screenshots/admin-questions.png) |
+| ![](docs/screenshots/admin-facts.png) | ![](docs/screenshots/admin.png) |
 
 ## Imkoniyatlar
 

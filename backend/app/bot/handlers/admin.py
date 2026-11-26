@@ -1,4 +1,4 @@
-"""Admin bo'limi: statistika, xato xabarlari, savollarni import qilish."""
+"""Admin bo‘limi: statistika, xato xabarlari, savollarni import qilish."""
 from aiogram import Bot, F, Router
 from aiogram.filters import Command, Filter
 from aiogram.types import (
@@ -33,9 +33,9 @@ HELP = (
     "⚠️ Yangi xato xabarlari: <b>{reports}</b>\n\n"
     "<b>Buyruqlar:</b>\n"
     "/panel — 🖥 veb admin panel (savollar, import, imtihon formati...)\n"
-    "/reports — yangi xato xabarlarini ko'rish\n"
+    "/reports — yangi xato xabarlarini ko‘rish\n"
     "/shablon — import uchun namuna CSV fayl\n"
-    "📎 Savollarni qo'shish: .xlsx yoki .csv faylni shu chatga yuboring"
+    "📎 Savollarni qo‘shish: .xlsx yoki .csv faylni shu chatga yuboring"
 )
 
 
@@ -78,7 +78,7 @@ async def list_reports(message: Message, session: AsyncSession) -> None:
         .order_by(QuestionReport.created_at).limit(10)
     ))
     if not reports:
-        await message.answer("✅ Yangi xato xabarlari yo'q.")
+        await message.answer("✅ Yangi xato xabarlari yo‘q.")
         return
     for r in reports:
         q = r.question
@@ -86,7 +86,7 @@ async def list_reports(message: Message, session: AsyncSession) -> None:
             f"⚠️ <b>#{r.id}</b> · savol #{q.id}\n"
             f"{esc(q.text)}\n"
             f"A) {esc(q.option_a)}\nB) {esc(q.option_b)}\nC) {esc(q.option_c)}\nD) {esc(q.option_d)}\n"
-            f"To'g'ri: <b>{q.correct_option.upper()}</b>\n\n"
+            f"To‘g‘ri: <b>{q.correct_option.upper()}</b>\n\n"
             f"💬 {esc(r.comment)}\n👤 {esc(r.user.full_name)}",
             reply_markup=report_admin_kb(r.id),
         )
@@ -102,7 +102,7 @@ async def resolve_report(cb: CallbackQuery, session: AsyncSession) -> None:
     if action == "off":
         report.question.is_active = False
         report.status = "fixed"
-        label = "🚫 Savol o'chirildi"
+        label = "🚫 Savol o‘chirildi"
     else:
         report.status = action
         label = "✅ Tuzatildi deb belgilandi" if action == "fixed" else "❌ Rad etildi"
@@ -133,12 +133,12 @@ async def import_document(message: Message, session: AsyncSession, bot: Bot) -> 
     try:
         report = await import_file(session, name, content)
     except ValueError as e:
-        await message.answer(f"❗ Fayl o'qilmadi: {esc(str(e))}")
+        await message.answer(f"❗ Fayl o‘qilmadi: {esc(str(e))}")
         return
     text = (
         f"📥 <b>Import yakunlandi</b>\n\n"
-        f"✅ Qo'shildi: <b>{report.added}</b>\n"
-        f"⏭ Takroriy (o'tkazib yuborildi): <b>{report.skipped_duplicates}</b>\n"
+        f"✅ Qo‘shildi: <b>{report.added}</b>\n"
+        f"⏭ Takroriy (o‘tkazib yuborildi): <b>{report.skipped_duplicates}</b>\n"
         f"❗ Xatoli qatorlar: <b>{len(report.errors)}</b>"
     )
     if report.errors:
