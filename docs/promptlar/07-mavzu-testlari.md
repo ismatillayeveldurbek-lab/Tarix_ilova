@@ -75,7 +75,8 @@ Mavzuda biror tur uchun material bo‘lmasa — boshqa turdan qo‘sh, lekin jam
 2. Savolda **javobga ishora yo‘q**: sana so‘ralsa — savolda sana yo‘q; shaxs so‘ralsa — ismi yo‘q.
 3. Darslikda aniq javobi bor; ikki xil tushunilmaydi.
 4. Inkor savoli (`qaysi biri NOTO‘G‘RI`) — 15 tadan ko‘pi bilan 1 ta, `NOTO‘G‘RI` katta harflarda.
-5. Bitta fakt — bitta savol. Savollar bir-birining javobini aytib qo‘ymasin.
+5. Bitta fakt — bitta savol. Savollar bir-birining javobini aytib qo‘ymasin — **variantlarda ham**: ❌ 8-savol "Strabon qachon yozgan?", 9-savolning varianti esa "Miloddan avvalgi I asr oxirlarida «Geografiya»ni yozgan" (8-savol javobi ochilib qoldi).
+6. Asar, kitob, gazeta nomlari savolda, variantlarda va izohda **doim** `«...»` ichida: `«Avesto»`, `«Tarix»`, `«Geografiya»`.
 
 **Variantlar:**
 1. **Faqat bitta** to‘g‘ri javob; qolganlari darslikka ko‘ra aniq noto‘g‘ri.

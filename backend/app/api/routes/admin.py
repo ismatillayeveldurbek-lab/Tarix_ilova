@@ -94,7 +94,7 @@ def q_out(q: Question) -> dict:
         "correct": q.correct_option, "explanation": q.explanation, "difficulty": q.difficulty,
         "period_id": q.period_id, "topic_id": q.topic_id,
         "period": q.period.name if q.period else None, "topic": q.topic.name if q.topic else None,
-        "fact_id": q.fact_id, "auto": bool(q.gen_key), "locked": q.locked,
+        "fact_id": q.fact_id, "auto": bool(q.gen_key) and not q.gen_key.startswith("test:"), "locked": q.locked,
         "is_active": q.is_active, "image_url": q.image_url,
     }
 
@@ -146,12 +146,13 @@ async def list_questions(
     """source: auto (faktlardan) | edited (admin tahrirlagan avtomatik) | manual (qo‘lda kiritilgan).
     sort=hard: o‘quvchilar eng ko‘p adashgan savollar (kamida 3 javob) — xato tuzilgan savolni topish uchun."""
     query = select(Question)
+    auto = Question.gen_key.is_not(None) & Question.gen_key.not_like("test:%")
     if source == "auto":
-        query = query.where(Question.gen_key.is_not(None), Question.locked.is_(False))
+        query = query.where(auto, Question.locked.is_(False))
     elif source == "edited":
-        query = query.where(Question.gen_key.is_not(None), Question.locked.is_(True))
-    elif source == "manual":
-        query = query.where(Question.gen_key.is_(None))
+        query = query.where(auto, Question.locked.is_(True))
+    elif source == "manual":  # admin kiritgan + data/testlar/ fayllaridan
+        query = query.where(~auto)
     if q:
         like = f"%{q}%"
         query = query.where(or_(Question.text.ilike(like), Question.explanation.ilike(like),

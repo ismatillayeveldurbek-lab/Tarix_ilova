@@ -36,6 +36,9 @@ Har bir prompt ilovaning qoidalarini o‘z ichiga oladi (CLAUDE.md → "Mezon xa
 
 ## Fayllarni nomlash va menga yuborish
 
+Mavzu testlari `data/testlar/` papkasida saqlanadi va server har ishga tushganda yuklanadi. Faylni tuzatib qayta yuborsangiz, savollar **yangilanadi**, ikki nusxa bo‘lmaydi.
+
+
 - Faktlar: `K07U_12_sana.csv`, `K07U_12_shaxs.csv` ... (darslik, paragraf, tur).
 - Testlar: `K07U_12_testlar.csv`.
 - Bir darslikni tugatgach, fayllarni papka yoki ZIP qilib shu chatga yuboring. Men:

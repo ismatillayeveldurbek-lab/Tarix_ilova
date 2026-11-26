@@ -151,6 +151,32 @@ async def _get_topic(
     return cache[key]
 
 
+def _row_values(row: dict[str, str]) -> dict:
+    """Bitta qatorni tekshiradi va Question maydonlariga aylantiradi (davr/mavzu — nomlari bilan).
+    Xato bo‘lsa ValueError."""
+    missing = [f for f in REQUIRED if not row.get(f)]
+    if missing:
+        raise ValueError("bo‘sh maydon: " + ", ".join(missing))
+    correct = row["correct"].strip().lower()
+    if correct not in OPTIONS:
+        raise ValueError(f"to‘g‘ri javob A/B/C/D bo‘lishi kerak: {row['correct']}")
+    difficulty = _difficulty(row.get("difficulty", ""))
+    image = row.get("image", "")
+    if image and not is_valid_image_url(image):
+        raise ValueError(f"rasm havolasi http(s):// bilan boshlanishi kerak: {image}")
+    explanation = clean_text(row.get("explanation", ""))
+    source = clean_text(row.get("source", ""))
+    if source and "Manba:" not in explanation:
+        explanation = f"{explanation}\n\nManba: {source}".strip()
+    return {
+        "text": clean_text(row["text"]), "option_a": clean_text(row["a"]), "option_b": clean_text(row["b"]),
+        "option_c": clean_text(row["c"]), "option_d": clean_text(row["d"]), "correct_option": correct,
+        "explanation": explanation, "difficulty": difficulty, "image_url": image or None,
+        "asks_time": _key(row.get("asks_time", "")) in YES,
+        "_period": clean_text(row.get("period", "")), "_topic": clean_text(row.get("topic", "")),
+    }
+
+
 async def import_rows(session: AsyncSession, rows: list[dict[str, str]]) -> ImportReport:
     report = ImportReport()
     existing = set(await session.scalars(select(Question.text)))
@@ -159,44 +185,87 @@ async def import_rows(session: AsyncSession, rows: list[dict[str, str]]) -> Impo
 
     for line_no, row in enumerate(rows, start=2):  # 1-qator — sarlavha
         try:
-            missing = [f for f in REQUIRED if not row.get(f)]
-            if missing:
-                raise ValueError("bo‘sh maydon: " + ", ".join(missing))
-            correct = row["correct"].strip().lower()
-            if correct not in OPTIONS:
-                raise ValueError(f"to‘g‘ri javob A/B/C/D bo‘lishi kerak: {row['correct']}")
-            difficulty = _difficulty(row.get("difficulty", ""))
-            image = row.get("image", "")
-            if image and not is_valid_image_url(image):
-                raise ValueError(f"rasm havolasi http(s):// bilan boshlanishi kerak: {image}")
+            values = _row_values(row)
         except ValueError as e:
             report.errors.append(f"{line_no}-qator: {e}")
             continue
-
-        row = {**row, "text": clean_text(row["text"]), "period": clean_text(row.get("period", "")),
-               "topic": clean_text(row.get("topic", ""))}
-        if row["text"] in existing:
+        if values["text"] in existing:
             report.skipped_duplicates += 1
             continue
-
-        period = await _get_period(session, row.get("period", ""), periods)
-        topic = await _get_topic(session, row.get("topic", ""), period, topics)
-        explanation = clean_text(row.get("explanation", ""))
-        source = clean_text(row.get("source", ""))
-        if source and "Manba:" not in explanation:
-            explanation = f"{explanation}\n\nManba: {source}".strip()
-        session.add(Question(
-            text=clean_text(row["text"]), option_a=clean_text(row["a"]), option_b=clean_text(row["b"]),
-            option_c=clean_text(row["c"]), option_d=clean_text(row["d"]), correct_option=correct,
-            explanation=explanation, difficulty=difficulty, image_url=image or None,
-            asks_time=_key(row.get("asks_time", "")) in YES,
-            topic_id=topic.id if topic else None, period_id=period.id if period else None,
-        ))
-        existing.add(row["text"])
+        period = await _get_period(session, values.pop("_period"), periods)
+        topic = await _get_topic(session, values.pop("_topic"), period, topics)
+        session.add(Question(**values, topic_id=topic.id if topic else None, period_id=period.id if period else None))
+        existing.add(values["text"])
         report.added += 1
 
     await session.flush()
     return report
+
+
+@dataclass
+class SyncFilesReport:
+    files: int = 0
+    added: int = 0
+    updated: int = 0
+    unchanged: int = 0
+    locked: int = 0
+    deactivated: int = 0
+    errors: list[str] = field(default_factory=list)
+
+
+async def sync_test_files(session: AsyncSession, folder) -> SyncFilesReport:
+    """data/testlar/*.csv — mavzu testlari (docs/promptlar/07-mavzu-testlari.md).
+    Har savol "test:<fayl>:<qator>" kaliti bilan saqlanadi: fayl tuzatilib qayta yuklansa savol
+    YANGILANADI (ikki nusxa bo‘lmaydi), fayldan olib tashlangan savol o‘chiriladi.
+    Admin tahrirlagan (locked) savolga tegilmaydi."""
+    from pathlib import Path
+
+    rep = SyncFilesReport()
+    files = sorted(Path(folder).glob("*.csv")) + sorted(Path(folder).glob("*.xlsx"))
+    existing = {q.gen_key: q for q in await session.scalars(select(Question).where(Question.gen_key.like("test:%")))}
+    periods: dict = {}
+    topics: dict = {}
+    seen: set[str] = set()
+    ok_files: set[str] = set()
+    for path in files:
+        rep.files += 1
+        try:
+            rows = read_rows(path.name, path.read_bytes())
+        except (ValueError, UnicodeDecodeError) as e:
+            rep.errors.append(f"{path.name}: {e}")
+            continue
+        ok_files.add(path.stem)
+        for line_no, row in enumerate(rows, start=2):
+            key = f"test:{path.stem}:{line_no}"
+            try:
+                values = _row_values(row)
+            except ValueError as e:
+                rep.errors.append(f"{path.name}, {line_no}-qator: {e}")
+                continue
+            seen.add(key)
+            period = await _get_period(session, values.pop("_period"), periods)
+            topic = await _get_topic(session, values.pop("_topic"), period, topics)
+            values.update(topic_id=topic.id if topic else None, period_id=period.id if period else None, is_active=True)
+            q = existing.get(key)
+            if q is None:
+                session.add(Question(gen_key=key, **values))
+                rep.added += 1
+            elif q.locked:
+                rep.locked += 1
+            elif any(getattr(q, k) != v for k, v in values.items()):
+                for k, v in values.items():
+                    setattr(q, k, v)
+                rep.updated += 1
+            else:
+                rep.unchanged += 1
+    for key, q in existing.items():
+        stem = key.split(":")[1]
+        # o'qib bo'lmagan fayl savollariga tegilmaydi (xato tuzatilguncha eskisi ishlab tursin)
+        if key not in seen and (stem in ok_files or stem not in {p.stem for p in files}) and not q.locked and q.is_active:
+            q.is_active = False
+            rep.deactivated += 1
+    await session.flush()
+    return rep
 
 
 async def import_file(session: AsyncSession, filename: str, content: bytes) -> ImportReport:

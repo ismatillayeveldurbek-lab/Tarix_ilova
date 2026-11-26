@@ -160,3 +160,25 @@ async def test_import_topic_tests_with_source_and_time_flag(session):
     assert when.asks_time and not who.asks_time
     assert when.explanation.endswith("Manba: 7-sinf O‘zbekiston tarixi, 12-§, 85-bet")
     assert when.topic.name == "Amir Temur davlati" and when.period.name == "O‘rta asrlar"
+
+
+async def test_topic_test_files_sync(session, tmp_path):
+    """data/testlar/: tuzatilgan fayl savolni yangilaydi, faktlardan tuzish ularga tegmaydi."""
+    from app.services.importer import sync_test_files
+    head = "savol,a,b,c,d,togri,izoh,manba,mavzu,davr,qiyinlik,vaqt_savoli\n"
+    row = '"{q}","1","2","3","4","A","Izoh.","6-sinf Qadimgi dunyo tarixi, 1-§, 8-bet","Qadimgi tarix ildizlari","Qadimgi davr","1","yo‘q"\n'
+    f = tmp_path / "K06J_01_testlar.csv"
+    f.write_text(head + row.format(q="Birinchi savol?") + row.format(q="Ikkinchi savol?"))
+    r = await sync_test_files(session, tmp_path)
+    assert (r.added, r.errors) == (2, [])
+
+    f.write_text(head + row.format(q="Birinchi savol (tuzatilgan)?"))  # 1-savol tuzatildi, 2-si olib tashlandi
+    r = await sync_test_files(session, tmp_path)
+    assert (r.updated, r.deactivated, r.added) == (1, 1, 0)
+
+    await _load(session, _years())
+    await sync_questions(session)  # faktlardan tuzish test savollarini o'chirmasin
+    await session.commit()
+    active = list(await session.scalars(select(Question.text).where(
+        Question.gen_key.like("test:%"), Question.is_active.is_(True))))
+    assert active == ["Birinchi savol (tuzatilgan)?"]

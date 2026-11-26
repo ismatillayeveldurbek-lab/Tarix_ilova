@@ -441,7 +441,9 @@ async def sync_questions(session) -> SyncReport:
     facts = list(await session.scalars(select(Fact)))
     gens = generate(facts)
     _, topics = await _periods_topics(session, [f for f in facts if f.visible])
-    existing = {q.gen_key: q for q in await session.scalars(select(Question).where(Question.gen_key.is_not(None)))}
+    # "test:..." — data/testlar/ fayllaridan (importer.sync_test_files); ularga bu yerda tegilmaydi
+    existing = {q.gen_key: q for q in await session.scalars(
+        select(Question).where(Question.gen_key.is_not(None), Question.gen_key.not_like("test:%")))}
     rep = SyncReport(total=len(gens))
     seen = set()
     for g in gens:
