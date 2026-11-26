@@ -197,6 +197,20 @@ def test_normalize_db_url():
         "postgresql+asyncpg://u:p@ep-x-pooler.eu-central-1.aws.neon.tech/neondb?ssl=require&prepared_statement_cache_size=0")
     assert normalize_db_url("postgres://u:p@h:5432/db") == "postgresql+asyncpg://u:p@h:5432/db"
     assert normalize_db_url("sqlite+aiosqlite:///x.db") == "sqlite+aiosqlite:///x.db"
+    # Neon "Connect" oynasidan psql buyrug'i yoki qo'shtirnoq bilan nusxalangan
+    assert normalize_db_url("psql 'postgresql://u:p@h/db?sslmode=require'") == "postgresql+asyncpg://u:p@h/db?ssl=require"
+    assert normalize_db_url(' "postgres://u:p@h/db"\n') == "postgresql+asyncpg://u:p@h/db"
+
+
+def test_bad_db_url_message_hides_value(monkeypatch):
+    import pytest
+    from pydantic import ValidationError
+
+    from app.config import Settings
+    monkeypatch.setenv("DATABASE_URL", "maxfiy-parol-bu-manzil-emas")
+    with pytest.raises(ValidationError) as e:
+        Settings(_env_file=None)
+    assert "DATABASE_URL noto‘g‘ri" in str(e.value) and "maxfiy-parol" not in str(e.value)
 
 
 def test_render_url_fallback(monkeypatch):
