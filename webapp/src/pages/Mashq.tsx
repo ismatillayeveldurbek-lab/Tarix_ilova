@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Bar, Card, HeroCard, IconTile, ListRow, Pill, Screen, SectionTitle, cx, fmt } from "../components/kit";
 import {
-  Book, Calendar, ChevronRight, Clipboard, Layers, Lightning, MapPin, Refresh, Scroll, Sparkle, Swords, Target, User,
+  Book, Calendar, ChevronRight, Clipboard, Layers, Lightning, MapPin, Refresh, Scroll, Sparkle, Swords, User,
 } from "../components/Icons";
 import { navigate } from "../lib/router";
 import { useStore } from "../lib/store";
@@ -62,6 +62,7 @@ export function MashqPage() {
   const { home } = useStore();
   const { data: path } = useApi<FactPath>("/v1/path");
   const { data: srs } = useApi<CardsSummary>("/v1/cards/summary");
+  const { data: game } = useApi<{ xp_today: number; xp_cap: number }>("/v1/games/oldin");
   if (!home) return null;
 
   return (
@@ -122,13 +123,18 @@ export function MashqPage() {
 
       {/* O‘yinlar */}
       <SectionTitle>O‘yinlar</SectionTitle>
-      <Card className="flex items-center gap-3 p-4">
-        <IconTile tone="sana"><Target size={20} /></IconTile>
-        <div className="min-w-0 flex-1">
-          <div className="text-[15.5px] font-semibold text-ink">Qaysi biri oldin?</div>
-          <div className="text-[13px] text-muted">60 soniya · ikki voqeadan oldingisini toping</div>
+      <Card className="p-4" onClick={() => go("/oldin")}>
+        <div className="flex items-center gap-3">
+          <IconTile tone="sana"><Calendar size={20} /></IconTile>
+          <div className="min-w-0 flex-1">
+            <div className="text-[15.5px] font-semibold text-ink">Qaysi biri oldin?</div>
+            <div className="text-[13px] text-muted">60 soniya · ikki voqeadan oldingisini toping</div>
+          </div>
+          <Pill className={game && game.xp_today >= game.xp_cap ? "bg-success-soft text-success" : "bg-sana-soft text-sana"}>
+            {game ? `${game.xp_today}/${game.xp_cap} XP` : "XP"}
+          </Pill>
         </div>
-        <Pill>Tez orada</Pill>
+        {game && <Bar value={game.xp_today / game.xp_cap} className="mt-3 h-1.5" tone="bg-sana" />}
       </Card>
 
       {/* Kurs dasturi */}

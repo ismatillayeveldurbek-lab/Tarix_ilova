@@ -8,9 +8,9 @@ Interfeys o'zbek tilida.
 |---|---|---|---|
 | ![](docs/screenshots/home.png) | ![](docs/screenshots/mashq.png) | ![](docs/screenshots/card-front.png) | ![](docs/screenshots/card-back.png) |
 
-| Profil | Dars |
-|---|---|
-| ![](docs/screenshots/profile.png) | ![](docs/screenshots/lesson.png) |
+| O‘yin: savol | O‘yin: javobdan keyin | O‘yin: natija | Profil |
+|---|---|---|---|
+| ![](docs/screenshots/oldin-play.png) | ![](docs/screenshots/oldin-feedback.png) | ![](docs/screenshots/oldin-result.png) | ![](docs/screenshots/profile.png) |
 
 | Imtihon | Reyting | O‘zlashtirish | Qorong‘i mavzu |
 |---|---|---|---|
@@ -150,6 +150,17 @@ Faktlar bazasidan avtomatik kartochkalar tuziladi: **karta → "Javobni ko‘ris
 - **"Bilmadim"** — karta 10 daqiqadan keyin qaytadi. **"Bildim"** — oraliq oshib boradi: 1 → 4 → 10 → 25 → 60 kun. 25 kunlik oraliqqa chiqqan karta "o‘zlashtirildi" hisoblanadi.
 - Navbat: avval vaqti kelgan kartalar, keyin yangilari (darslik tartibida, kuniga 20 ta — server tekshiradi).
 - Har kartada manba: "6-sinf Jahon tarixi, 6-§, 31-bet" va darslikdan iqtibos.
+
+## O‘yin: "Qaysi biri oldin?"
+
+60 soniyada 24 juftlik: ikki voqeadan oldin bo‘lganini tanlaysiz. Hamma hisob serverda.
+
+- **Oraliq asta torayadi:** 500+ → 100+ → 30+ → 10+ → 10 yildan kam.
+- **Javob doim bir ma’noli:** har voqea vaqt oralig‘i sifatida olinadi ("XV asr" = 1401–1500, "XV asrning 60-yillari" = 1460–1469, "1572, 1577-yillar" = 1572–1577). Juftlik faqat oraliqlari kesishmaydigan voqealardan tuziladi. "Shohmurod davri" kabi noaniq sanalar va nomida yil yozilgan voqealar o‘yinga kirmaydi (1 309 ta voqea yaroqli).
+- **Ochko:** to‘g‘ri javob +10; ketma-ket 3 ta — ×2, 6 ta — ×3; xato seriyani nolga tushiradi.
+- **Javobdan keyin** ikkala yil, "Oldin / Keyin" va darslik beti ko‘rsatiladi; bu paytda soat to‘xtaydi. Sahifa yopilsa, o‘yin to‘xtagan joyidan davom etadi.
+- **XP:** har to‘g‘ri javob 3 XP; bugungi 1–2-raund to‘liq, 3-raund yarim, 4-raunddan XP yo‘q; kuniga ko‘pi bilan 100 XP. XP haftalik reytingga qo‘shiladi.
+- **Xato qilingan voqealar** kunlik takrorlashga tushadi.
 
 ## 2. Savollarni joylash
 

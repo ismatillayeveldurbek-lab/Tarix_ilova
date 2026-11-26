@@ -3,12 +3,12 @@
 Eski /api/... marshrutlari Mini App’ning hozirgi sahifalari uchun ishlashda davom etadi.
 """
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from sqlalchemy import select
 
 from app.api.deps import CurrentUser, Session
-from app.models import Fact, UserFactState
-from app.services import cards, srs
+from app.models import Fact, GameSession, UserFactState
+from app.services import cards, game_oldin, srs
 from app.services.cards import card_ok
 from app.services.facts import fact_path, fact_progress, get_daily_stat
 from app.services.streak import effective_streak
@@ -92,3 +92,69 @@ async def cards_grade(fact_id: str, body: GradeIn, user: CurrentUser, session: S
         "next_review_at": state.next_review_at.isoformat() + "Z",
         "today": {"cards_reviewed": stat.cards_reviewed, "new_cards": stat.new_cards},
     }
+
+
+# ---------- O'yin: "Qaysi biri oldin?" ----------
+
+async def _own_game(session, sid: int, user) -> GameSession:
+    s = await session.get(GameSession, sid)
+    if s is None or s.user_id != user.id or s.game != game_oldin.GAME:
+        raise HTTPException(404, "O‘yin topilmadi")
+    return s
+
+
+@router.get("/games/oldin")
+async def oldin_info(user: CurrentUser, session: Session) -> dict:
+    stat = await get_daily_stat(session, user.id)
+    current = await game_oldin.open_session(session, user)
+    return {
+        "xp_today": int((stat.game_xp or {}).get(game_oldin.GAME, 0)) if stat else 0,
+        "xp_cap": game_oldin.DAILY_XP_CAP,
+        "rounds_today": await game_oldin.rounds_today(session, user),
+        "can_resume": bool(current and game_oldin.left_ms(current) > 0
+                           and current.state["idx"] < len(current.state["pairs"])),
+        "pairs": game_oldin.PAIRS, "seconds": game_oldin.BUDGET_MS // 1000,
+    }
+
+
+@router.post("/games/oldin/start")
+async def oldin_start(user: CurrentUser, session: Session) -> dict:
+    try:
+        s = await game_oldin.start(session, user)
+    except game_oldin.GameError as e:
+        raise HTTPException(400, str(e)) from None
+    pair = await game_oldin.next_pair(session, s)
+    await session.commit()
+    return {"session_id": s.id, "round": s.round_no, "pair": pair, "left_ms": game_oldin.left_ms(s),
+            "score": s.state["score"], "combo": s.state["combo"]}
+
+
+class PickIn(BaseModel):
+    pick: str = Field(pattern="^[ab]$")
+
+
+@router.post("/games/{sid}/answer")
+async def oldin_answer(sid: int, body: PickIn, user: CurrentUser, session: Session) -> dict:
+    s = await _own_game(session, sid, user)
+    try:
+        res = await game_oldin.answer(session, s, body.pick)
+    except game_oldin.GameError as e:
+        raise HTTPException(409, str(e)) from None
+    await session.commit()
+    return res
+
+
+@router.post("/games/{sid}/next")
+async def oldin_next(sid: int, user: CurrentUser, session: Session) -> dict:
+    s = await _own_game(session, sid, user)
+    pair = await game_oldin.next_pair(session, s)
+    await session.commit()
+    return {"pair": pair, "left_ms": game_oldin.left_ms(s), "finished": pair is None}
+
+
+@router.post("/games/{sid}/finish")
+async def oldin_finish(sid: int, user: CurrentUser, session: Session) -> dict:
+    s = await _own_game(session, sid, user)
+    res = await game_oldin.finish(session, user, s)
+    await session.commit()
+    return res

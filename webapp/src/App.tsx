@@ -9,6 +9,7 @@ import { HomePage } from "./pages/Home";
 import { HomeSkeleton } from "./components/Skeleton";
 import { CardsPage } from "./pages/Cards";
 import { LessonPage } from "./pages/Lesson";
+import { OldinPage } from "./pages/Oldin";
 import { MashqPage } from "./pages/Mashq";
 import { ProfilePage } from "./pages/Profile";
 import { ProgressPage } from "./pages/Progress";
@@ -74,6 +75,7 @@ function UserApp() {
   }
   if (!home) return <HomeSkeleton />;
 
+  if (path === "/oldin") return <OldinPage />;
   if (path === "/cards") {
     return <CardsPage key={params.toString()} tur={params.get("tur") ?? ""} davr={params.get("davr") ?? ""} />;
   }
