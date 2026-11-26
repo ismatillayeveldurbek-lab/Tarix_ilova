@@ -8,6 +8,7 @@ from app.services.facts_import import import_facts, read_csv
 from app.services.game_oldin import interval
 from app.services.question_gen import date_shape, generate, question_leaks, sync_questions
 from tests.test_facts import BAZA, row, to_csv
+from tests.test_facts import row as row_fact
 
 
 def _years() -> list[dict]:
@@ -182,3 +183,14 @@ async def test_topic_test_files_sync(session, tmp_path):
     active = list(await session.scalars(select(Question.text).where(
         Question.gen_key.like("test:%"), Question.is_active.is_(True))))
     assert active == ["Birinchi savol (tuzatilgan)?"]
+
+
+def test_repeated_header_rows_skipped():
+    """Bir nechta ChatGPT javobi bitta faylga ketma-ket qo'shilgan: sarlavha qayta-qayta keladi."""
+    from app.services.importer import read_rows
+    head = "savol,a,b,c,d,togri,izoh,manba,mavzu,davr,qiyinlik,vaqt_savoli\n"
+    row = '"Savol {n}?","1","2","3","4","A","","","","","1","yo‘q"\n'
+    rows = read_rows("x.csv", (head + row.format(n=1) + "\n" + head + row.format(n=2)).encode())
+    assert [r["text"] for r in rows] == ["Savol 1?", "Savol 2?"]
+    facts = read_csv(to_csv([row_fact(id="A-1"), row_fact(id="id", tur="tur")]))  # 2-qator — takroriy sarlavha
+    assert [r["id"] for r in facts] == ["A-1"]

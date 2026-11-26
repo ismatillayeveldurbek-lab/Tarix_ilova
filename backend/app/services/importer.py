@@ -91,7 +91,10 @@ def _map_rows(raw: list[list], aliases: dict[str, str], required: tuple[str, ...
     if missing:
         raise ValueError("Ustunlar topilmadi: " + ", ".join(missing))
     rows = []
+    header_keys = [_key(h) for h in raw[0]]
     for values in raw[1:]:
+        if [_key(v) for v in values[:len(header_keys)]] == header_keys:
+            continue  # bir nechta ChatGPT javobi bitta faylga qo'shilganda sarlavha takrorlanadi
         row = {h: _norm(v) for h, v in zip(headers, values) if h}
         if any(row.values()):
             rows.append(row)

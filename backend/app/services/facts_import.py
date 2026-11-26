@@ -44,7 +44,8 @@ def read_csv(content: bytes) -> list[dict[str, str]]:
     missing = [c for c in REQUIRED_COLUMNS if c not in (reader.fieldnames or [])]
     if missing:
         raise ValueError("CSV’da ustunlar yo‘q: " + ", ".join(missing))
-    return list(reader)
+    # Bir nechta ChatGPT javobi bitta faylga qo'shilganda sarlavha qatori takrorlanadi — tashlab ketamiz
+    return [r for r in reader if r.get("id") != "id" and any((v or "").strip() for v in r.values() if isinstance(v, str))]
 
 
 async def import_facts(session: AsyncSession, rows: list[dict[str, str]], dry_run: bool = False) -> FactImportReport:
