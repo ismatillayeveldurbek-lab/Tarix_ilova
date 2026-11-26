@@ -84,6 +84,21 @@ lekin shu akkauntda boshqa tekin xizmat ochmang.
 
 ---
 
+## Ilova sekin ishlasa
+
+| Sabab | Belgisi | Yechim |
+|---|---|---|
+| **Server uxlab qolgan** | Birinchi ochilish 30–60 soniya, keyin tez | UptimeRobot monitorini yoqing (4-qadam) |
+| **Render va Neon turli mintaqada** | Har bir sahifa doim 2–5 soniya | Ikkalasi ham **Frankfurt** bo‘lishi kerak (pastda) |
+| **Neon bazasi uxlagan** | Uzoq tanaffusdan keyingi birinchi amal 1–2 soniya | Tekin tarifda normal holat |
+
+**Mintaqani tekshirish:**
+- Render → xizmat → **Settings** → **Region**. Bu yerda **Frankfurt (EU Central)** turishi kerak.
+- Neon → loyiha → **Settings** → **Region**. Bu yerda **AWS Europe Central 1 (Frankfurt)** turishi kerak.
+
+Mintaqani keyin o‘zgartirib bo‘lmaydi. Render boshqa mintaqada bo‘lsa (masalan, Oregon), yangi Web Service oching va region sifatida Frankfurt'ni tanlang. Environment qiymatlarini (`BOT_TOKEN`, `DATABASE_URL`, `ADMIN_IDS`) qayta kiriting, keyin eski xizmatni o‘chiring. Ma’lumotlar Neon'da, shuning uchun hech narsa yo‘qolmaydi.
+Frankfurt O‘zbekistonga ham yaqin: telefondan serverga har bir so‘rov Amerikadagidan taxminan 3 baravar tez boradi.
+
 ## Ko‘p uchraydigan muammolar
 
 | Belgisi | Sabab va yechim |

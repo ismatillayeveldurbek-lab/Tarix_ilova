@@ -66,12 +66,8 @@ async def week_activity(session, user: User) -> list[dict]:
 @router.get("/home")
 async def home(user: CurrentUser, session: Session) -> dict:
     total, correct = await answer_totals(session, user.id)
-    path = await learning_path(session, user)
     progress = await topic_progress(session, user.id)
-    for p in path:
-        p["name"] = p["name"]
-        for t_ in p["topics"]:
-            t_["name"] = t_["name"]
+    path = await learning_path(session, user, progress)  # mavzular hisobi bir marta
     config = await exam_service.get_active_config(session)
     events = await events_for(session)
     return {

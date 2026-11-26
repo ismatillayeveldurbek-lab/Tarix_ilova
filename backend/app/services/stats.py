@@ -14,9 +14,10 @@ async def answer_totals(session: AsyncSession, user_id: int) -> tuple[int, int]:
     return int(total), int(correct)
 
 
-async def learning_path(session: AsyncSession, user: User) -> list[dict]:
-    """Davrlar -> mavzular: har mavzuda nechta savol va nechtasi o‘zlashtirilgan."""
-    groups = group_by_period(await topic_progress(session, user.id))
+async def learning_path(session: AsyncSession, user: User, progress: list | None = None) -> list[dict]:
+    """Davrlar -> mavzular: har mavzuda nechta savol va nechtasi o‘zlashtirilgan.
+    progress berilsa, qayta hisoblanmaydi (bosh sahifa uni tavsiya uchun ham ishlatadi)."""
+    groups = group_by_period(progress if progress is not None else await topic_progress(session, user.id))
     return [
         {"id": g["id"], "name": g["name"], "topics": [
             {"id": t["id"], "name": t["name"], "total": t["total"], "solved": t["mastered"], "percent": t["percent"],
