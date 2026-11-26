@@ -130,7 +130,8 @@ export function CardsPage({ tur, davr }: { tur: string; davr: string }) {
       </div>
 
       <div className={wrap}>
-        <div key={card.fact_id} className="rise rounded-card border border-line bg-surface p-5 shadow-lift">
+        <div key={card.fact_id + (back ? "-b" : "-f")}
+          className={cx("rounded-card border bg-surface p-5 shadow-lift", back ? "animate-flip-in border-peri/40" : "animate-rise border-line")}>
           <div className="flex flex-wrap items-center gap-1.5">
             <Pill className={TONE[card.tur] ?? "bg-surface-2 text-muted"}>{card.label}</Pill>
             {card.davr && <Pill>{card.davr}</Pill>}
@@ -155,9 +156,9 @@ export function CardsPage({ tur, davr }: { tur: string; davr: string }) {
               Avval o‘zingiz eslang, keyin javobni oching
             </p>
           ) : (
-            <div className="rise mt-5 border-t border-line pt-5">
+            <div className="mt-5 border-t border-line pt-5">
               <div className="text-[12px] font-bold uppercase tracking-[.1em] text-success">Javob</div>
-              <div className="mt-1 text-[22px] font-extrabold leading-tight tracking-tight text-ink">{back.answer}</div>
+              <div className="mt-1 animate-pop text-[22px] font-extrabold leading-tight tracking-tight text-ink [animation-delay:.25s]">{back.answer}</div>
               {back.text && back.text !== back.answer && (
                 <p className="mt-3 font-reading text-[16px] leading-relaxed text-ink-2">{back.text}</p>
               )}
@@ -190,8 +191,8 @@ export function CardsPage({ tur, davr }: { tur: string; davr: string }) {
             </button>
           ) : (
             <>
-              <div className="mb-2 text-center text-[13px] font-semibold text-muted">Bildingizmi?</div>
-              <div className="grid grid-cols-2 gap-3">
+              <div className="mb-2 animate-fade text-center text-[13px] font-semibold text-muted">Bildingizmi?</div>
+              <div className="grid animate-rise grid-cols-2 gap-3">
                 <button type="button" disabled={busy} onClick={() => grade(false)}
                   className="rounded-full bg-danger-soft py-3.5 text-[16px] font-bold text-danger transition active:scale-[.98] disabled:opacity-60">
                   Bilmadim

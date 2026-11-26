@@ -1,3 +1,4 @@
+import { CountUp } from "../components/CountUp";
 import { Bar, Card, HeroCard, IconTile, Initials, ListRow, Pill, Screen, SectionTitle, cx, fmt } from "../components/kit";
 import { Check, ChevronRight, Clipboard, Flame, Lightning, Refresh, Star, Target, Trophy, Users } from "../components/Icons";
 import { navigate } from "../lib/router";
@@ -19,7 +20,7 @@ function PathHero({ path, due, xp, done, goal }: { path: FactPath | null; due: n
         <div>
           <div className="text-[12px] font-semibold uppercase tracking-[.12em] text-white/65">Tarix yo‘lingiz</div>
           <div className="mt-1 flex items-baseline gap-2">
-            <span className="text-[34px] font-extrabold leading-none tracking-tight">{fmt(path?.mastered ?? 0)}</span>
+            <span className="text-[34px] font-extrabold leading-none tracking-tight"><CountUp value={path?.mastered ?? 0} /></span>
             <span className="text-[15px] font-semibold text-white/60">/ {fmt(path?.total ?? 0)} fakt</span>
           </div>
           <div className="mt-1 text-[13px] text-white/65">o‘zlashtirildi · {Math.round(pct * 100)}%</div>
@@ -34,7 +35,7 @@ function PathHero({ path, due, xp, done, goal }: { path: FactPath | null; due: n
           return (
             <div key={d.name} className="min-w-0">
               <div className="h-1.5 overflow-hidden rounded-full bg-white/15">
-                <div className="h-full rounded-full bg-[#ffe064]" style={{ width: `${Math.max(p * 100, d.started ? 4 : 0)}%` }} />
+                <div className="h-full rounded-full bg-[#ffe064] transition-[width] duration-1000 ease-out-soft" style={{ width: `${Math.max(p * 100, d.started ? 4 : 0)}%` }} />
               </div>
               <div className="mt-1.5 truncate text-[11.5px] font-semibold text-white/80">{d.name}</div>
               <div className="text-[11px] text-white/50">{fmt(d.total)}</div>
@@ -46,10 +47,10 @@ function PathHero({ path, due, xp, done, goal }: { path: FactPath | null; due: n
       <div className="mt-5 grid grid-cols-3 gap-2">
         {[
           ["Takrorga", fmt(due)],
-          ["Bugungi XP", fmt(xp)],
+          ["Bugungi XP", <CountUp key="xp" value={xp} />],
           ["Bugun", `${Math.min(done, goal)}/${goal}`],
         ].map(([label, value]) => (
-          <div key={label} className="rounded-2xl bg-white/[.08] px-3 py-2.5">
+          <div key={String(label)} className="rounded-2xl bg-white/[.08] px-3 py-2.5">
             <div className="text-[11.5px] font-medium text-white/60">{label}</div>
             <div className="text-[18px] font-bold">{value}</div>
           </div>
@@ -102,7 +103,7 @@ export function HomePage() {
         </div>
         <span className={cx("inline-flex items-center gap-1 rounded-full bg-surface px-3 py-1.5 text-[15px] font-bold shadow-soft",
           home.user.streak ? "text-peach" : "text-faint")}>
-          <Flame size={17} /> {home.user.streak}
+          <Flame size={17} className={home.user.streak ? "animate-breathe" : undefined} /> <CountUp value={home.user.streak} duration={600} />
         </span>
       </header>
 

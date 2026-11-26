@@ -13,7 +13,7 @@ export function Card({ children, className, onClick }: { children: ReactNode; cl
   if (onClick) {
     return (
       <button type="button" onClick={onClick}
-        className={cx(base, "transition active:scale-[.99] hover:border-line-strong", className)}>
+        className={cx(base, "transition duration-200 hover:-translate-y-0.5 hover:border-line-strong hover:shadow-lift active:translate-y-0 active:scale-[.985]", className)}>
         {children}
       </button>
     );
@@ -77,13 +77,13 @@ export function ListRow({ icon, title, subtitle, right, onClick, disabled }: {
 export function Bar({ value, className, tone = "bg-cta" }: { value: number; className?: string; tone?: string }) {
   return (
     <div className={cx("h-2 overflow-hidden rounded-full bg-surface-2", className)}>
-      <div className={cx("h-full rounded-full transition-[width] duration-500", tone)} style={{ width: `${Math.max(0, Math.min(1, value)) * 100}%` }} />
+      <div className={cx("h-full rounded-full transition-[width] duration-700 ease-out-soft", tone)} style={{ width: `${Math.max(0, Math.min(1, value)) * 100}%` }} />
     </div>
   );
 }
 
 export function Pill({ children, className }: { children: ReactNode; className?: string }) {
-  return <span className={cx("inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] font-semibold", className ?? "bg-surface-2 text-muted")}>{children}</span>;
+  return <span className={cx("inline-flex items-center gap-1 whitespace-nowrap rounded-full px-2.5 py-1 text-[12px] font-semibold", className ?? "bg-surface-2 text-muted")}>{children}</span>;
 }
 
 export function Initials({ name, size = 44 }: { name: string; size?: number }) {
@@ -97,7 +97,7 @@ export function Initials({ name, size = 44 }: { name: string; size?: number }) {
 /** Sahifa konteyneri: Telegram safe-area va pastki menyu uchun joy */
 export function Screen({ children, nav = true }: { children: ReactNode; nav?: boolean }) {
   return (
-    <div className={cx("mx-auto max-w-[560px] space-y-4 px-4 pt-[calc(var(--safe-top)+16px)]",
+    <div className={cx("stagger mx-auto max-w-[560px] space-y-4 px-4 pt-[calc(var(--safe-top)+16px)]",
       nav ? "pb-[calc(var(--safe-bottom)+96px)]" : "pb-[calc(var(--safe-bottom)+32px)]")}>
       {children}
     </div>

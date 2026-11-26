@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
+import { CountUp } from "../components/CountUp";
 import { Check, Copy, Share, Users } from "../components/Icons";
-import { Avatar, Loading, toast } from "../components/ui";
+import { Card, HeroCard, Initials, Pill, Screen, SectionTitle, cx } from "../components/kit";
+import { Loading, toast } from "../components/ui";
 import { api } from "../lib/api";
 import { copyText, haptic, shareLink } from "../lib/telegram";
 import type { Referrals } from "../lib/types";
 
-const SHARE_TEXT = "Tarixdan milliy sertifikatga birga tayyorlanamiz: har kuni 10 ta savol, izohlar va sinov imtihoni.";
+const SHARE_TEXT = "Tarixdan milliy sertifikatga birga tayyorlanamiz: har kuni mashq, izohlar va sinov imtihoni.";
 
 export function InvitePage() {
   const [data, setData] = useState<Referrals | null>(null);
@@ -28,65 +30,73 @@ export function InvitePage() {
   ];
 
   return (
-    <div className="page stack">
-      <div className="page-head">
-        <div>
-          <div className="eyebrow">Taklif dasturi</div>
-          <h1>Do‘stlarni taklif qilish</h1>
-          <p className="muted small" style={{ marginTop: 4 }}>Birga tayyorlanish samaraliroq. Har bir faol do‘st uchun bonus XP oling.</p>
+    <Screen>
+      <HeroCard>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <div className="text-[12px] font-semibold uppercase tracking-[.12em] text-white/65">Taklif dasturi</div>
+            <h1 className="mt-1 text-[24px] font-extrabold leading-tight tracking-tight">Do‘stlar bilan birga tayyorlaning</h1>
+            <p className="mt-1 text-[13.5px] text-white/65">Har bir faol do‘st uchun +{data.xp_inviter} XP</p>
+          </div>
+          <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-white/12"><Users size={24} className="animate-breathe" /></span>
         </div>
-      </div>
+        <div className="mt-5 grid grid-cols-3 gap-2">
+          {[["Taklif qilingan", data.invited], ["Faol", data.active], ["Topilgan XP", data.earned_xp]].map(([l, v]) => (
+            <div key={String(l)} className="rounded-2xl bg-white/[.08] px-3 py-2.5">
+              <div className="text-[11.5px] font-medium text-white/60">{l}</div>
+              <div className="text-[20px] font-bold tabular-nums"><CountUp value={Number(v)} /></div>
+            </div>
+          ))}
+        </div>
+      </HeroCard>
 
-      <div className="card stack" style={{ gap: 12 }}>
+      <Card className="space-y-3 p-4">
         {steps.map((text, i) => (
-          <div key={i} className="row" style={{ alignItems: "flex-start" }}>
-            <span className="step-num">{i + 1}</span>
-            <span className="small" style={{ paddingTop: 2 }}>{text}</span>
+          <div key={i} className="flex items-start gap-3">
+            <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-peri-soft text-[13px] font-bold text-peri">{i + 1}</span>
+            <span className="pt-0.5 text-[14.5px] text-ink">{text}</span>
           </div>
         ))}
-      </div>
+      </Card>
 
-      <div className="stack" style={{ gap: 8 }}>
-        <div className="eyebrow">Sizning havolangiz</div>
-        <div className="link-box">
-          <span className="ellipsis grow">{data.link.replace("https://", "")}</span>
-          <button className="btn sm white" onClick={copy}>
-            {copied ? <><Check size={15} /> Nusxalandi</> : <><Copy size={15} /> Nusxalash</>}
+      <div className="space-y-2.5">
+        <SectionTitle>Sizning havolangiz</SectionTitle>
+        <div className="flex items-center gap-2 rounded-2xl border border-line bg-surface p-1.5 pl-4 shadow-soft">
+          <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-ink-2">{data.link.replace("https://", "")}</span>
+          <button type="button" onClick={copy}
+            className={cx("inline-flex items-center gap-1.5 rounded-xl px-3 py-2 text-[13.5px] font-bold transition",
+              copied ? "bg-success-soft text-success" : "bg-surface-2 text-ink hover:bg-line")}>
+            {copied ? <><Check size={15} className="animate-pop" /> Nusxalandi</> : <><Copy size={15} /> Nusxalash</>}
           </button>
         </div>
-        <button className="btn block" onClick={() => { haptic.tap(); shareLink(data.link, SHARE_TEXT); }}>
+        <button type="button" onClick={() => { haptic.tap(); shareLink(data.link, SHARE_TEXT); }}
+          className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-cta py-3.5 text-[15.5px] font-bold text-on-cta transition active:scale-[.99]">
           <Share size={18} /> Telegram orqali yuborish
         </button>
       </div>
 
-      <div className="metrics">
-        <div className="metric"><span className="label">Taklif qilingan</span><span className="value">{data.invited}</span></div>
-        <div className="metric"><span className="label">Faol</span><span className="value">{data.active}</span></div>
-        <div className="metric"><span className="label">Topilgan</span><span className="value">{data.earned_xp}<small>XP</small></span></div>
-      </div>
-
-      <div className="section-title"><span>Do‘stlaringiz</span></div>
+      <SectionTitle>Do‘stlaringiz</SectionTitle>
       {data.friends.length === 0 ? (
-        <div className="card empty">
-          <span className="empty-icon"><Users size={24} /></span>
-          <div className="muted small">Hali hech kim qo‘shilmadi. Havolani birinchi do‘stingizga yuboring.</div>
-        </div>
+        <Card className="flex flex-col items-center gap-2 p-7 text-center">
+          <span className="grid h-14 w-14 animate-pop place-items-center rounded-2xl bg-joy-soft text-joy"><Users size={26} /></span>
+          <div className="text-[14px] text-muted">Hali hech kim qo‘shilmadi. Havolani birinchi do‘stingizga yuboring.</div>
+        </Card>
       ) : (
-        <div className="card list" style={{ padding: "4px 10px" }}>
+        <Card className="stagger divide-y divide-line overflow-hidden">
           {data.friends.map((f, i) => (
-            <div key={i} className="list-row">
-              <Avatar name={f.name} />
-              <div className="grow">
-                <div style={{ fontWeight: 500 }}>{f.name}</div>
-                <div className="tiny muted">{new Date(f.joined_at).toLocaleDateString()}</div>
+            <div key={i} className="flex items-center gap-3 px-4 py-3">
+              <Initials name={f.name} size={40} />
+              <div className="min-w-0 flex-1">
+                <div className="truncate text-[15px] font-semibold text-ink">{f.name}</div>
+                <div className="text-[12.5px] text-muted">{new Date(f.joined_at).toLocaleDateString()}</div>
               </div>
               {f.active
-                ? <span className="chip green">+{data.xp_inviter} XP</span>
-                : <span className="chip">{data.min_answers} ta savol kutilmoqda</span>}
+                ? <Pill className="bg-success-soft text-success">+{data.xp_inviter} XP</Pill>
+                : <Pill>{data.min_answers} ta savol kutilmoqda</Pill>}
             </div>
           ))}
-        </div>
+        </Card>
       )}
-    </div>
+    </Screen>
   );
 }

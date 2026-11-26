@@ -43,8 +43,13 @@ export function Sheet({ onClose, children }: { onClose: () => void; children: Re
     return () => window.removeEventListener("keydown", onKey);
   }, [onClose]);
   return (
-    <div className="backdrop" onClick={onClose}>
-      <div className="sheet" onClick={(e) => e.stopPropagation()}>{children}</div>
+    <div className="fixed inset-0 z-50 flex animate-fade items-end justify-center bg-[rgba(10,12,16,.45)] backdrop-blur-[2px] sm:items-center"
+      onClick={onClose}>
+      <div onClick={(e) => e.stopPropagation()}
+        className="max-h-[88vh] w-full max-w-[560px] animate-sheet-up overflow-y-auto rounded-t-[28px] bg-surface px-5 pt-3 pb-[calc(var(--safe-bottom)+20px)] shadow-lift sm:rounded-[24px]">
+        <div className="mx-auto mb-4 h-1.5 w-10 rounded-full bg-line-strong" aria-hidden />
+        {children}
+      </div>
     </div>
   );
 }

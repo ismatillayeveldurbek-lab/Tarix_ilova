@@ -30,15 +30,15 @@ const OWNER: Record<string, string> = { "/exam": "/mashq", "/rating": "/profile"
 /** Pastda suzib turuvchi oq menyu (Mezon) */
 function BottomNav({ active }: { active: string }) {
   return (
-    <nav className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[calc(var(--safe-bottom)+10px)]">
+    <nav className="app-nav fixed inset-x-0 bottom-0 z-30 px-3 pb-[calc(var(--safe-bottom)+10px)]">
       <div className="mx-auto flex max-w-[520px] rounded-[26px] border border-line bg-surface/95 p-1.5 shadow-lift backdrop-blur-md">
         {TABS.map(({ path: p, label, icon: Icon }) => {
           const on = active === p;
           return (
             <button key={p} type="button" onClick={() => { haptic.select(); navigate(p, true); }}
-              className={cx("flex flex-1 flex-col items-center gap-0.5 rounded-[20px] py-2 text-[11.5px] font-semibold transition",
+              className={cx("flex flex-1 flex-col items-center gap-0.5 rounded-[20px] py-2 text-[11.5px] font-semibold transition duration-300 active:scale-95",
                 on ? "bg-peri-soft text-peri" : "text-faint hover:text-muted")}>
-              <Icon size={23} />{label}
+              <span key={on ? "on" : "off"} className={on ? "animate-pop" : undefined}><Icon size={23} /></span>{label}
             </button>
           );
         })}
@@ -97,7 +97,8 @@ function UserApp() {
     "/exam": <ExamPage />, "/rating": <RatingPage />,
   };
   const active = TABS.some((x) => x.path === path) ? path : OWNER[path] ?? "/";
-  return <>{pages[path] ?? <HomePage />}<BottomNav active={active} /></>;
+  // Sahifa almashganda yumshoq paydo bo‘lish (faqat shaffoflik: transform pastki "fixed" tugmalarni buzadi)
+  return <><div key={path} className="animate-enter">{pages[path] ?? <HomePage />}</div><BottomNav active={active} /></>;
 }
 
 export default function App() {

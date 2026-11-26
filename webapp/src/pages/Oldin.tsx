@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Book, Calendar, Check, Clock, Close, Cross, Refresh } from "../components/Icons";
 import { Bar, Card, IconTile, Pill, cx } from "../components/kit";
+import { CountUp } from "../components/CountUp";
+import { Confetti, FloatUp } from "../components/motion";
 import { Loading, toast } from "../components/ui";
 import { api } from "../lib/api";
 import { navigate } from "../lib/router";
@@ -29,13 +31,15 @@ function EventCard({ side, which, ans, picked, disabled, onPick }: {
   return (
     <button type="button" disabled={disabled} onClick={onPick}
       className={cx(
-        "relative w-full rounded-card border-2 bg-surface p-5 text-left shadow-soft transition",
+        "relative w-full rounded-card border-2 bg-surface p-5 text-left shadow-soft transition duration-200",
         !ans && "border-line hover:border-peri active:scale-[.99]",
-        ans && isEarlier && "border-success bg-success-soft",
-        ans && !isEarlier && (wrongPick ? "border-danger bg-danger-soft" : "border-line opacity-80"),
+        !ans && picked === which && "scale-[.98] border-peri",
+        ans && isEarlier && "border-success bg-success-soft animate-glow",
+        ans && !isEarlier && (wrongPick ? "border-danger bg-danger-soft animate-shake" : "border-line opacity-60"),
       )}>
+      {ans?.correct && isEarlier && <FloatUp className="right-5 top-14 text-[20px] text-success">+{ans.points}</FloatUp>}
       {ans && (
-        <span className={cx("absolute right-4 top-4 rounded-full px-2.5 py-1 text-[12px] font-bold",
+        <span className={cx("absolute right-4 top-4 animate-pop rounded-full px-2.5 py-1 text-[12px] font-bold",
           isEarlier ? "bg-success text-on-success" : "bg-surface-2 text-muted")}>
           {isEarlier ? "Oldin" : "Keyin"}
         </span>
@@ -43,7 +47,7 @@ function EventCard({ side, which, ans, picked, disabled, onPick }: {
       <div className="pr-16 font-reading text-[19px] font-semibold leading-snug text-ink">{shown.title}</div>
       {ans ? (
         <>
-          <div className={cx("mt-2 text-[22px] font-extrabold tracking-tight", isEarlier ? "text-success" : "text-ink")}>{shown.year}</div>
+          <div className={cx("mt-2 animate-rise text-[22px] font-extrabold tracking-tight", isEarlier ? "text-success" : "text-ink")}>{shown.year}</div>
           <div className="mt-1 flex items-start gap-1.5 text-[12.5px] text-muted"><Book size={14} className="mt-0.5 shrink-0" />{shown.source}</div>
         </>
       ) : null}
@@ -180,7 +184,7 @@ export function OldinPage() {
   if (phase === "intro") {
     const round = info.rounds_today + (info.can_resume ? 0 : 1);
     return (
-      <div className={cx(wrap, "space-y-4 pb-[calc(var(--safe-bottom)+110px)] pt-[calc(var(--safe-top)+12px)]")}>
+      <div className={cx(wrap, "stagger space-y-4 pb-[calc(var(--safe-bottom)+110px)] pt-[calc(var(--safe-top)+12px)]")}>
         <button type="button" onClick={quit} aria-label="Yopish" className="grid h-9 w-9 place-items-center rounded-full text-muted hover:bg-surface-2"><Close size={20} /></button>
         <div className="flex items-center gap-4">
           <IconTile tone="sana" size={56}><Calendar size={26} /></IconTile>
@@ -226,7 +230,10 @@ export function OldinPage() {
   if (phase === "count") {
     return (
       <div className="grid min-h-screen place-items-center">
-        <div key={count} className="rise text-[96px] font-extrabold leading-none tracking-tight text-ink">{count}</div>
+        <div className="relative grid place-items-center">
+          <span key={`r${count}`} className="absolute h-40 w-40 animate-okring rounded-full border-4 border-sana" />
+          <div key={count} className="animate-count text-[104px] font-extrabold leading-none tracking-tight text-ink">{count}</div>
+        </div>
       </div>
     );
   }
@@ -234,10 +241,11 @@ export function OldinPage() {
   // ---------- Natija ----------
   if (phase === "result" && result) {
     return (
-      <div className={cx(wrap, "space-y-4 pb-[calc(var(--safe-bottom)+120px)] pt-[calc(var(--safe-top)+24px)]")}>
-        <div className="rise text-center">
+      <div className={cx(wrap, "stagger space-y-4 pb-[calc(var(--safe-bottom)+120px)] pt-[calc(var(--safe-top)+24px)]")}>
+        <div className="relative text-center">
+          {result.accuracy >= 80 && result.answered >= 5 && <Confetti />}
           <div className="text-[12px] font-bold uppercase tracking-[.12em] text-muted">Qaysi biri oldin? · {result.round}-raund</div>
-          <div className="mt-2 text-[56px] font-extrabold leading-none tracking-tight text-ink">{result.score}</div>
+          <div className="mt-2 text-[56px] font-extrabold leading-none tracking-tight text-ink"><CountUp value={result.score} duration={1100} /></div>
           <div className="text-[14px] text-muted">ochko</div>
         </div>
         <div className="grid grid-cols-4 gap-2">
@@ -304,13 +312,15 @@ export function OldinPage() {
         <div className="flex items-center gap-3">
           <button type="button" onClick={quit} aria-label="Yopish" className="grid h-9 w-9 place-items-center rounded-full text-muted hover:bg-surface-2"><Close size={20} /></button>
           <span className={cx("inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-[15px] font-extrabold tabular-nums",
-            secs <= 10 ? "bg-danger-soft text-danger" : "bg-surface text-ink shadow-soft")}>
+            secs <= 10 ? "animate-pulse bg-danger-soft text-danger" : "bg-surface text-ink shadow-soft")}>
             <Clock size={16} /> {secs}s
           </span>
           {!deadline.current && ans && <span className="text-[12px] font-semibold text-muted">soat to‘xtagan</span>}
           <span className="flex-1" />
-          {mult > 1 && <span className="rounded-full bg-peach px-2.5 py-1 text-[13px] font-extrabold text-white">×{mult}</span>}
-          <span className="text-[18px] font-extrabold tabular-nums text-ink">{score}</span>
+          {mult > 1 && <span key={mult} className="animate-pop rounded-full bg-peach px-2.5 py-1 text-[13px] font-extrabold text-white">×{mult}</span>}
+          <span className="relative text-[18px] font-extrabold tabular-nums text-ink">
+            <span key={score} className="inline-block animate-pop">{score}</span>
+          </span>
         </div>
         <Bar value={left / (info.seconds * 1000)} tone={secs <= 10 ? "bg-danger" : "bg-sana"} className="h-1.5" />
       </div>
@@ -320,20 +330,20 @@ export function OldinPage() {
           <span className="text-[13px] font-bold uppercase tracking-[.1em] text-muted">Qaysi biri oldin bo‘lgan?</span>
           <span className="text-[13px] font-bold tabular-nums text-muted">{pair.index}/{pair.total}</span>
         </div>
-        <div key={pair.index} className="rise space-y-3">
-          <EventCard side={pair.a} which="a" ans={ans} picked={picked} disabled={busy || !!ans} onPick={() => pick("a")} />
+        <div key={pair.index} className="stagger space-y-3">
+          <div><EventCard side={pair.a} which="a" ans={ans} picked={picked} disabled={busy || !!ans} onPick={() => pick("a")} /></div>
           <div className="text-center text-[12px] font-bold uppercase tracking-[.2em] text-faint">yoki</div>
-          <EventCard side={pair.b} which="b" ans={ans} picked={picked} disabled={busy || !!ans} onPick={() => pick("b")} />
+          <div><EventCard side={pair.b} which="b" ans={ans} picked={picked} disabled={busy || !!ans} onPick={() => pick("b")} /></div>
         </div>
         {ans && (
-          <div className={cx("rise text-center text-[15px] font-bold", ans.correct ? "text-success" : "text-danger")}>
+          <div className={cx("animate-rise text-center text-[15px] font-bold", ans.correct ? "text-success" : "text-danger")}>
             {ans.correct ? `To‘g‘ri! +${ans.points}${ans.multiplier > 1 ? ` (×${ans.multiplier})` : ""}` : "Xato — seriya nolga tushdi"}
           </div>
         )}
       </div>
 
       {ans && (
-        <div className="fixed inset-x-0 bottom-0 z-20 border-t border-line bg-surface/95 backdrop-blur">
+        <div className="fixed inset-x-0 bottom-0 z-20 animate-sheet-up border-t border-line bg-surface/95 backdrop-blur">
           <div className={cx(wrap, "py-3 pb-[calc(var(--safe-bottom)+12px)]")}>
             <button type="button" disabled={busy} onClick={next}
               className="w-full rounded-full bg-cta py-3.5 text-[16px] font-bold text-on-cta active:scale-[.99] disabled:opacity-60">
