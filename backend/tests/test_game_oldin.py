@@ -139,3 +139,17 @@ async def test_rounds_and_daily_cap(session, facts):
     # 24 to'g'ri × 3 = 72; 1-raund 72, 2-raund limitgacha 28, 3-raund 0 (limit), 4-raund 0
     assert xps == [72, 28, 0, 0]
     assert (await g.finish(session, user, s))["round"] == 4
+
+
+def test_front_has_no_era_hints():
+    from tests.test_cards import fact
+    from app.services.cards import front
+    f = fact(nom="Orlean qamali", sana_matn="1428–1429-yillar", yil_boshi=1428, yil_oxiri=1429)
+    # o'yin: javobdan oldin faqat nom (sinf/darslik davrni bildirib qo'yadi)
+    assert g.card_front(f) == {"id": f.id, "title": "Orlean qamali"}
+    assert g.card_back(f)["source"] == "8-sinf Jahon tarixi, 3-§, 20-bet"
+    # kartochka: "Qachon?" savolida davr va sinf yo'q; boshqa savollarda bor
+    fr = front(f)
+    assert fr["prompt"] == "Bu qachon bo‘lgan?" and fr["davr"] is None and fr["sinf"] is None
+    atama = front(fact(tur="atama", nom="Feodal", matn="Yer egasi."))
+    assert atama["davr"] == "Yangi" and atama["sinf"] == 8

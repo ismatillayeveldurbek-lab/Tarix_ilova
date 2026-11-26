@@ -7,7 +7,7 @@ import { navigate } from "../lib/router";
 import { useStore } from "../lib/store";
 import { confirmDialog, haptic } from "../lib/telegram";
 
-type Side = { id: string; title: string; meta: string; year?: string; source?: string };
+type Side = { id: string; title: string; year?: string; source?: string };
 type Pair = { index: number; total: number; a: Side; b: Side };
 type Info = { xp_today: number; xp_cap: number; rounds_today: number; can_resume: boolean; pairs: number; seconds: number };
 type Answer = { correct: boolean; earlier: "a" | "b"; a: Side; b: Side; points: number; score: number; combo: number; multiplier: number; left_ms: number; last: boolean };
@@ -46,9 +46,7 @@ function EventCard({ side, which, ans, picked, disabled, onPick }: {
           <div className={cx("mt-2 text-[22px] font-extrabold tracking-tight", isEarlier ? "text-success" : "text-ink")}>{shown.year}</div>
           <div className="mt-1 flex items-start gap-1.5 text-[12.5px] text-muted"><Book size={14} className="mt-0.5 shrink-0" />{shown.source}</div>
         </>
-      ) : (
-        <div className="mt-2 text-[13px] text-muted">{shown.meta}</div>
-      )}
+      ) : null}
     </button>
   );
 }

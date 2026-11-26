@@ -170,11 +170,13 @@ def year_text(f: Fact) -> str:
 
 
 def card_front(f: Fact) -> dict:
-    """Voqea kartasi — YILSIZ (javob)."""
-    return {"id": f.id, "title": f.nom, "meta": f.book.title if f.book else f"{f.sinf}-sinf"}
+    """Voqea kartasi javobdan OLDIN: faqat nom. Yil ham, darslik/sinf ham yuborilmaydi —
+    sinf davrni bildiradi (6-sinf — qadimgi, 11-sinf — eng yangi) va javobni aytib qo'yadi."""
+    return {"id": f.id, "title": f.nom}
 
 
 def card_back(f: Fact) -> dict:
+    """Javobdan keyin: yil va darslik manbasi."""
     return {**card_front(f), "year": year_text(f), "source": f.source}
 
 

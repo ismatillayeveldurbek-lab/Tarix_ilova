@@ -7,7 +7,7 @@ import { navigate } from "../lib/router";
 import { useStore } from "../lib/store";
 import { confirmDialog, haptic } from "../lib/telegram";
 
-type Front = { fact_id: string; tur: string; label: string; prompt: string; body: string; hints: string[]; davr: string; sinf: number };
+type Front = { fact_id: string; tur: string; label: string; prompt: string; body: string; hints: string[]; davr: string | null; sinf: number | null };
 type Back = { fact_id: string; answer: string; title: string; text: string; extra: string[]; sana: string; source: string; mavzu: string; iqtibos: string };
 type Queue = { cards: Front[]; due: number; new_left: number };
 
@@ -133,8 +133,8 @@ export function CardsPage({ tur, davr }: { tur: string; davr: string }) {
         <div key={card.fact_id} className="rise rounded-card border border-line bg-surface p-5 shadow-lift">
           <div className="flex flex-wrap items-center gap-1.5">
             <Pill className={TONE[card.tur] ?? "bg-surface-2 text-muted"}>{card.label}</Pill>
-            <Pill>{card.davr}</Pill>
-            <Pill>{card.sinf}-sinf</Pill>
+            {card.davr && <Pill>{card.davr}</Pill>}
+            {card.sinf && <Pill>{card.sinf}-sinf</Pill>}
           </div>
 
           <div className="mt-5 text-[13px] font-bold uppercase tracking-[.1em] text-muted">{card.prompt}</div>

@@ -56,6 +56,9 @@ tegishli bo'limini o'qi.
 - Chalg'ituvchi variantlar o'sha davr va turdan bo'lsin, bema'ni bo'lmasin.
 - Atama ta'rifi atamaning o'zini o'z ichiga olmasin.
 - Yopiq kartalar/javoblar klientga oldindan yuborilmasin.
+- Vaqt/sana so'raladigan savol va o'yinlarda ("Qaysi biri oldin?", "Qachon?") javobdan OLDIN
+  darslik, sinf va davr ko'rsatilmasin va klientga yuborilmasin — sinf davrni bildiradi (6-sinf —
+  qadimgi, 11-sinf — eng yangi) va javobni aytib qo'yadi. Manba javobdan keyin ko'rsatiladi.
 - Qo'shtirnoqlar ikki marta qo'yilmasin; o‘ va g‘ uchun ‘ belgisi.
 
 ## Ish uslubi

@@ -115,6 +115,7 @@ async def test_cards_api_flow(session):
         first = next(x for x in q["cards"] if x["fact_id"] == "S-00")
         assert set(first) == {"fact_id", "tur", "label", "prompt", "body", "hints", "davr", "sinf"}  # javob yo'q
         assert "1900" not in first["body"] and "H-1" not in [x["fact_id"] for x in q["cards"]]
+        assert first["davr"] is None and first["sinf"] is None  # "Qachon?" savolida davr/sinf ishorasi yo'q
 
         atama = (await c.get("/api/v1/cards", params={"tur": "atama"})).json()["cards"]
         assert [x["fact_id"] for x in atama] == ["A-1"]

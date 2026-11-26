@@ -45,6 +45,7 @@ def _leaks(answer: str, shown: str) -> bool:
 
 
 RECALL = "Bu haqida nimani bilasiz?"
+WHEN_PROMPTS = ("Bu qachon bo‘lgan?", "Bo‘sh joyni to‘ldiring")
 
 
 def _when(f: Fact) -> tuple[str, str]:
@@ -101,9 +102,12 @@ def front(f: Fact) -> dict:
         body = mask(f.matn, _terms(f.nom))
     else:
         prompt, body = "Eslang", f.nom
+    # "Qachon?" savollarida davr va sinf javobga ishora qiladi — ular javobdan OLDIN yuborilmaydi
+    asks_time = prompt in WHEN_PROMPTS
     return {
         "fact_id": f.id, "tur": f.tur, "label": TYPE_LABELS.get(f.tur, f.tur),
-        "prompt": prompt, "body": body, "hints": hints, "davr": f.davr, "sinf": f.sinf,
+        "prompt": prompt, "body": body, "hints": hints,
+        "davr": None if asks_time else f.davr, "sinf": None if asks_time else f.sinf,
     }
 
 
