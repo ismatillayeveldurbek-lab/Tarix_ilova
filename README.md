@@ -4,9 +4,13 @@ Tarix fanidan milliy sertifikat imtihoniga tayyorlanuvchilar uchun **Telegram bo
 Dizayn Mezon uslubida (osmon palitrasi, Urbanist shrifti, Tailwind CSS). Pastki menyu: Bosh, Mashq, Profil. Ilovada faktlar bazasi, XP, ketma-ket kunlar, kurs dasturi va haftalik reyting bor.
 Interfeys o'zbek tilida.
 
-| Bosh | Mashq | Profil | Dars |
+| Bosh | Mashq | Kartochka (savol) | Kartochka (javob) |
 |---|---|---|---|
-| ![](docs/screenshots/home.png) | ![](docs/screenshots/mashq.png) | ![](docs/screenshots/profile.png) | ![](docs/screenshots/lesson.png) |
+| ![](docs/screenshots/home.png) | ![](docs/screenshots/mashq.png) | ![](docs/screenshots/card-front.png) | ![](docs/screenshots/card-back.png) |
+
+| Profil | Dars |
+|---|---|
+| ![](docs/screenshots/profile.png) | ![](docs/screenshots/lesson.png) |
 
 | Imtihon | Reyting | O‘zlashtirish | Qorong‘i mavzu |
 |---|---|---|---|
@@ -128,6 +132,24 @@ python -m scripts.import_facts             # ../data/baza.csv ni import qiladi
 ```
 
 Import xavfsiz: faktlar ID bo'yicha yangilanadi. `ishonch=past` qatorlar o'quvchiga ko'rsatilmaydi. Har qator `CLAUDE.md` dagi qoidalar bo'yicha tekshiriladi (manba bor-yo'qligi, yil va asr mosligi, qo'sh qo'shtirnoq, o‘/g‘ belgisi va hokazo). Admin panelda **Faktlar bazasi** bo'limi bor: qidiruv, filtrlar, faktni yashirish va CSV'ni panel orqali yangilash. Serverda ilova har ishga tushganda baza avtomatik yangilanadi.
+
+## Kunlik takrorlash (kartochkalar)
+
+Faktlar bazasidan avtomatik kartochkalar tuziladi: **karta → "Javobni ko‘rish" → "Bildim / Bilmadim"**.
+
+| Fakt turi | Savol (old tomoni) | Javob (orqa tomoni) |
+|---|---|---|
+| Sana, urush | "Bu qachon bo‘lgan?" (nomdagi yil yashiriladi) | sana, g‘olib va natija |
+| Shaxs | "Kim haqida gap ketmoqda?" + 3 ta ishora | ism, fakt |
+| Atama | "Qaysi atama?" + ta‘rif | atama |
+| Asar | "Muallifi kim?" yoki "Qaysi asar?" | muallif / asar nomi |
+| Joy | "Qaysi shahar / davlat / hudud?" + tavsif (nom yashiriladi) | joy nomi, hozirgi joyi |
+| Sanasi yo‘q faktlar | "Bu haqida nimani bilasiz?" (faol eslash) | darslikdagi fakt |
+
+- Javob serverdan faqat "Javobni ko‘rish" bosilganda keladi. Savol matnida javob "…" bilan yashiriladi; yashirib bo‘lmaydigan karta ko‘rsatilmaydi (3 840 tadan 3 839 tasi ishlatiladi).
+- **"Bilmadim"** — karta 10 daqiqadan keyin qaytadi. **"Bildim"** — oraliq oshib boradi: 1 → 4 → 10 → 25 → 60 kun. 25 kunlik oraliqqa chiqqan karta "o‘zlashtirildi" hisoblanadi.
+- Navbat: avval vaqti kelgan kartalar, keyin yangilari (darslik tartibida, kuniga 20 ta — server tekshiradi).
+- Har kartada manba: "6-sinf Jahon tarixi, 6-§, 31-bet" va darslikdan iqtibos.
 
 ## 2. Savollarni joylash
 

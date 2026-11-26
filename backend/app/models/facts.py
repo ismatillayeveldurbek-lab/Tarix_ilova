@@ -117,5 +117,6 @@ class DailyStat(Base):
     day: Mapped[date] = mapped_column(Date, index=True)
     xp: Mapped[int] = mapped_column(Integer, default=0)
     cards_reviewed: Mapped[int] = mapped_column(Integer, default=0)
+    new_cards: Mapped[int] = mapped_column(Integer, default=0)  # bugun boshlangan yangi kartalar (limit uchun)
     games_played: Mapped[int] = mapped_column(Integer, default=0)
     game_xp: Mapped[dict] = mapped_column(JSON, default=dict)  # {"oldin": 40} — o‘yin bo‘yicha XP (limit uchun)

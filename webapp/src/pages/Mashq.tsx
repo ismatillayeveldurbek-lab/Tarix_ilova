@@ -1,12 +1,12 @@
 import { useState } from "react";
-import { Card, IconTile, ListRow, Pill, Screen, SectionTitle, cx, fmt } from "../components/kit";
+import { Bar, Card, HeroCard, IconTile, ListRow, Pill, Screen, SectionTitle, cx, fmt } from "../components/kit";
 import {
   Book, Calendar, ChevronRight, Clipboard, Layers, Lightning, MapPin, Refresh, Scroll, Sparkle, Swords, Target, User,
 } from "../components/Icons";
 import { navigate } from "../lib/router";
 import { useStore } from "../lib/store";
 import { haptic } from "../lib/telegram";
-import type { FactPath, PeriodNode } from "../lib/types";
+import type { CardsSummary, FactPath, PeriodNode } from "../lib/types";
 import { useApi } from "../lib/useApi";
 
 const go = (to: string) => { haptic.tap(); navigate(to); };
@@ -14,6 +14,10 @@ const go = (to: string) => { haptic.tap(); navigate(to); };
 const SECTION_ICONS: Record<string, React.ReactNode> = {
   sana: <Calendar size={20} />, shaxs: <User size={20} />, atama: <Book size={20} />,
   joy: <MapPin size={20} />, urush: <Swords size={20} />, asar: <Scroll size={20} />,
+};
+// Tailwind klasslarni manba kodidan qidiradi — shuning uchun nomlar to'liq yozilgan
+const BAR_TONE: Record<string, string> = {
+  sana: "bg-sana", shaxs: "bg-shaxs", atama: "bg-atama", joy: "bg-joy", urush: "bg-urush", asar: "bg-asar",
 };
 const ROMAN = ["I", "II", "III", "IV", "V", "VI", "VII", "VIII"];
 
@@ -57,6 +61,7 @@ function Unit({ period, index }: { period: PeriodNode; index: number }) {
 export function MashqPage() {
   const { home } = useStore();
   const { data: path } = useApi<FactPath>("/v1/path");
+  const { data: srs } = useApi<CardsSummary>("/v1/cards/summary");
   if (!home) return null;
 
   return (
@@ -66,19 +71,39 @@ export function MashqPage() {
         <p className="text-[14px] text-muted">Darsliklardagi faktlar, testlar va sinov imtihoni</p>
       </header>
 
+      {/* Kunlik takrorlash */}
+      <HeroCard onClick={() => go("/cards")}>
+        <div className="flex items-center justify-between">
+          <div>
+            <div className="text-[12px] font-semibold uppercase tracking-[.12em] text-white/65">Kunlik takrorlash</div>
+            <div className="mt-1 text-[22px] font-extrabold tracking-tight">
+              {!srs ? "Kartalar" : srs.due + srs.new_left === 0 ? "Bugungi kartalar tugadi" : `${srs.due} takrorga · ${srs.new_left} yangi`}
+            </div>
+            <div className="text-[13px] text-white/65">
+              {srs && srs.due + srs.new_left === 0 ? `Ertaga yana ${srs.new_per_day} ta yangi karta` : "Karta → javobni ko‘rish → bildim / bilmadim"}
+            </div>
+          </div>
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-white/12"><Refresh size={22} /></span>
+        </div>
+      </HeroCard>
+
       {/* Qo‘llanma: faktlar bo‘limlari */}
       <SectionTitle right={path ? `${fmt(path.total)} fakt` : undefined}>Qo‘llanma</SectionTitle>
       <div className="grid grid-cols-2 gap-3">
-        {(path?.sections ?? []).map((s) => (
-          <Card key={s.tur} className="p-4">
-            <div className="flex items-start justify-between">
-              <IconTile tone={s.tur}>{SECTION_ICONS[s.tur]}</IconTile>
-              <Pill className="bg-surface-2 text-faint">Tez orada</Pill>
-            </div>
-            <div className="mt-3 text-[16px] font-bold text-ink">{s.label}</div>
-            <div className="text-[13px] text-muted">{fmt(s.total)} ta</div>
-          </Card>
-        ))}
+        {(path?.sections ?? []).map((s) => {
+          const st = srs?.sections[s.tur];
+          return (
+            <Card key={s.tur} className="p-4" onClick={() => go(`/cards?tur=${s.tur}`)}>
+              <div className="flex items-start justify-between">
+                <IconTile tone={s.tur}>{SECTION_ICONS[s.tur]}</IconTile>
+                {st && st.due > 0 && <Pill className="bg-danger-soft text-danger">{st.due} takrorga</Pill>}
+              </div>
+              <div className="mt-3 text-[16px] font-bold text-ink">{s.label}</div>
+              <div className="text-[13px] text-muted">{fmt(st?.mastered ?? 0)} / {fmt(s.total)} o‘zlashtirildi</div>
+              <Bar value={st && s.total ? (st.mastered + st.learning * 0.3) / s.total : 0} className="mt-2.5 h-1.5" tone={BAR_TONE[s.tur]} />
+            </Card>
+          );
+        })}
         {!path && Array.from({ length: 6 }, (_, i) => <div key={i} className="h-[124px] animate-pulse rounded-card bg-surface-2" />)}
       </div>
 

@@ -28,6 +28,7 @@ FLAG_NAMES = {
     "atama_ozini_tushuntiradi": "atama ta’rifida o‘zi bor (savolda yashiriladi)",
     "kontekstsiz": "kontekstsiz gap (\"Bu...\", \"U...\")",
     "ishoralar_kam": "shaxsda 3 tadan kam ishora",
+    "maydonda_izoh": "qisqa maydonga tahrir izohi tushgan (tuzatish kerak)",
 }
 
 

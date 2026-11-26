@@ -14,7 +14,7 @@ async def get_daily_stat(session: AsyncSession, user_id: int, create: bool = Fal
     today = local_today()
     stat = await session.scalar(select(DailyStat).where(DailyStat.user_id == user_id, DailyStat.day == today))
     if stat is None and create:
-        stat = DailyStat(user_id=user_id, day=today, xp=0, cards_reviewed=0, games_played=0, game_xp={})
+        stat = DailyStat(user_id=user_id, day=today, xp=0, cards_reviewed=0, new_cards=0, games_played=0, game_xp={})
         session.add(stat)
         await session.flush()
     return stat
@@ -31,8 +31,7 @@ async def fact_progress(session: AsyncSession, user: User) -> dict:
     )).all())
     due_now = await session.scalar(
         select(func.count()).select_from(UserFactState).join(Fact, Fact.id == UserFactState.fact_id)
-        .where(UserFactState.user_id == user.id, VISIBLE, UserFactState.holat != STATE_MASTERED,
-               UserFactState.next_review_at <= utcnow())
+        .where(UserFactState.user_id == user.id, VISIBLE, UserFactState.next_review_at <= utcnow())
     ) or 0
     started = sum(by_state.values())
     return {

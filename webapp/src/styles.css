@@ -24,7 +24,7 @@
   --accent: #e0703f;          /* peach (matn uchun to'qroq) */
   --accent-soft: #fdeee6;
 
-  --success: #1f9d63;   --success-soft: #e3f6ec;
+  --success: #1f9d63;   --success-soft: #e3f6ec;   --on-success: #ffffff;
   --danger: #e5484d;    --danger-soft: #ffecec;
   --warning: #b7791f;   --warning-soft: #fdf3df;
 
@@ -67,7 +67,7 @@
   --accent: #f59a70;
   --accent-soft: #3a2418;
 
-  --success: #4cc98c;   --success-soft: #10291e;
+  --success: #4cc98c;   --success-soft: #10291e;   --on-success: #0b1220;
   --danger: #ff7a7e;    --danger-soft: #34171a;
   --warning: #f0b955;   --warning-soft: #2e2412;
 

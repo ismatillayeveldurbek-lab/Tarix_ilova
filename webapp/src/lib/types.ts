@@ -73,3 +73,11 @@ export type FactPath = {
   davrlar: { name: string; total: number; mastered: number; started: number }[];
   sections: { tur: "sana" | "shaxs" | "atama" | "joy" | "urush" | "asar"; label: string; total: number }[];
 };
+
+/** /api/v1/cards/summary — bo'limlar bo'yicha takrorlash holati */
+export type CardsSummary = {
+  sections: Record<string, { total: number; mastered: number; learning: number; due: number }>;
+  due: number;
+  new_left: number;
+  new_per_day: number;
+};

@@ -3,7 +3,7 @@ import { Check, ChevronRight, Clipboard, Flame, Lightning, Refresh, Star, Target
 import { navigate } from "../lib/router";
 import { useStore } from "../lib/store";
 import { haptic } from "../lib/telegram";
-import type { FactPath } from "../lib/types";
+import type { CardsSummary, FactPath } from "../lib/types";
 import { useApi } from "../lib/useApi";
 
 const MONTHS = ["yanvar", "fevral", "mart", "aprel", "may", "iyun", "iyul", "avgust", "sentabr", "oktabr", "noyabr", "dekabr"];
@@ -62,7 +62,8 @@ function PathHero({ path, due, xp, done, goal }: { path: FactPath | null; due: n
 export function HomePage() {
   const { home } = useStore();
   const { data: path } = useApi<FactPath>("/v1/path");
-  const { data: me } = useApi<{ facts: { due_now: number }; today: { xp: number } }>("/v1/me");
+  const { data: me } = useApi<{ facts: { due_now: number }; today: { xp: number; cards_reviewed: number } }>("/v1/me");
+  const { data: srs } = useApi<CardsSummary>("/v1/cards/summary");
   if (!home) return null;
 
   const now = new Date();
@@ -72,7 +73,9 @@ export function HomePage() {
   const planItems = [
     {
       key: "srs", tone: "peri", icon: <Refresh size={20} />, title: "Kunlik takrorlash",
-      sub: "Faktlar kartochkasi · tez orada", done: false, soon: true, to: "",
+      sub: srs ? (srs.due + srs.new_left > 0 ? `${srs.due} takrorga · ${srs.new_left} yangi karta` : "Bugungi kartalar tugadi")
+        : "Faktlar kartochkasi",
+      done: !!srs && srs.due === 0 && srs.new_left === 0, soon: false, to: "/cards",
     },
     {
       key: "daily", tone: "peach", icon: <Lightning size={20} />, title: `Kunlik ${goal} savol`,

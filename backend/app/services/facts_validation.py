@@ -16,6 +16,7 @@ Bayroqlar va ularning ta’siri:
   atama_ozini_tushuntiradi — ta’rif ichida atamaning o‘zi bor: savolda atama yashirib ko‘rsatiladi
   kontekstsiz            — "Bu...", "U..." bilan boshlanadi: matn yolg‘iz ko‘rsatiladigan o‘yinlarda yo‘q
   ishoralar_kam          — shaxsda 3 tadan kam ishora: "Kim men?" o‘yinida yo‘q
+  maydonda_izoh          — qisqa maydonga (muallif, g‘olib...) tahrir izohi tushib qolgan ("42-bet: ...")
 """
 import re
 from dataclasses import dataclass, field
@@ -135,6 +136,8 @@ def check_row(row: dict[str, str]) -> CheckedFact:
         flags.append("kontekstsiz")
     if d["tur"] == "shaxs" and len(d["shaxs_ishoralar"]) < 3:
         flags.append("ishoralar_kam")
+    if any(re.search(r"\d+-bet\b|matnda shunday", d[f]) for f in ("asar_muallifi", "golib", "joy_hozirgi", "shaxs_faoliyati", "nom")):
+        flags.append("maydonda_izoh")
 
     return CheckedFact(d, flags)
 

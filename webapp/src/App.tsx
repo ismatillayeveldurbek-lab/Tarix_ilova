@@ -7,6 +7,7 @@ import { AdminApp } from "./pages/admin/AdminApp";
 import { ExamPage } from "./pages/Exam";
 import { HomePage } from "./pages/Home";
 import { HomeSkeleton } from "./components/Skeleton";
+import { CardsPage } from "./pages/Cards";
 import { LessonPage } from "./pages/Lesson";
 import { MashqPage } from "./pages/Mashq";
 import { ProfilePage } from "./pages/Profile";
@@ -73,6 +74,9 @@ function UserApp() {
   }
   if (!home) return <HomeSkeleton />;
 
+  if (path === "/cards") {
+    return <CardsPage key={params.toString()} tur={params.get("tur") ?? ""} davr={params.get("davr") ?? ""} />;
+  }
   if (path === "/lesson") {
     const mode = (params.get("mode") || "mixed") as "daily" | "review" | "mixed" | "period" | "topic";
     const id = params.get("id") ? Number(params.get("id")) : null;

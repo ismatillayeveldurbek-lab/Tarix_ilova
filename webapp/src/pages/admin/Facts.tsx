@@ -22,7 +22,7 @@ export const FLAG_LABELS: Record<string, string> = {
   ishonch_past: "Ishonch past", manba_yoq: "Manba yo‘q", tur_nomalum: "Turi noma’lum", matn_yoq: "Matn yo‘q",
   yil_yoq: "Aniq yil yo‘q", yil_xato: "Yil xato", yil_asr_mos_emas: "Yil va asr mos emas",
   atama_ozini_tushuntiradi: "Ta’rifda atamaning o‘zi", kontekstsiz: "Kontekstsiz gap",
-  ishoralar_kam: "Ishoralar kam", csvda_yoq: "CSV’da yo‘q",
+  ishoralar_kam: "Ishoralar kam", csvda_yoq: "CSV’da yo‘q", maydonda_izoh: "Maydonda tahrir izohi",
 };
 const DAVRLAR = ["Qadimgi", "O‘rta asrlar", "Yangi", "Eng yangi"];
 const HUDUDLAR = ["Jahon", "O‘zbekiston va Markaziy Osiyo"];
