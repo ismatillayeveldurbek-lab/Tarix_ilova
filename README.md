@@ -162,6 +162,20 @@ Faktlar bazasidan avtomatik kartochkalar tuziladi: **karta → "Javobni ko‘ris
 - **XP:** har to‘g‘ri javob 3 XP; bugungi 1–2-raund to‘liq, 3-raund yarim, 4-raunddan XP yo‘q; kuniga ko‘pi bilan 100 XP. XP haftalik reytingga qo‘shiladi.
 - **Xato qilingan voqealar** kunlik takrorlashga tushadi.
 
+## XP, kunlik seriya va limitlar
+
+| Manba | XP | Kunlik chegara |
+|---|---|---|
+| Test va imtihon javobi | to‘g‘ri 10, noto‘g‘ri 1 | — |
+| Kartochka (bildim yoki bilmadim) | 2 | 60 XP |
+| "Qaysi biri oldin?" | to‘g‘ri javob 3 (1–2-raund to‘liq, 3-raund yarim, 4+ yo‘q) | 100 XP |
+| Do‘st taklifi | taklif qilganga 50, do‘stga 20 | — |
+
+- Barcha XP bugungi hisobda manba bo‘yicha saqlanadi (Profil → "Bugun") va haftalik reytingga qo‘shiladi.
+- **Kunlik maqsad — 10 ta mashq**: test javobi, kartochka yoki o‘yindagi javob. Uchalasi ham ketma-ket kunlar seriyasini saqlaydi.
+- Limitlar va kunlik hisob **Toshkent vaqti bilan 00:00 da** yangilanadi. Kuniga 20 ta yangi kartochka.
+- 19:00 dagi eslatma maqsad bajarilmagan bo‘lsa yuboriladi va seriya uzilish xavfini aytadi.
+
 ## 2. Savollarni joylash
 
 1. Telegramda botga **/panel** yozing (sizning ID raqamingiz `ADMIN_IDS` da bo'lishi kerak).

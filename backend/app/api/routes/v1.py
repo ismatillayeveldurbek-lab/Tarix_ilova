@@ -8,7 +8,8 @@ from sqlalchemy import select
 
 from app.api.deps import CurrentUser, Session
 from app.models import Fact, GameSession, UserFactState
-from app.services import cards, game_oldin, srs
+from app.services import cards, game_oldin, srs, xp
+from app.services.rating import user_week_xp
 from app.services.cards import card_ok
 from app.services.facts import fact_path, fact_progress, get_daily_stat
 from app.services.streak import effective_streak
@@ -31,9 +32,16 @@ async def me(user: CurrentUser, session: Session) -> dict:
         },
         "today": {
             "xp": today.xp if today else 0,
+            "xp_by_source": [
+                {"source": k, "label": xp.SOURCE_LABELS.get(k, k), "xp": v}
+                for k, v in sorted(((today.game_xp or {}) if today else {}).items(), key=lambda x: -x[1]) if v
+            ],
+            "actions": today.actions if today else 0,
+            "goal": xp.goal(),
             "cards_reviewed": today.cards_reviewed if today else 0,
             "games_played": today.games_played if today else 0,
         },
+        "week_xp": await user_week_xp(session, user.id),
         "facts": await fact_progress(session, user),
     }
 

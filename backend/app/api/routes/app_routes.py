@@ -11,7 +11,8 @@ from app.config import settings
 from app.db import local_today, utcnow
 from app.models import Answer, ExamConfig, ExamSession, LessonSession, Question, User
 from app.services import exam as exam_service
-from app.services.daily import answers_today, daily_question_ids
+from app.services.daily import daily_question_ids
+from app.services.xp import actions_today
 from app.services.history import events_for
 from app.services.quiz import (
     REPORTS_PER_DAY, create_report, get_question, pick_question_ids, record_answer, reports_last_day,
@@ -78,7 +79,7 @@ async def home(user: CurrentUser, session: Session) -> dict:
             "reminder_enabled": user.reminder_enabled,
             "reminder_time": user.reminder_time.strftime("%H:%M"),
         },
-        "today": {"done": await answers_today(session, user.id), "goal": settings.daily_question_count},
+        "today": {"done": await actions_today(session, user.id), "goal": settings.daily_question_count},
         "week": {"xp": await user_week_xp(session, user.id), "rank": await user_rank(session, user.id),
                  "days": await week_activity(session, user)},
         "totals": {"answers": total, "correct": correct},
@@ -205,7 +206,7 @@ async def answer(body: AnswerIn, user: CurrentUser, session: Session, request: R
     lesson.answered_ids = [*lesson.answered_ids, q.id]  # yangi ro‘yxat — SQLAlchemy o‘zgarishni ko‘radi
     result = await record_answer(session, user, q, body.option, source=lesson.source)
     referral = result.referral
-    done = await answers_today(session, user.id)
+    done = await actions_today(session, user.id)
     await session.commit()
     goal = settings.daily_question_count
     bot = getattr(request.app.state, "bot", None)

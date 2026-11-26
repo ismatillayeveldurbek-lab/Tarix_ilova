@@ -111,7 +111,7 @@ export function MashqPage() {
       {/* Testlar */}
       <SectionTitle>Testlar</SectionTitle>
       <Card className="divide-y divide-line overflow-hidden">
-        <ListRow title={`Kunlik ${home.today.goal} savol`} subtitle={`${Math.min(home.today.done, home.today.goal)} / ${home.today.goal} bajarildi`}
+        <ListRow title="Kunlik test" subtitle="10 ta savol: takrorlash vaqti kelganlar + yangilari"
           icon={<IconTile tone="peach"><Lightning size={20} /></IconTile>} onClick={() => go("/lesson?mode=daily")} />
         <ListRow title="Xatolar ustida ishlash" subtitle={home.due_count ? `${home.due_count} ta savol kutmoqda` : "Hozircha xato savol yo‘q"}
           icon={<IconTile tone="danger"><Refresh size={20} /></IconTile>} onClick={() => go("/lesson?mode=review")} />

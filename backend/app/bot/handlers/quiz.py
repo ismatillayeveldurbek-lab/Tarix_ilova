@@ -17,7 +17,8 @@ from app.bot.texts import t
 from app.bot.utils import esc, leave_input_state
 from app.config import settings
 from app.models import Media, Question, User
-from app.services.daily import answers_today, daily_question_ids
+from app.services.daily import daily_question_ids
+from app.services.xp import actions_today
 from app.services.media import media_id
 from app.services.quiz import get_question, list_periods, list_topics, pick_question_ids, record_answer
 from app.services.rating import xp_for
@@ -201,7 +202,7 @@ async def on_answer(cb: CallbackQuery, user: User, session: AsyncSession, state:
     await cb.message.edit_text(text, reply_markup=after_answer_kb(q.id, last))
     await cb.answer("✅" if result.is_correct else "❌")
 
-    if await answers_today(session, user.id) == settings.daily_question_count:
+    if await actions_today(session, user.id) == settings.daily_question_count:
         await cb.message.answer(t("goal_done", n=settings.daily_question_count, streak=user.streak_current))
     if result.referral:  # do‘st yetarli savol yechdi — ikkalasiga bonus
         await notify_activated(cb.bot, session, result.referral)

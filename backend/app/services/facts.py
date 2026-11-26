@@ -14,7 +14,7 @@ async def get_daily_stat(session: AsyncSession, user_id: int, create: bool = Fal
     today = local_today()
     stat = await session.scalar(select(DailyStat).where(DailyStat.user_id == user_id, DailyStat.day == today))
     if stat is None and create:
-        stat = DailyStat(user_id=user_id, day=today, xp=0, cards_reviewed=0, new_cards=0, games_played=0, game_xp={})
+        stat = DailyStat(user_id=user_id, day=today, xp=0, cards_reviewed=0, new_cards=0, actions=0, games_played=0, game_xp={})
         session.add(stat)
         await session.flush()
     return stat

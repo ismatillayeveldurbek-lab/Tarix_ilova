@@ -9,7 +9,8 @@ from app.db import utcnow
 from app.models import Answer, Period, Question, QuestionReport, Referral, Topic, User
 from app.services.referrals import try_activate
 from app.services.review import update_review
-from app.services.streak import touch_streak
+from app.services.rating import xp_for
+from app.services.xp import award, count_actions
 
 
 async def pick_question_ids(
@@ -50,7 +51,8 @@ async def record_answer(
         )
     )
     await update_review(session, user.id, question.id, is_correct)
-    streak_up = touch_streak(user)
+    streak_up = await count_actions(session, user)
+    await award(session, user.id, xp_for(is_correct), "test")
     await session.flush()
     referral = await try_activate(session, user)
     return AnswerResult(is_correct=is_correct, streak_increased=streak_up, referral=referral)

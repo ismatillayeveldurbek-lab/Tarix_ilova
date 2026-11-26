@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { Dumbbell, Home, User } from "./components/Icons";
 import { cx } from "./components/kit";
 import { Logo } from "./components/Logo";
@@ -60,8 +60,16 @@ function useBackButton(show: boolean) {
 
 function UserApp() {
   const { path, params } = useRoute();
-  const { home, error } = useStore();
+  const { home, error, reload } = useStore();
   useBackButton(path !== "/");
+
+  // Asosiy bo'limga qaytilganda (test, karta yoki o'yindan keyin) ma'lumotni yangilaymiz:
+  // seriya, bugungi faollik va XP har doim aniq bo'lsin. Birinchi yuklashni StoreProvider qiladi.
+  const firstLoad = useRef(true);
+  useEffect(() => {
+    if (firstLoad.current) { firstLoad.current = false; return; }
+    if (TABS.some((t) => t.path === path)) void reload();
+  }, [path, reload]);
 
   if (error && !home) {
     return (

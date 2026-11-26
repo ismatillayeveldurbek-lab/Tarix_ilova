@@ -18,7 +18,7 @@ from app.bot.texts import t
 from app.config import settings
 from app.db import SessionLocal, local_today, utcnow
 from app.models import LessonSession, User
-from app.services.daily import answers_today
+from app.services.xp import actions_today
 from app.services.history import events_for, format_post
 from app.services.streak import effective_streak
 
@@ -40,7 +40,7 @@ async def send_reminders(bot: Bot, now: datetime | None = None) -> int:
         ))
         for user in users:
             user.last_reminder_date = today
-            done = await answers_today(session, user.id)
+            done = await actions_today(session, user.id)
             if done >= settings.daily_question_count:
                 continue
             streak = effective_streak(user, today)

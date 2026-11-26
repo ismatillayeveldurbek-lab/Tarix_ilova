@@ -17,12 +17,12 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db import local_today, utcnow
-from app.models import Fact, GameSession, User, UserFactState, XpBonus
+from app.models import Fact, GameSession, User, UserFactState
 from app.services.daily import local_midnight_utc
 from app.services.facts import VISIBLE, get_daily_stat
 from app.services.facts_validation import NO_YEAR_GAME_FLAGS, roman_to_int
 from app.services.srs import schedule
-from app.services.streak import touch_streak
+from app.services.xp import award, count_actions
 
 GAME = "oldin"
 PAIRS = 24
@@ -297,15 +297,11 @@ async def finish(session: AsyncSession, user: User, s: GameSession, now: datetim
         pause(s, now)
         stat = await get_daily_stat(session, user.id, create=True)
         earned_today = int((stat.game_xp or {}).get(GAME, 0))
-        s.xp, _ = xp_for_round(correct, s.round_no, earned_today)
+        xp, _ = xp_for_round(correct, s.round_no, earned_today)
         s.finished_at = now
-        stat.game_xp = {**(stat.game_xp or {}), GAME: earned_today + s.xp}
-        stat.xp += s.xp
         stat.games_played += 1
-        if s.xp:
-            session.add(XpBonus(user_id=user.id, amount=s.xp, reason="oyin_oldin"))
-        if answered:
-            touch_streak(user)
+        s.xp = await award(session, user.id, xp, GAME, cap=DAILY_XP_CAP)
+        await count_actions(session, user, len(answered))
         # Xato qilingan voqealar kunlik takrorlashga ("Takrorlash kerak")
         for p in mistakes:
             for fid in (p["a"], p["b"]):

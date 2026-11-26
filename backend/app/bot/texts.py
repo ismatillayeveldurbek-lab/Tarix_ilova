@@ -71,7 +71,7 @@ TEXTS: dict[str, str] = {
         "⭐ +{xp} XP\n"
         "🔥 Ketma-ket: <b>{streak}</b> kun"
     ),
-    "goal_done": "🎉 <b>Kunlik maqsad bajarildi!</b> Bugun {n} ta savol yechdingiz.\n🔥 Ketma-ket: <b>{streak}</b> kun",
+    "goal_done": "🎉 <b>Kunlik maqsad bajarildi!</b> Bugun {n} ta mashq bajardingiz.\n🔥 Ketma-ket: <b>{streak}</b> kun",
 
     # Kunlik mashq va takrorlash
     "daily_start": "🔥 <b>Kunlik mashq</b>: {n} ta savol. Avval takrorlash vaqti kelganlar, keyin yangilari.",
@@ -82,12 +82,12 @@ TEXTS: dict[str, str] = {
         "oraliqlarda qayta beriladi."
     ),
     "reminder": (
-        "⏰ Bugungi <b>{n} ta savol</b> sizni kutmoqda!\n"
-        "🔥 Ketma-ket: <b>{streak}</b> kun — uzib qo‘ymang!"
+        "🔥 <b>{streak} kunlik seriyangiz bugun uzilishi mumkin!</b>\n"
+        "Kunlik maqsadgacha yana <b>{n} ta mashq</b> qoldi — test, kartochka yoki o‘yin."
     ),
     "reminder_new": (
-        "⏰ Bugungi <b>{n} ta savol</b> sizni kutmoqda!\n"
-        "🔥 Bugun yangi ketma-ketlikni boshlang — har kuni ozgina, lekin muntazam."
+        "⏰ Bugungi <b>{n} ta mashq</b> sizni kutmoqda — test, kartochka yoki o‘yin.\n"
+        "🔥 Bugun yangi seriyani boshlang: har kuni ozgina, lekin muntazam."
     ),
     "btn_start_daily": "▶️ Boshlash",
 

@@ -15,7 +15,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.db import utcnow
 from app.models import Answer, ExamAnswer, ExamConfig, ExamSession, Period, Question, Topic, User
 from app.services.review import update_review
-from app.services.streak import touch_streak
+from app.services.rating import xp_for
+from app.services.xp import award, count_actions
 
 GRACE_SECONDS = 30  # internet sekinligi uchun qo‘shimcha vaqt
 
@@ -152,8 +153,9 @@ async def finish_exam(session: AsyncSession, exam: ExamSession, user: User) -> E
                 session.add(Answer(user_id=user.id, question_id=q.id, chosen_option=item.chosen_option,
                                    is_correct=item.is_correct, source="exam", answered_at=now))
                 await update_review(session, user.id, q.id, item.is_correct, now=now)
-        if any(i.chosen_option for i in items):
-            touch_streak(user)
+        answered = [i for i in items if i.chosen_option]
+        await count_actions(session, user, len(answered))
+        await award(session, user.id, sum(xp_for(bool(i.is_correct)) for i in answered), "imtihon")
         possible = sum(i.points for i in items) or 1
         earned = sum(i.points for i in items if i.is_correct)
         max_score = float(config.scoring.get("max_score", possible)) if config else possible

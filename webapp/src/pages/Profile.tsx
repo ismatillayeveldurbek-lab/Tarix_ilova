@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Card, IconTile, Initials, ListRow, Pill, Screen, SectionTitle, cx } from "../components/kit";
+import { Bar, Card, IconTile, Initials, ListRow, Pill, Screen, SectionTitle, cx } from "../components/kit";
 import { Bell, Chart, Check, Flame, Shield, Trophy, Users } from "../components/Icons";
 import { Switch, toast } from "../components/ui";
 import { api } from "../lib/api";
 import { navigate } from "../lib/router";
 import { useStore } from "../lib/store";
 import { haptic } from "../lib/telegram";
+import { useApi } from "../lib/useApi";
 
 const DAYS = ["Du", "Se", "Ch", "Pa", "Ju", "Sh", "Ya"];
 const go = (to: string) => { haptic.tap(); navigate(to); };
@@ -13,6 +14,7 @@ const go = (to: string) => { haptic.tap(); navigate(to); };
 export function ProfilePage() {
   const { home, reload, setHome } = useStore();
   const [saving, setSaving] = useState(false);
+  const { data: me } = useApi<{ today: { xp: number; actions: number; goal: number; xp_by_source: { source: string; label: string; xp: number }[] } }>("/v1/me");
   if (!home) return null;
   const u = home.user;
   const accuracy = home.totals.answers ? Math.round((home.totals.correct / home.totals.answers) * 100) : 0;
@@ -55,6 +57,26 @@ export function ProfilePage() {
           ))}
         </div>
       </Card>
+
+      {/* Bugungi XP manbalar bo'yicha */}
+      {me && (
+        <Card className="p-4">
+          <div className="flex items-center justify-between">
+            <span className="text-[15px] font-bold text-ink">Bugun</span>
+            <span className="text-[13px] text-muted">{Math.min(me.today.actions, me.today.goal)} / {me.today.goal} mashq · {me.today.xp} XP</span>
+          </div>
+          <Bar value={me.today.actions / me.today.goal} className="mt-2.5" tone={me.today.actions >= me.today.goal ? "bg-success" : "bg-peri"} />
+          {me.today.xp_by_source.length > 0 ? (
+            <div className="mt-3 space-y-1.5">
+              {me.today.xp_by_source.map((x) => (
+                <div key={x.source} className="flex items-center justify-between text-[13.5px]">
+                  <span className="text-ink-2">{x.label}</span><span className="font-bold text-ink">+{x.xp} XP</span>
+                </div>
+              ))}
+            </div>
+          ) : <div className="mt-2 text-[13px] text-muted">Bugun hali XP yo‘q — kartochka yoki testdan boshlang.</div>}
+        </Card>
+      )}
 
       {/* Hafta */}
       <Card className="p-4">

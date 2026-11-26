@@ -16,6 +16,7 @@ from app.db import utcnow
 from app.models import STATE_DUE, STATE_LEARNING, STATE_MASTERED, STATE_NEW, Fact, User, UserFactState
 from app.services.cards import card_ok
 from app.services.facts import VISIBLE, get_daily_stat
+from app.services.xp import CARD_XP, CARD_XP_CAP, award, count_actions
 
 INTERVALS_DAYS = [1, 4, 10, 25, 60]
 RELEARN = timedelta(minutes=10)
@@ -84,6 +85,8 @@ async def grade(session: AsyncSession, user: User, fact: Fact, knew: bool, now: 
         stat.new_cards += 1
     schedule(state, knew, now)
     stat.cards_reviewed += 1
+    await count_actions(session, user)
+    await award(session, user.id, CARD_XP, "kartochka", cap=CARD_XP_CAP)
     await session.flush()
     return state
 

@@ -13,6 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.config import settings
 from app.db import utcnow
 from app.models import Answer, Referral, User, XpBonus
+from app.services.xp import award
 
 CODE_ALPHABET = "abcdefghjkmnpqrstuvwxyz23456789"  # adashtiradigan belgilar (0/o, 1/l/i) yo‘q
 CODE_LENGTH = 8
@@ -71,10 +72,8 @@ async def try_activate(session: AsyncSession, user: User) -> Referral | None:
     if answers < settings.referral_min_answers:
         return None
     referral.activated_at = utcnow()
-    session.add_all([
-        XpBonus(user_id=referral.inviter_id, amount=settings.referral_xp_inviter, reason="referral"),
-        XpBonus(user_id=user.id, amount=settings.referral_xp_invited, reason="referral_welcome"),
-    ])
+    await award(session, referral.inviter_id, settings.referral_xp_inviter, "taklif")
+    await award(session, user.id, settings.referral_xp_invited, "taklif_bonus")
     await session.flush()
     return referral
 
@@ -87,7 +86,7 @@ async def referral_stats(session: AsyncSession, user: User) -> dict:
     )).all()
     earned = await session.scalar(
         select(func.coalesce(func.sum(XpBonus.amount), 0))
-        .where(XpBonus.user_id == user.id, XpBonus.reason == "referral")
+        .where(XpBonus.user_id == user.id, XpBonus.reason == "taklif")
     )
     return {
         "invited": len(rows),

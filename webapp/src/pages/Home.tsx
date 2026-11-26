@@ -78,8 +78,8 @@ export function HomePage() {
       done: !!srs && srs.due === 0 && srs.new_left === 0, soon: false, to: "/cards",
     },
     {
-      key: "daily", tone: "peach", icon: <Lightning size={20} />, title: `Kunlik ${goal} savol`,
-      sub: done >= goal ? "Bajarildi" : `${Math.min(done, goal)} / ${goal} savol`, done: done >= goal, soon: false, to: "/lesson?mode=daily",
+      key: "daily", tone: "peach", icon: <Lightning size={20} />, title: "Kunlik test",
+      sub: "10 ta savol: takrorlash + yangilari", done: false, soon: false, to: "/lesson?mode=daily",
     },
     {
       key: "review", tone: "danger", icon: <Target size={20} />, title: "Xatolar ustida ishlash",
@@ -90,7 +90,6 @@ export function HomePage() {
       sub: home.exam ? `${home.exam.count} savol · ${home.exam.minutes} daqiqa` : "Tez orada", done: false, soon: !home.exam, to: "/exam",
     },
   ];
-  const planDone = planItems.filter((p) => p.done).length;
 
   return (
     <Screen>
@@ -114,9 +113,11 @@ export function HomePage() {
         <div className="flex items-center justify-between px-4 pt-4 pb-1">
           <div>
             <div className="text-[17px] font-bold text-ink">Bugungi reja</div>
-            <div className="text-[13px] text-muted">Har kuni ozgina — lekin muntazam</div>
+            <div className="text-[13px] text-muted">Kuniga {goal} ta mashq: test, kartochka yoki o‘yin</div>
           </div>
-          <Pill className="bg-peri-soft text-peri">{planDone} / {planItems.length}</Pill>
+          <Pill className={done >= goal ? "bg-success-soft text-success" : "bg-peri-soft text-peri"}>
+            {done >= goal ? "Maqsad bajarildi" : `${Math.min(done, goal)} / ${goal} mashq`}
+          </Pill>
         </div>
         <div className="divide-y divide-line">
           {planItems.map((p) => (
